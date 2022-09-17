@@ -1117,3 +1117,108 @@ public class MainActivity extends AppCompatActivity
 
 ## App的活动页面
 
+### 创建新的App页面
+
+#### **1．创建XML文件**
+
+在Android Studio左上方找到项目结构图，右击res目录下面的layout，弹出右键菜单
+
+
+
+![image-20220917193548334](img/Android学习笔记/image-20220917193548334.png)
+
+
+
+![image-20220917193618147](img/Android学习笔记/image-20220917193618147.png)
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+</LinearLayout>
+```
+
+
+
+
+
+#### **2．创建Java代码**
+
+同样在Android Studio左上方找到项目结构图，右击java目录下面的包名，弹出右键菜单
+
+
+
+![image-20220917193901980](img/Android学习笔记/image-20220917193901980.png)
+
+
+
+![image-20220917193918049](img/Android学习笔记/image-20220917193918049.png)
+
+
+
+
+
+```java
+package com.example.my_first_android_project;
+
+
+import android.os.Bundle;
+
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+/**
+ * Project name(项目名称)：my_first_android_project
+ * Package(包名): com.example.my_first_android_project
+ * Class(类名): Main2
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/17
+ * Time(创建时间)： 19:39
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class Main2 extends AppCompatActivity
+{
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.layout2);
+    }
+}
+```
+
+
+
+
+
+#### **3．注册页面配置**
+
+创建好了页面的XML文件及其Java代码，还得在项目中注册该页面，打开AndroidManifest.xml，在 application节点内部补充如下一行配置：
+
+```xml
+<activity android:name=".Main2">
+
+</activity>
+```
+
+添加了上面这行配置，表示给该页面注册身份，否则App运行时打开页面会提示错误“activity not found”。如果activity的标记头与标记尾中间没有其他内容
+
+
+
+
+
+### 快速生成页面源码
+
+
+
+
+
