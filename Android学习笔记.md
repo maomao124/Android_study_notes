@@ -492,5 +492,180 @@ public class MainActivity extends AppCompatActivity
 
 # App开发基础
 
+## App的运行环境
+
+App是在手机上运行的一类应用软件，而应用软件依附于操作系统，无论电脑还是手机，刚开机都会显 示桌面，这个桌面便是操作系统的工作台。个人电脑的操作系统主要有微软的Windows和苹果的Mac OS，智能手机流行的操作系统也有两种，分别是安卓手机的Android和苹果手机的iOS。本书讲述的App 开发为Android上的应用开发，Android系统基于Linux内核，但不等于Linux系统，故App应用无法在 Linux系统上运行。
+
+
+
+Android Studio是谷歌官方推出的App开发环境，它提供了三种操作系统的安装包，分别是Windows、 Mac和Linux。这就产生一个问题：开发者可以在电脑上安装Android Studio，并使用Android Studio开 发App项目，但是编译出来的App在电脑上跑不起来。这种情况真是令人匪夷所思的，通常学习C语言、 Java或者Python，都能在电脑的开发环境直接观看程序运行过程，就算是J2EE开发，也能在浏览器通过 网页观察程序的运行结果。可是安卓的App应用竟然没法在电脑上直接运行，那该怎样验证App的界面 展示及其业务逻辑是否正确呢？
+
+* 为了提供App开发的功能测试环境，一种办法是利用Android Studio创建内置的模拟器，然后启动内置 模拟器，再在模拟器上运行App应用
+* 另一种办法是使用真实手机测试App，该办法在实际开发中更为常见。由于模拟器本身跑在电脑上面， 占用电脑的CPU和内存，会拖累电脑的运行速度
+
+
+
+利用真机调试要求具备以下**5个条件**：
+
+1．**使用数据线把手机连到电脑上**
+
+手机的电源线拔掉插头就是数据线。数据线长方形的一端接到电脑的USB接口，即可完成手机与电脑的 连接
+
+
+
+2．**在电脑上安装手机的驱动程序**
+
+一般电脑会把手机当作USB存储设备一样安装驱动，大多数情况会自动安装成功。如果遇到少数情况安 装失败，需要先安装手机助手，由助手软件下载并安装对应的手机驱动
+
+
+
+3．**打开手机的开发者选项并启用USB调试**
+
+手机出厂后默认关闭开发者选项，需要开启开发者选项才能调试App。打开手机的设置菜单，进入“系统” →“关于手机”→“版本信息”页面，这里有好几个版本项，每个版本项都使劲点击七、八下，总会有某个版 本点击后出现“你将开启开发者模式”的提示。继续点击该版本开启开发者模式，然后退出并重新进入设 置页面，此时就能在“系统”菜单下找到“开发者选项”或“开发人员选项”了。进入“开发者选项”页面，启用 “开发者选项”和“USB调试”两处开关，允许手机通过USB接口安装调试应用
+
+
+
+4．**将连接的手机设为文件传输模式，并允许计算机进行USB调试**
+
+手机通过USB数据线连接电脑后，请求选择某种USB连接方式。这里记得选中“传输文件”，因为充电模式不支持调试App。 选完之后手机桌面弹出确认窗口，提示开发者是否允许当前计算机进行USB调试。这里勾选“始终允许使用这台计算机进行调试”选项，再点击右下角的确定按钮，允许计算机在手机上调试App
+
+
+
+5．手机要能正常使用
+
+锁屏状态下，Android Studio向手机安装App的行为可能会被拦截，所以要保证手机处于解锁状态，才 能顺利通过电脑安装App到手机上。 有的手机还要求插入SIM卡才能调试App，还有的手机要求登录会员才能调试App，总之如果遇到无法安 装的问题，各种情况都尝试一遍才好。
+
+
+
+
+
+## App的开发语言
+
+基于安卓系统的App开发主要有两大技术路线，分别是**原生开发和混合开发**。原生开发指的是在移动平 台上利用官方提供的编程语言（例如Java、Kotlin等）、开发工具包（SDK）、开发环境（Android Studio）进行App开发；混合开发指的是结合原生与H5技术开发混合应用，也就是将部分App页面改成 内嵌的网页，这样无须升级App、只要覆盖服务器上的网页，即可动态更新App页面。
+
+
+
+不管是原生开发还是混合开发，都要求掌握Android Studio的开发技能，因为混合开发本质上依赖于原生开发。单就原生开发而言，又涉及多种编程语 言，包括Java、Kotlin、C/C++、XML等
+
+
+
+### Java
+
+Java是Android开发的主要编程语言，在创建新项目时，弹出项目配置对话框，看见 Language栏默认选择了Java，表示该项目采用Java编码
+
+虽然Android开发需要Java环境，但没要求电脑上必须事先安装JDK，因为Android Studio已经自带了 JRE
+
+单击项目结构对话框左侧的SDK Location，对话框右边从上到下依次排列着“Android SDK location”、 “Android NDK location”、“JDK location”，其中下方的JDK location提示位于Android Studio安装路径的 JRE目录下，它正是Android Studio自带的Java运行环境
+
+
+
+Android Studio自带的JRE使用的版本是11
+
+
+
+```sh
+PS C:\Program Files\Android Studio\jre\bin> ls
+
+
+    目录: C:\Program Files\Android Studio\jre\bin
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         2022/9/15     20:56                server
+-a----         2022/7/11     15:34          30024 attach.dll
+-a----         2022/7/11     15:33        1566536 awt.dll
+-a----         2022/7/11     15:34          37192 dt_shmem.dll
+-a----         2022/7/11     15:33          34632 dt_socket.dll
+-a----         2022/7/11     15:34         670024 fontmanager.dll
+-a----         2022/7/11     15:34         549192 freetype.dll
+-a----         2022/7/11     15:33          51528 instrument.dll
+-a----         2022/7/11     15:33          51528 j2gss.dll
+-a----         2022/7/11     15:33          26952 j2pcsc.dll
+-a----         2022/7/11     15:34          77640 j2pkcs11.dll
+-a----         2022/7/11     15:33          29000 jaas.dll
+-a----         2022/7/11     15:34          45896 jabswitch.exe
+-a----         2022/7/11     15:34         111944 jaccessinspector.exe
+-a----         2022/7/11     15:33          72008 jaccesswalker.exe
+-a----         2022/7/11     15:34          25416 jaotc.exe
+-a----         2022/7/11     15:33          23880 jar.exe
+-a----         2022/7/11     15:33          23880 jarsigner.exe
+-a----         2022/7/11     15:34         156488 java.dll
+-a----         2022/7/11     15:33          33608 java.exe
+-a----         2022/7/11     15:34         158024 javaaccessbridge.dll
+-a----         2022/7/11     15:34          23880 javac.exe
+-a----         2022/7/11     15:33          23880 javadoc.exe
+-a----         2022/7/11     15:34         170824 javajpeg.dll
+-a----         2022/7/11     15:34          23880 javap.exe
+-a----         2022/7/11     15:34          33608 javaw.exe
+-a----         2022/7/11     15:34          21832 jawt.dll
+-a----         2022/7/11     15:33          23880 jdb.exe
+-a----         2022/7/11     15:33          23880 jdeprscan.exe
+-a----         2022/7/11     15:34          23880 jdeps.exe
+-a----         2022/7/11     15:33         218440 jdwp.dll
+-a----         2022/7/11     15:33          23880 jfr.exe
+-a----         2022/7/11     15:33          23880 jhsdb.exe
+-a----         2022/7/11     15:34          33608 jimage.dll
+-a----         2022/7/11     15:33          23880 jimage.exe
+-a----         2022/7/11     15:34          23880 jjs.exe
+-a----         2022/7/11     15:34          87880 jli.dll
+-a----         2022/7/11     15:33          23880 jlink.exe
+-a----         2022/7/11     15:34          23880 jmod.exe
+-a----         2022/7/11     15:33          23880 jrunscript.exe
+-a----         2022/7/11     15:33          61768 jsound.dll
+-a----         2022/7/11     15:34          23872 keytool.exe
+-a----         2022/7/11     15:33          23880 kinit.exe
+-a----         2022/7/11     15:33          23880 klist.exe
+-a----         2022/7/11     15:34          23880 ktab.exe
+-a----         2022/7/11     15:33         257864 lcms.dll
+-a----         2022/7/11     15:34          36168 le.dll
+-a----         2022/7/11     15:34          30024 management.dll
+-a----         2022/7/11     15:33          24904 management_agent.dll
+-a----         2022/7/11     15:33          36680 management_ext.dll
+-a----         2022/7/11     15:34         515400 mlib_image.dll
+-a----         2022/7/11     15:34         627528 msvcp140.dll
+-a----         2022/7/11     15:33          96072 net.dll
+-a----         2022/7/11     15:34          68424 nio.dll
+-a----         2022/7/11     15:33          23880 pack200.exe
+-a----         2022/7/11     15:34          25928 prefs.dll
+-a----         2022/7/11     15:33          21320 rmi.dll
+-a----         2022/7/11     15:34          23880 rmid.exe
+-a----         2022/7/11     15:34          23880 rmiregistry.exe
+-a----         2022/7/11     15:33          40776 saproc.dll
+-a----         2022/7/11     15:34          23880 serialver.exe
+-a----         2022/7/11     15:34         218440 splashscreen.dll
+-a----         2022/7/11     15:33          44872 sspi_bridge.dll
+-a----         2022/7/11     15:33         151880 sunec.dll
+-a----         2022/7/11     15:33          89416 unpack.dll
+-a----         2022/7/11     15:33         140616 unpack200.exe
+-a----         2022/7/11     15:33          82248 vcruntime140.dll
+-a----         2022/7/11     15:34          56648 verify.dll
+-a----         2022/7/11     15:34          32072 w2k_lsa_auth.dll
+-a----         2022/7/11     15:33         196936 windowsaccessbridge-64.dll
+-a----         2022/7/11     15:33          86344 zip.dll
+
+
+PS C:\Program Files\Android Studio\jre\bin> pwd
+
+Path
+----
+C:\Program Files\Android Studio\jre\bin
+
+
+PS C:\Program Files\Android Studio\jre\bin> ./java -version
+openjdk version "11.0.12" 2021-07-20
+OpenJDK Runtime Environment (build 11.0.12+7-b1504.28-7817840)
+OpenJDK 64-Bit Server VM (build 11.0.12+7-b1504.28-7817840, mixed mode)
+PS C:\Program Files\Android Studio\jre\bin>
+```
+
+
+
+
+
+### Kotlin
+
+
+
 
 
