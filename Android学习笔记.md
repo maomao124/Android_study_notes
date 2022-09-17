@@ -1218,7 +1218,227 @@ public class Main2 extends AppCompatActivity
 
 ### 快速生成页面源码
 
+经过创建XML文件、创建Java代码、注册页面配置3个步骤，就算创建好了一个新页面，没想到 区区一个页面也这么费事，怎样才能提高开发效率呢？其实Android Studio早已集成了快速创建页面的 功能，只要一个对话框就能完成所有操作
 
+
+
+右键菜单中依次选择New→Activity→Empty Activity
+
+![image-20220917195154902](img/Android学习笔记/image-20220917195154902.png)
+
+
+
+
+
+![image-20220917195302587](img/Android学习笔记/image-20220917195302587.png)
+
+
+
+回到Android Studio左上方的项目结构图，发现res的layout目录下多了个activity_main3.xml，同时 java目录下多了个MainActivity3，并且MainActivity3代码已经设定了加载activity_main3布局。接着打开AndroidManifest.xml，找到application节点发现多了下面这行配置：
+
+```xml
+<activity
+android:name=".MainActivity3"
+android:exported="false" />
+```
+
+
+
+
+
+
+
+### 跳到另一个页面
+
+一旦创建好新页面，就得在合适的时候跳到该页面，假设出发页面为A，到达页面为B，那么跳转动作是 从A跳到B。由于启动App会自动打开默认主页MainActivity，因此跳跃的起点理所当然在MainActivity， 跳跃的终点则为目标页面的Activity。这种跳转动作翻译为Android代码，格式形如“startActivity(new Intent(源页面.this, 目标页面.class));”。如果目标页面名为MainActivity3，跳转代码便是下面这样的：
+
+```java
+// 活动页面跳转，从MainActivity跳到MainActivity3
+startActivity(new Intent(MainActivity.this, MainActivity3.class));
+```
+
+
+
+因为跳转动作通常发生在当前页面，也就是从当前页面跳到其他页面，所以不产生歧义的话，可以使用 this指代当前页面
+
+
+
+activity_main.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/tv_hello"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.55" />
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="点击跳转到第二个页面"
+            tools:ignore="MissingConstraints" />
+
+    <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="点击跳转到第三个页面"
+            tools:ignore="MissingConstraints"
+            tools:layout_editor_absoluteY="62dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+
+</LinearLayout>
+```
+
+
+
+layout2.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:background="#cccccc">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ff00ff00"
+            android:textSize="36sp"
+            android:text="第二个页面"/>
+
+</LinearLayout>
+```
+
+
+
+activity_main3.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:gravity="center"
+        android:background="#222222">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ff00ff"
+            android:textSize="36sp"
+            android:text="第三个页面" />
+
+</LinearLayout>
+```
+
+
+
+MainActivity
+
+```java
+package com.example.my_first_android_project;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d("MainActivity", "onCreate: 调试日志");
+        Log.i("MainActivity", "onCreate: 日志");
+        Log.w("MainActivity", "onCreate: 警告日志", new RuntimeException());
+        Log.e("MainActivity", "onCreate: 错误日志", new RuntimeException());
+
+        TextView TextView = this.findViewById(R.id.tv_hello);
+        TextView.setText("你好，世界！");
+
+        Button button1 = findViewById(R.id.button1);
+        Button button2 = findViewById(R.id.button2);
+        button1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                startActivity(new Intent(MainActivity.this, Main2.class));
+            }
+        });
+        button2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });
+
+    }
+
+
+}
+```
+
+
+
+
+
+运行：
+
+![image-20220917203805364](img/Android学习笔记/image-20220917203805364.png)
+
+
+
+![image-20220917203815653](img/Android学习笔记/image-20220917203815653.png)
+
+
+
+![image-20220917203825162](img/Android学习笔记/image-20220917203825162.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 简单控件
 
 
 
