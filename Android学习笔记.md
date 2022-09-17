@@ -804,3 +804,316 @@ Gradle Scripts下面主要是工程的编译配置文件，主要有：
 
 ### 编译配置文件build.gradle
 
+新创建的App项目默认有两个build.gradle，一个是Project项目级别的build.gradle；另一个是Module 模块级别的build.gradle
+
+
+
+项目级别的build.gradle指定了当前项目的总体编译规则，打开该文件在buildscript下面找到 repositories和dependencies两个节点，其中repositories节点用于设置Android Studio插件的网络仓 库地址，而dependencies节点用于设置gradle插件的版本号。由于官方的谷歌仓库位于国外，下载速度 相对较慢，因此可在repositories节点添加阿里云的仓库地址，方便国内开发者下载相关插件。
+
+
+
+```
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    //插件
+    id 'com.android.application' version '7.2.2' apply false
+    id 'com.android.library' version '7.2.2' apply false
+}
+
+//任务
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+```
+
+
+
+
+
+模块级别的build.gradle对应于具体模块，每个模块都有自己的build.gradle，它指定了当前模块的详细编译规则
+
+```
+//插件
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    // 指定编译用的SDK版本号
+    compileSdk 32
+
+    defaultConfig {
+        // 指定该模块的应用编号，也就是App的包名
+        applicationId "com.example.my_first_android_project"
+        // 指定App适合运行的最小SDK版本号
+        minSdk 25
+        // 指定目标设备的SDK版本号。表示App最希望在哪个版本的Android上运行
+        targetSdk 32
+        // 指定App的应用版本号
+        versionCode 1
+        // 指定App的应用版本名称
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// 指定App编译的依赖信息
+dependencies {
+
+    // 指定引用jar包的路径
+    //implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // 指定编译Android的高版本支持库
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    // 指定单元测试编译用的junit版本号
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+```
+
+
+
+
+
+### AndroidManifest.xml
+
+AndroidManifest.xml指定了App的运行配置信息，它是一个XML描述文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.my_first_android_project">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.My_first_android_project"
+        tools:targetApi="31">
+
+        <!-- activity节点指定了该App拥有的活动页面信息，其中拥有android.intent.action.MAIN的activity说明它是入口页面 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+AndroidManifest.xml的根节点为manifest，它的package属性指定了该App的包名。manifest下面有个application节点，它的各属性说明如下：
+
+* android:allowBackup，是否允许应用备份。允许用户备份系统应用和第三方应用的apk安装包和应用数据，以便在刷机或者数据丢失后恢复应用，用户即可通过adb backup和adb restore来进行对应用数据的备份和恢复。为true表示允许，为false则表示不允许。
+* android:icon，指定App在手机屏幕上显示的图标
+* android:label，指定App在手机屏幕上显示的名称。
+* android:roundIcon，指定App的圆角图标。
+* android:supportsRtl，是否支持阿拉伯语／波斯语这种从右往左的文字排列顺序。为true表示支持，为false则表示不支持。
+* android:theme，指定App的显示风格。
+
+
+
+application下面还有个activity节点，它是活动页面的注册声明，只有在AndroidManifest.xml中 正确配置了activity节点，才能在运行时访问对应的活动页面。初始配置的MainActivity正是App的默认 主页，之所以说该页面是App主页，是因为它的activity节点内部还配置了以下的过滤信息：
+
+```xml
+ <intent-filter>
+         <action android:name="android.intent.action.MAIN" />
+         <category android:name="android.intent.category.LAUNCHER" />
+</intent-filter>
+```
+
+其中action节点设置的android.intent.action.MAIN表示该页面是App的入口页面，启动App时会最先打 开该页面。
+
+而category节点设置的android.intent.category.LAUNCHER决定了是否在手机屏幕上显示 App图标，如果同时有两个activity节点内部都设置了android.intent.category.LAUNCHER，那么桌面就 会显示两个App图标
+
+
+
+
+
+
+
+## App的设计规范
+
+App将看得见的界面设计与看不见的代码逻辑区分开，然后 利用XML标记描绘应用界面，同时使用Java代码书写程序逻辑，从而形成App前后端分离的设计规约， 有利于提高App集成的灵活性
+
+
+
+### 界面设计与代码逻辑
+
+手机的功能越来越强大，某种意义上相当于微型电脑，比如打开一个电商App，仿佛是在电脑上浏览网 站。网站分为用户看得到的网页，以及用户看不到的Web后台；App也分为用户看得到的界面，以及用 户看不到的App后台。虽然Android允许使用Java代码描绘界面，但不提倡这么做，推荐的做法是将界面 设计从Java代码剥离出来，通过单独的XML文件定义界面布局
+
+
+
+把界面设计与代码逻辑分开，不仅参考了网站的Web前后端分离，还有下列几点好处：
+
+* 使用XML文件描述App界面，可以很方便地在Android Studio上预览界面效果。比如新创建的App 项目，默认首页布局为activity_main.xml，单击界面右上角的Design按钮，即可看到预览界面。如果XML文件修改了Hello World的文字内容，立刻就能在预览区域观看最新界面。倘若使用Java代码描 绘界面，那么必须运行App才能看到App界面
+* 一个界面布局可以被多处代码复用，比如看图界面，既能通过商城购物代码浏览商品图片，也能通过商品评价代码浏览买家晒单
+* 反过来，一段Java代码也可能适配多个界面布局，比如手机有竖屏与横屏两种模式，默认情况App采用同一套布局，然而在竖屏时很紧凑的界面布局，切换到横屏往往变得松垮乃至变形。鉴于竖屏与横屏遵照一样的业务逻辑，仅仅是屏幕方向不同，若要调整的话，只需分别给出竖屏时候的 界面布局，以及横屏时候的界面布局。因为用户多数习惯竖屏浏览，所以res/layout目录下放置的XML 文件默认为竖屏规格，另外在res下面新建名为layout-land的目录，用来存放横屏规格的XML文件。 land是landscape的缩写，意思是横向，Android把layout-land作为横屏XML的专用布局目录。然后在 layout-land目录创建与原XML同名的XML文件，并重新编排界面控件的展示方位，调整后的横屏界面，从而有效适配了屏幕的水平方向
+
+
+
+![image-20220917191736913](img/Android学习笔记/image-20220917191736913.png)
+
+
+
+
+
+
+
+### 利用XML标记描绘应用界面
+
+```xml
+<TextView
+android:id="@+id/tv_hello"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Hello World!" />
+```
+
+
+
+TextView标签以“<”开头，以“/>”结尾，为何尾巴多了个斜杆呢？要是没有斜杆，以左右尖括号包 裹标签名称，岂不更好？其实这是XML的标记规范，凡是XML标签都由标签头与标签尾组成，标签头以 左右尖括号包裹标签名称，形如“”；标签尾在左尖括号后面插入斜杆，以此同标签头区分开，形如“”。标 签头允许在标签名称后面添加各种属性取值，而标签尾不允许添加任何属性，因此上述TextView标签的 完整XML定义是下面这样的：
+
+```xml
+<TextView
+android:id="@+id/tv_hello"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Hello World!">
+</TextView>
+```
+
+考虑到TextView仅仅是个文本视图，其标签头和标签尾之间不会插入其他标记，所以合并它的标签头和 标签尾，也就是让TextView标签以“/>”结尾，表示该标签到此为止
+
+然而不是所有情况都能采取简化写法，简写只适用于TextView控件这种末梢节点。好比一棵大树，大树 先有树干，树干分岔出树枝，一些大树枝又分出小树枝，树枝再长出末端的树叶。一个界面也是先有根 节点（相当于树干），根节点下面挂着若干布局节点（相当于树枝），布局节点下面再挂着控件节点 （相当于树叶）。因为树叶已经是末梢了，不会再包含其他节点，所以末梢节点允许采用“/>”这种简写方式。
+
+
+
+* 每个界面只有一个根节点，却可能有多个布局节点，也可能没有中间的布局节点，此时所有控件节点都挂在根节点下面
+* 根节点必须配备“xmlns:android="http://schemas.android.com/apk/res/android"”，表示指定 XML内部的命名空间，有了这个命名空间，Android Studio会自动检查各节点的属性名称是否合法，如 果不合法就提示报错。至于布局节点就不能再指定命名空间
+
+
+
+
+
+### 使用Java代码书写程序逻辑
+
+在XML文件中定义界面布局，已经明确是可行的了，然而这只是静态界面，倘若要求在App运行时修改 文字内容，该当如何是好？倘若是动态变更网页内容，还能在HTML文件中嵌入JavaScript代码，由js片 段操作Web控件。但Android的XML文件仅仅是布局标记，不能再嵌入其他语言的代码了，也就是说， 只靠XML文件自身无法动态刷新某个控件
+
+
+
+XML固然表达不了复杂的业务逻辑，这副重担就得交给App后台的Java代码了。Android Studio每次创 建新项目，除了生成默认的首页布局activity_main.xml之外，还会生成与其对应的代码文件 MainActivity.java
+
+```java
+package com.example.my_first_android_project;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d("MainActivity", "onCreate: 调试日志");
+        Log.i("MainActivity", "onCreate: 日志");
+        Log.w("MainActivity", "onCreate: 警告日志", new RuntimeException());
+        Log.e("MainActivity", "onCreate: 错误日志", new RuntimeException());
+    }
+}
+```
+
+
+
+可见MainActivity.java的代码内容很简单，只有一个MainActivity类，该类下面只有一个onCreate方 法。注意onCreate内部的setContentView方法直接引用了布局文件的名字activity_main，该方法的意 思是往当前活动界面填充activity_main.xml的布局内容。现在准备在这里改动，把文字内容改成中文。 首先打开activity_main.xml，在TextView节点下方补充一行android:id="@+id/tv_hello"，表示给它起 个名字编号；然后回到MainActivity.java，在setContentView方法下面补充几行代码
+
+```xml
+    <TextView
+            android:id="@+id/tv_hello"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.55" />
+```
+
+
+
+```java
+package com.example.my_first_android_project;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d("MainActivity", "onCreate: 调试日志");
+        Log.i("MainActivity", "onCreate: 日志");
+        Log.w("MainActivity", "onCreate: 警告日志", new RuntimeException());
+        Log.e("MainActivity", "onCreate: 错误日志", new RuntimeException());
+
+        TextView TextView = this.findViewById(R.id.tv_hello);
+        TextView.setText("你好，世界！");
+    }
+}
+```
+
+
+
+新增的两行代码主要做了这些事情：先调用findViewById方法，从布局文件中取出名为tv_hello的 TextView控件；再调用控件对象的setText方法，为其设置新的文字内容
+
+
+
+![image-20220917193119074](img/Android学习笔记/image-20220917193119074.png)
+
+
+
+
+
+## App的活动页面
+
