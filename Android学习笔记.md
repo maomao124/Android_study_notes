@@ -2526,3 +2526,73 @@ layout_margin不单单用于文本视图，还可用于所有视图，包括各�
 
 ### 设置视图的对齐方式
 
+App界面上的视图排列，默认靠左朝上对齐，这也符合日常的书写格式。然而页面的排版不是一成不变 的，有时出于美观或者其他原因，要将视图排列改为朝下或靠右对齐，为此需要另外指定视图的对齐方 式。在XML文件中通过属性android:layout_gravity可以指定当前视图的对齐方向，当属性值为top时表 示视图朝上对齐，为bottom时表示视图朝下对齐，为left时表示视图靠左对齐，为right时表示视图靠右 对齐。如果希望视图既朝上又靠左，则用竖线连接top与left，此时属性标记为 android:layout_gravity="top|left"；如果希望视图既朝下又靠右，则用竖线连接bottom与right，此时属性标记为android:layout_gravity="bottom|right"。
+
+
+
+注意layout_gravity规定的对齐方式，指的是当前视图往上级视图的哪个方向对齐，并非当前视图的内部 对齐。若想设置内部视图的对齐方向，则需由当前视图的android:gravity指定，该属性一样拥有top、 bottom、left、right 4种取值及其组合。它与layout_gravity的不同之处在于：layout_gravity设定了当 前视图相对于上级视图的对齐方式，而gravity设定了下级视图相对于当前视图的对齐方式；前者决定了 当前视图的位置，而后者决定了下级视图的位置。
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:background="@color/cardview_dark_background"
+        android:orientation="horizontal">
+
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="400dp"
+            android:layout_weight="1"
+            android:background="@color/purple_200"
+            android:layout_margin="30dp"
+            android:padding="10dp"
+            android:layout_gravity="bottom"
+            android:gravity="right">
+
+
+        <View
+                android:layout_width="80dp"
+                android:layout_height="100dp"
+                android:background="@color/design_default_color_error" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="400dp"
+            android:layout_weight="1"
+            android:background="@color/purple_200"
+            android:layout_margin="30dp"
+            android:padding="10dp"
+            android:gravity="bottom|left">
+
+        <View
+                android:layout_width="80dp"
+                android:layout_height="100dp"
+                android:background="@color/design_default_color_error" />
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+![image-20220918131311587](img/Android学习笔记/image-20220918131311587.png)
+
+
+
+
+
+
+
+## 常用布局
+
