@@ -2596,3 +2596,427 @@ App界面上的视图排列，默认靠左朝上对齐，这也符合日常的�
 
 ## 常用布局
 
+### 线性布局LinearLayout
+
+线性布局 像是用一根线把它的内部视图串起来，故而内部视图之间的排列顺序是固定的，要么从左到右排列，要 么从上到下排列。在XML文件中，LinearLayout通过属性android:orientation区分两种方向，其中从左 到右排列叫作水平方向，属性值为horizontal；从上到下排列叫作垂直方向，属性值为vertical。如果 LinearLayout标签不指定具体方向，则系统默认该布局为水平方向排列，也就是默认 android:orientation="horizontal"
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:background="@color/cardview_dark_background">
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="1" />
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
+            android:background="#223333">
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="3" />
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="4" />
+
+    </LinearLayout>
+
+
+</LinearLayout>
+```
+
+
+
+![image-20220918134709858](img/Android学习笔记/image-20220918134709858.png)
+
+
+
+
+
+除了方向之外，线性布局还有一个权重概念，所谓权重，指的是线性布局的下级视图各自拥有多大比例 的宽高。比如一块蛋糕分给两个人吃，可能两人平均分，也可能甲分三分之一，乙分三分之二。两人平 均分的话，先把蛋糕切两半，然后甲分到一半，乙分到另一半，此时甲乙的权重比为1:1。甲分三分之 一、乙分三分之二的话，先把蛋糕平均切成三块，然后甲分到一块，乙分到两块，此时甲乙的权重比为 1:2。就线性布局而言，它自身的尺寸相当于一整块蛋糕，它的下级视图们一起来分这个尺寸蛋糕，有的 视图分得多，有的视图分得少。分多分少全凭每个视图分到了多大的权重，这个权重在XML文件中通过 属性android:layout_weight来表达
+
+把线性布局看作蛋糕的话，分蛋糕的甲乙两人就相当于线性布局的下级视图。假设线性布局平均分为左 右两块，则甲视图和乙视图的权重比为1:1，意味着两个下级视图的layout_weight属性都是1。不过视图 有宽高两个方向，系统怎知layout_weight表示哪个方向的权重呢？所以这里有个规定，一旦设置了 layout_weight属性值，便要求layout_width填0dp或者layout_height填0dp。如果layout_width填 0dp，则layout_weight表示水平方向的权重，下级视图会从左往右分割线性布局；如果layout_height填 0dp，则layout_weight表示垂直方向的权重，下级视图会从上往下分割线性布局
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:background="@color/cardview_dark_background">
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="1" />
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
+            android:background="#223333">
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="3" />
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="4" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:background="@color/cardview_dark_background">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="5" />
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="6" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:background="@color/cardview_dark_background">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="7" />
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="8" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:background="@color/cardview_dark_background">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                android:layout_height="30dp"
+                android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="9" />
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="3"
+                android:background="@color/purple_200"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/design_default_color_error"
+                android:text="10" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:background="#dddddd">
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginRight="10dp"
+                android:padding="10dp"
+                android:background="#223333">
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@color/design_default_color_primary"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="11" />
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@color/purple_200"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="12" />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginRight="10dp"
+                android:padding="10dp"
+                android:background="#223333">
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@color/design_default_color_primary"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="13" />
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="2"
+                    android:layout_height="0dp"
+                    android:background="@color/purple_200"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="14" />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginRight="10dp"
+                android:padding="10dp"
+                android:background="#223333">
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="2"
+                    android:layout_height="0dp"
+                    android:background="@color/design_default_color_primary"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="15" />
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@color/purple_200"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="16" />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginRight="10dp"
+                android:padding="10dp"
+                android:background="#223333">
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="2"
+                    android:layout_height="0dp"
+                    android:background="@color/design_default_color_primary"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="17" />
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="3"
+                    android:layout_height="0dp"
+                    android:background="@color/purple_200"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="18" />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginRight="10dp"
+                android:padding="10dp"
+                android:background="#223333">
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="5"
+                    android:layout_height="0dp"
+                    android:background="@color/design_default_color_primary"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="17" />
+
+            <TextView
+                    android:layout_width="40dp"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@color/purple_200"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/design_default_color_error"
+                    android:text="18" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+![image-20220918140019806](img/Android学习笔记/image-20220918140019806.png)
+
+
+
+
+
+
+
+### 相对布局RelativeLayout
+
