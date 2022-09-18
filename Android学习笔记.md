@@ -2468,3 +2468,61 @@ public class MainActivity extends AppCompatActivity
 
 ### 设置视图的间距
 
+* android:layout_marginTop="5dp"，该属性的作用是让当前视图与上方间隔一段距离
+* android:layout_marginLeft让当前视图与左边间隔一段距离
+* android:layout_marginRight让当前视图与右边间隔一段距离
+* android:layout_marginBottom让当前视图与下方间隔一段距离
+* 如果上下左右 都间隔同样的距离，还能使用android:layout_margin一次性设置四周的间距
+
+
+
+layout_margin不单单用于文本视图，还可用于所有视图，包括各类布局和各类控件。因为不管布局还 是控件，它们统统由视图基类View派生而来，而layout_margin正是View的一个通用属性，所以View的 子子孙孙都能使用layout_margin。在View的大家族中，视图组ViewGroup尤为特殊，它既是View的子 类，又是各类布局的基类。布局下面能容纳其他视图，而控件却不行，这正源自ViewGroup的组装特性。
+
+
+
+除了layout_margin之外，padding也是View的一个通用属性，它用来设置视图的内部间距，并且 padding也提供了paddingTop、paddingBottom、paddingLeft、paddingRight四个方向的距离属性。 同样是设置间距，layout_margin指的是当前视图与外部视图（包括上级视图和平级视图）之间的距 离，而padding指的是当前视图与内部视图（包括下级视图和内部文本）之间的距离
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="@color/purple_200"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="20dp"
+            android:background="@color/design_default_color_secondary"
+            android:padding="30dp">
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/design_default_color_error" />
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+![image-20220918115335207](img/Android学习笔记/image-20220918115335207.png)
+
+
+
+
+
+
+
+
+
+### 设置视图的对齐方式
+
