@@ -3020,3 +3020,163 @@ App界面上的视图排列，默认靠左朝上对齐，这也符合日常的�
 
 ### 相对布局RelativeLayout
 
+线性布局的下级视图是顺序排列着的，另一种相对布局的下级视图位置则由其他视图决定。相对布局名 为RelativeLayout，因为下级视图的位置是相对位置，所以得有具体的参照物才能确定最终位置。如果 不设定下级视图的参照物，那么下级视图默认显示在RelativeLayout内部的左上角
+
+用于确定下级视图位置的参照物分两种，一种是与该视图自身平级的视图；另一种是该视图的上级视图 （也就是它归属的RelativeLayout）
+
+
+
+![image-20220918201727061](img/Android学习笔记/image-20220918201727061.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="#dddddd"
+        tools:context=".MainActivity">
+
+    <TextView
+            android:id="@+id/center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在中间"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_centerInParent="true" />
+
+    <TextView
+            android:id="@+id/center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在水平中间"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_centerHorizontal="true" />
+
+    <TextView
+            android:id="@+id/center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在垂直中间"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_centerVertical="true" />
+
+    <TextView
+            android:id="@+id/parent_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我跟上级左边对齐"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_alignParentLeft="true" />
+
+    <TextView
+            android:id="@+id/parent_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我跟上级右边对齐"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_alignParentRight="true" />
+
+    <TextView
+            android:id="@+id/parent_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我跟上级顶部对齐"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_alignParentTop="true" />
+
+    <TextView
+            android:id="@+id/parent_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我跟上级底部对齐"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_alignParentBottom="true" />
+
+    <TextView
+            android:id="@+id/left_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在中间左边"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_toLeftOf="@id/center"
+            android:layout_alignTop="@id/center" />
+
+    <TextView
+            android:id="@+id/right_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在中间右边"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_toRightOf="@id/center"
+            android:layout_alignTop="@id/center" />
+
+    <TextView
+            android:id="@+id/top_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在中间上面"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_above="@id/center"
+            android:layout_alignLeft="@id/center" />
+
+    <TextView
+            android:id="@+id/bottom_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:text="我在中间下面"
+            android:textSize="16sp"
+            android:textColor="@color/purple_200"
+            android:layout_below="@id/center"
+            android:layout_alignRight="@id/center" />
+
+
+</RelativeLayout>
+```
+
+
+
+
+
+![image-20220918203912867](img/Android学习笔记/image-20220918203912867.png)
+
+
+
+
+
+![image-20220918203932767](img/Android学习笔记/image-20220918203932767.png)
+
+
+
+
+
+
+
+### 网格布局GridLayout
+
