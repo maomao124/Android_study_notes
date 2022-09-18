@@ -1552,7 +1552,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-```java
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -1703,4 +1703,228 @@ public class MainActivity extends AppCompatActivity
 
 
 ### 设置文本的大小
+
+TextView允许设置文本内容，也允许设置文本大小，在Java代码中调用setTextSize方法，即可指定文本大小
+
+这里的大小数值越大，则看到的文本也越大；大小数值越小，则看到的文本也越小。在XML文件中则通 过属性android:textSize指定文本大小
+
+文本大小存在不同的字号单位，XML文件要求在字号数字后面写明单位类型，常见的字号单位主要 有px、dp、sp 3种
+
+
+
+#### px
+
+px是手机屏幕的最小显示单位，它与设备的显示屏有关。一般来说，同样尺寸的屏幕（比如6英寸手 机），如果看起来越清晰，则表示像素密度越高，以px计量的分辨率也越大
+
+
+
+#### dp
+
+dp有时也写作dip，指的是与设备无关的显示单位，它只与屏幕的尺寸有关。一般来说，同样尺寸的屏 幕以dp计量的分辨率是相同的，比如同样是6英寸手机，无论它由哪个厂家生产，其分辨率换算成dp单位都是一个大小
+
+
+
+#### sp
+
+sp的原理跟dp差不多，但它专门用来设置字体大小。手机在系统设置里可以调整字体的大小（小、标 准、大、超大）。设置普通字体时，同数值dp和sp的文字看起来一样大；如果设置为大字体，用dp设置 的文字没有变化，用sp设置的文字就变大了。 字体大小采用不同单位的话，显示的文字大小各不相同。例如，30px、30dp、30sp这3个字号，在不同 手机上的显示大小有所差异。有的手机像素密度较低，一个dp相当于两个px，此时30px等同于15dp； 有的手机像素密度较高，一个dp相当于3个px，此时30px等同于10dp。假设某个App的内部文本使用字 号30px，则该App安装到前一部手机的字体大小为15dp，安装到后一部手机的字体大小为10dp，显然 后一部手机显示的文本会更小。
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:gravity="center"
+        android:padding="5dp"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/tv_px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="你好，世界（px大小）"
+            android:textSize="30px" />
+
+    <TextView
+            android:id="@+id/tv_dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="你好，世界（dp大小）"
+            android:textSize="30dp" />
+
+    <TextView
+            android:id="@+id/tv_sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="你好，世界（sp大小）"
+            android:textSize="30sp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220917213210015](img/Android学习笔记/image-20220917213210015.png)
+
+
+
+接着打开手机的设置菜单，依次选择“显示”→“字体与显示大小” 调整字体大小
+
+
+
+![image-20220917213330373](img/Android学习笔记/image-20220917213330373.png)
+
+
+
+![image-20220917213356649](img/Android学习笔记/image-20220917213356649.png)
+
+
+
+发现字号单位30px和30dp的文字大小不变，而30sp的文字随着系统字体一起变大了
+
+
+
+纯数字的setTextSize方法，内部默认字号单位为sp（COMPLEX_UNIT_SP）
+
+
+
+
+
+| 名称 | 解释 |
+| ---- | ---- |
+|px（Pixel像素）|也称为图像元素，是作为图像构成的基本单元，单个像素的大小并不固定，跟随屏幕大小和素数量的关系变化，一个像素点为1px。|
+|Resolution（分辨率）|是指屏幕的垂直和水平方向的像素数量，如果分辨率是 1920*1080 ，那是垂直方向有 1920 个像素，水平方向有 1080 个像素。|
+|Dpi（像素密度） |是指屏幕上每英寸（1英寸 = 2.54 厘米）距离中有多少个像素点。|
+|Density（密度） |是指屏幕上每平方英寸（2.54 ^ 2 平方厘米）中含有的像素点数量。|
+|Dip / dp (设备独立像素)|也可以叫做dp，长度单位，同一个单位在不同的设备上有不同的显示效果，具体效果根据设备的密度有关，|
+
+
+
+
+
+#### 计算规则
+
+以一个 4.95 英寸 1920 * 1080 的 nexus5 手机设备为例
+
+**Dpi :**
+
+1. 计算直角边像素数量： 1920^2+1080^2=2202^2（勾股定理）。 
+
+2. 计算 DPI：2202 / 4.95 = 445。 
+3. 得到这个设备的 DPI 为 445 （每英寸的距离中有 445 个像素）。
+
+
+
+**Density：**
+
+上面得到每英寸中有 445 像素，那么 density 为每平方英寸中的像素数量，应该为： 445^2=198025
+
+
+
+**Dip：**
+
+所有显示到屏幕上的图像都是以 px 为单位，Dip 是我们开发中使用的长度单位，最后他也需要转换成 px，计算这个设备上 1dip 等于多少 px：
+
+**px = dip x dpi /160**
+
+320 x 480分辨率，3.6寸的手机：dpi为160，1dp=1px
+
+
+
+
+
+* **对于相同分辨率的手机，屏幕越大，同DP的组件占用屏幕比例越小**
+* **对于相同尺寸的手机，即使分辨率不同，同DP的组件占用屏幕比例也相同**
+
+
+
+dp的UI效果只在相同尺寸的屏幕上相同，如果屏幕尺寸差异过大，则需要重做dp适配
+
+
+
+
+
+```xml
+<TextView
+        android:id="@+id/tv_sp2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="你好，世界（sp大小）"
+        android:textSize="30sp" />
+```
+
+```java
+package mao.android_set_text_size;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView = findViewById(R.id.tv_sp2);
+        textView.setTextSize(28);
+    }
+}
+```
+
+
+
+源码
+
+```java
+/**
+ * Set the default text size to the given value, interpreted as "scaled
+ * pixel" units.  This size is adjusted based on the current density and
+ * user font size preference.
+ *
+ * <p>Note: if this TextView has the auto-size feature enabled than this function is no-op.
+ *
+ * @param size The scaled pixel size.
+ *
+ * @attr ref android.R.styleable#TextView_textSize
+ */
+@android.view.RemotableViewMethod
+public void setTextSize(float size) {
+    setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+}
+```
+
+
+
+![image-20220917220128390](img/Android学习笔记/image-20220917220128390.png)
+
+
+
+
+
+
+
+
+
+### 设置文本的颜色
+
+除了设置文字大小，文字颜色也经常需要修改，毕竟Android默认的灰色文字不够醒目。在Java代码中调 用setTextColor方法即可设置文本颜色，具体在Color类中定义了12种颜色
+
+
+
+![image-20220918103922626](img/Android学习笔记/image-20220918103922626.png)
+
+
 
