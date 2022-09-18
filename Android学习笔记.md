@@ -2334,3 +2334,137 @@ public class MainActivity extends AppCompatActivity
 ## 视图基础
 
 ### 设置视图的宽高
+
+手机屏幕是块长方形区域，较短的那条边叫作宽，较长的那条边叫作高。App控件通常也是长方形状， 控件宽度通过属性android:layout_width表达，控件高度通过属性android:layout_height表达，宽高的 取值主要有下列3种：
+
+* match_parent：表示与上级视图保持一致。上级视图的尺寸有多大，当前视图的尺寸就有多大。
+* wrap_content：表示与内容自适应。对于文本视图来说，内部文字需要多大的显示空间，当前视 图就要占据多大的尺寸。但最宽不能超过上级视图的宽度，一旦超过就要换行；最高不能超过上级视图 的高度，一旦超过就会隐藏。
+
+* 以dp为单位的具体尺寸，比如300dp，表示宽度或者高度就是这么大。
+
+
+
+在XML文件中采用以上任一方式均可设置视图的宽高，但在Java代码中设置宽高就有点复杂了，首先确 保XML中的宽高属性值为wrap_content，这样才允许在代码中修改宽高。接着打开该页面对应的Java代 码，依序执行以下3个步骤：
+
+* 步骤一，调用控件对象的getLayoutParams方法，获取该控件的布局参数，参数类型为 ViewGroup.LayoutParams
+* 步骤二，布局参数的width属性表示宽度，height属性表示高度，修改这两个属性值，即可调整控件的宽高
+* 步骤三，调用控件对象的setLayoutParams方法，填入修改后的布局参数使之生效
+
+不过布局参数的width和height两个数值默认是px单位，需要将dp单位的数值转换为px单位的数值，然后才能赋值给width属性和height属性。
+
+
+
+```java
+package mao.android_set_width_and_height_of_the_view;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView1 = findViewById(R.id.t1);
+        ViewGroup.LayoutParams layoutParams = textView1.getLayoutParams();
+        layoutParams.height = dip2px(this, 50);
+        layoutParams.width = dip2px(this, 200);
+        textView1.setLayoutParams(layoutParams);
+    }
+
+    /**
+     * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
+     *
+     * @param context 上下文
+     * @param dpValue dp值
+     * @return int
+     */
+    public static int dip2px(Context context, float dpValue)
+    {
+        // 获取当前手机的像素密度（1个dp对应几个px）
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f); // 四舍五入取整
+    }
+
+}
+```
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#333333">
+
+    <TextView
+            android:id="@+id/t1"
+            android:background="@color/purple_200"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="#00ffff"
+            android:text="视图宽度采用wrap_content定义"
+            android:textColor="#000000"
+            android:textSize="17sp" />
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="#00ffff"
+            android:text="视图宽度采用match_parent定义"
+            android:textColor="#000000"
+            android:textSize="17sp" />
+
+    <TextView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="#00ffff"
+            android:text="视图宽度采用固定大小"
+            android:textColor="#000000"
+            android:textSize="17sp" />
+
+</LinearLayout>
+```
+
+
+
+![image-20220918112230262](img/Android学习笔记/image-20220918112230262.png)
+
+
+
+
+
+
+
+### 设置视图的间距
+
