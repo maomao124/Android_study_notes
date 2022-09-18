@@ -1928,3 +1928,409 @@ public void setTextSize(float size) {
 
 
 
+```java
+package mao.android_set_text_color;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView1 = findViewById(R.id.t1);
+        textView1.setTextColor(Color.RED);
+        textView1.setTextSize(30);
+    }
+}
+```
+
+
+
+可是XML文件无法引用Color类的颜色常量，为此Android制定了一套规范的编码标准，将色值交由透明 度alpha和RGB三原色（红色red、绿色green、蓝色blue）联合定义。该标准又有八位十六进制数与六 位十六进制数两种表达方式，例如八位编码FFEEDDCC中，FF表示透明度，EE表示红色的浓度，DD表示 绿色的浓度，CC表示蓝色的浓度。透明度为FF表示完全不透明，为00表示完全透明。RGB三色的数值越 大，表示颜色越浓，也就越暗；数值越小，表示颜色越淡，也就越亮。RGB亮到极致就是白色，暗到极 致就是黑色。
+
+
+
+至于六位十六进制编码，则有两种情况，它在XML文件中默认不透明（等价于透明度为FF），而在代码 中默认透明（等价于透明度为00）。以下代码给两个文本视图分别设置六位色值与八位色值，注意添加 0x前缀表示十六进制数
+
+
+
+```java
+package mao.android_set_text_color;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView1 = findViewById(R.id.t1);
+        textView1.setTextColor(Color.RED);
+        textView1.setTextSize(30);
+        TextView textView3 = findViewById(R.id.t3);
+        textView3.setTextColor(0xffffff);
+    }
+}
+```
+
+
+
+运行测试App，发现控件的文本不见了，其实是变透明了
+
+
+
+在XML文件中可通过属性android:textColor设置文字颜色，但要给色值添加井号前缀“#”，设定好文本颜色
+
+
+
+```java
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#cc00aa">
+
+    <TextView
+            android:id="@+id/t1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World2!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="#ffffff"/>
+
+    <TextView
+            android:id="@+id/t3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World3!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+</LinearLayout>
+```
+
+
+
+就像字符串资源那样，Android把颜色也当作一种资源，打开res/values目录下的colors.xml
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
+```
+
+
+
+然后回到XML布局文件，把android:textColor的属性值改为“@color/颜色名称”
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#cc00aa">
+
+    <TextView
+            android:id="@+id/t1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World2!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="#ffffff"/>
+
+    <TextView
+            android:id="@+id/t3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World3!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World4!"
+            android:textColor="@color/purple_200"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+
+
+不仅文字颜色，还有背景颜色也会用到上述的色值定义，在XML文件中通过属性android:background设 置控件的背景颜色。Java代码则有两种方式设置背景颜色，倘若色值来源于Color类或十六进制数，则调 用setBackgroundColor方法设置背景；倘若色值来源于colors.xml中的颜色资源，则调用 setBackgroundResource方法，以“R.color.颜色名称”的格式设置背景。
+
+
+
+```java
+package mao.android_set_text_color;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @SuppressLint("ResourceAsColor")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView1 = findViewById(R.id.t1);
+        textView1.setTextColor(Color.RED);
+        textView1.setTextSize(30);
+        TextView textView3 = findViewById(R.id.t3);
+        textView3.setTextColor(0xffffff);
+        TextView textView5 = findViewById(R.id.t5);
+        textView5.setTextColor(R.color.teal_200);
+    }
+}
+```
+
+
+
+注意属性android:background和setBackgroundResource方法，它俩用来设置控件的背景，不单单是 背景颜色，还包括背景图片。在设置背景图片之前，先将图片文件放到res/drawable***目录（以 drawable开头的目录，不仅仅是drawable目录），然后把android:background的属性值改为 “@drawable/不含扩展名的图片名称”，或者调用setBackgroundResource方法填入“R.drawable.不含扩 展名的图片名称”。
+
+
+
+
+
+Color类还有很多方法
+
+
+
+![image-20220918105753912](img/Android学习笔记/image-20220918105753912.png)
+
+
+
+![image-20220918105814990](img/Android学习笔记/image-20220918105814990.png)
+
+
+
+![image-20220918105830889](img/Android学习笔记/image-20220918105830889.png)
+
+
+
+![image-20220918105903213](img/Android学习笔记/image-20220918105903213.png)
+
+
+
+![image-20220918105922815](img/Android学习笔记/image-20220918105922815.png)
+
+
+
+
+
+```java
+package mao.android_set_text_color;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @SuppressLint("ResourceAsColor")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView textView1 = findViewById(R.id.t1);
+        textView1.setTextColor(Color.RED);
+        textView1.setTextSize(30);
+        TextView textView3 = findViewById(R.id.t3);
+        textView3.setTextColor(0xffffff);
+        TextView textView5 = findViewById(R.id.t5);
+        textView5.setTextColor(R.color.teal_200);
+        TextView textView6 = findViewById(R.id.t6);
+        //从红色、绿色、蓝色分量返回一个 color-int。
+        // alpha 分量隐式为 255（完全不透明）。
+        // 这些组件值应该是\([0..255]\)，但是没有执行范围检查，
+        // 所以如果它们超出范围，则返回的颜色是未定义的
+        textView6.setTextColor(Color.rgb(0,255,0));
+    }
+}
+```
+
+
+
+```java
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#cc00aa">
+
+    <TextView
+            android:id="@+id/t1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World2!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="#ffffff"/>
+
+    <TextView
+            android:id="@+id/t3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World3!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World4!"
+            android:textColor="@color/purple_200"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World5!"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/t6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World6!"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220918110208896](img/Android学习笔记/image-20220918110208896.png)
+
+
+
+
+
+
+
+
+
+## 视图基础
+
+### 设置视图的宽高
