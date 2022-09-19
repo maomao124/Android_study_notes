@@ -3635,3 +3635,501 @@ App界面上的视图排列，默认靠左朝上对齐，这也符合日常的�
 
 ### 滚动视图ScrollView
 
+手机屏幕的显示空间有限，常常需要上下滑动或左右滑动才能拉出其余页面内容，可惜一般的布局节点 都不支持自行滚动，这时就要借助滚动视图了。与线性布局类似，滚动视图也分为垂直方向和水平方向 两类，其中垂直滚动视图名为ScrollView，水平滚动视图名为HorizontalScrollView。
+
+* 垂直方向滚动时，layout_width属性值设置为match_parent，layout_height属性值设置为 wrap_content
+* 水平方向滚动时，layout_width属性值设置为wrap_content，layout_height属性值设置为 match_parent
+* 滚动视图节点下面必须且只能挂着一个子布局节点，否则会在运行时报错Caused by： java.lang.IllegalStateException：ScrollView can host only one direct child
+
+
+
+
+
+垂直滚动
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="1"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="2"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="3"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="4"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="5"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="6"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/purple_200"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:text="7"
+                        android:gravity="center"
+                        android:textSize="40sp"
+                        android:textColor="@color/design_default_color_secondary" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+水平滚动
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+    <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="1"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="2"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="3"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="4"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="5"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="6"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="400dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/purple_200"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="7"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+运行测试App，可知ScrollView在纵向滚动，而HorizontalScrollView在横向滚动。 有时ScrollView的实际内容不够，又想让它充满屏幕，怎么办呢？如果把layout_height属性赋值为 match_parent，结果还是不会充满，正确的做法是再增加一行属性android:fillViewport（该属性为true 表示允许填满视图窗口）
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/cardview_dark_background">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/purple_200"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:text="1"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/purple_200"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:text="2"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/cardview_dark_background"
+            android:fillViewport="true">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/purple_200"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:text="1"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/purple_200"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:text="2"
+                    android:gravity="center"
+                    android:textSize="40sp"
+                    android:textColor="@color/design_default_color_secondary" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+主页布局
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ScrollView"
+            android:textSize="30sp" />
+
+
+    <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="HorizontalScrollView"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="4"
+            android:textSize="30sp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_scrollview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this,MainActivity2.class));
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });
+
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity4.class));
+            }
+        });
+
+        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity5.class));
+            }
+        });
+    }
+}
+```
+
+
+
+运行
+
+
+
+![image-20220919204207183](img/Android学习笔记/image-20220919204207183.png)
+
+
+
+![image-20220919204218695](img/Android学习笔记/image-20220919204218695.png)
+
+
+
+![image-20220919204229154](img/Android学习笔记/image-20220919204229154.png)
+
+
+
+![image-20220919204242430](img/Android学习笔记/image-20220919204242430.png)
+
+
+
+![image-20220919204258885](img/Android学习笔记/image-20220919204258885.png)
+
+
+
+![image-20220919204311534](img/Android学习笔记/image-20220919204311534.png)
+
+
+
+![image-20220919204321545](img/Android学习笔记/image-20220919204321545.png)
+
+
+
+
+
+
+
+
+
+## 按钮触控
+
