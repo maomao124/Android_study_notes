@@ -3178,5 +3178,460 @@ App界面上的视图排列，默认靠左朝上对齐，这也符合日常的�
 
 
 
+
+
 ### 网格布局GridLayout
+
+虽然线性布局既能在水平方向排列，也能在垂直方向排列，但它不支持多行多列的布局方式，只支持单 行（水平排列）或单列（垂直排列）的布局方式。若要实现类似表格那样的多行多列形式，可采用网格布局GridLayout
+
+网格布局默认从左往右、从上到下排列，它先从第一行从左往右放置下级视图，塞满之后另起一行放置 其余的下级视图，如此循环往复直至所有下级视图都放置完毕。为了判断能够容纳几行几列，网格布局 新增了android:columnCount与android:rowCount两个属性，其中columnCount指定了网格的列数， 即每行能放多少个视图；rowCount指定了网格的行数，即每列能放多少个视图
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:background="@color/purple_200"
+        android:rowCount="4"
+        android:columnCount="3">
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="4"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="5"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="6"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="7"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="8"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="9"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="10"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="11"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="12"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+</GridLayout>
+```
+
+
+
+
+
+![image-20220918213927855](img/Android学习笔记/image-20220918213927855.png)
+
+
+
+该成3行四列
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:background="@color/purple_200"
+        android:rowCount="3"
+        android:columnCount="4">
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="4"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="5"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="6"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="7"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="8"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="9"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="10"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="11"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="12"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+</GridLayout>
+```
+
+
+
+
+
+![image-20220918214011731](img/Android学习笔记/image-20220918214011731.png)
+
+
+
+
+
+更改成6行两列
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:background="@color/purple_200"
+        android:rowCount="6"
+        android:columnCount="2">
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="4"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="5"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="6"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="7"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="8"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="9"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="10"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="11"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+    <TextView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="12"
+            android:textColor="#00ff00"
+            android:textSize="30sp"
+            android:layout_margin="10dp"
+            android:background="@color/purple_500"/>
+
+</GridLayout>
+```
+
+
+
+![image-20220918214420378](img/Android学习笔记/image-20220918214420378.png)
+
+
+
+
+
+
+
+
+
+### 滚动视图ScrollView
 
