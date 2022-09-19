@@ -4297,3 +4297,244 @@ public class MainActivity3 extends AppCompatActivity
 
 
 
+
+
+所谓监听器，意思是专门监听控件的动作行为，它平时无所事事，只有控件发生了指定的动作，监听器 才会触发开关去执行对应的代码逻辑。点击监听器需要实现接口View.OnClickListener，并重写onClick 方法补充点击事件的处理代码，再由按钮调用setOnClickListener方法设置监听器对象。
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:gravity="center"
+        android:orientation="vertical">
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面1"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面2"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //也可以不使用匿名内部类的方法设置监听器，也可以使用lambda表达式创建，
+        //也可以复用一个View.OnClickListener实例
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });
+    }
+}
+```
+
+
+
+如果一个页面只有一个按钮，单独定义新的监听器倒也无妨，可是如果存在许多按钮，每个按钮都定义自己的监听器，不是很好。对于同时监听多个按钮的情况，更好的办法是注册统一的监听器，也就是让当前页面实现接口View.OnClickListener，如此一来，onClick方法便写在了页面代码之内。因为 是统一的监听器，所以onClick内部需要判断是哪个按钮被点击了，也就是利用视图对象的getId方法检查控件编号
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //也可以不使用匿名内部类的方法设置监听器，也可以使用lambda表达式创建，
+        //也可以复用一个View.OnClickListener实例
+/*        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });*/
+
+        View.OnClickListener onClickListener = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (v.getId() == R.id.button1)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity2.class));
+                }
+                else if (v.getId() == R.id.button2)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity3.class));
+                }
+                else
+                {
+                    //...
+                }
+            }
+        };
+
+        findViewById(R.id.button1).setOnClickListener(onClickListener);
+        findViewById(R.id.button2).setOnClickListener(onClickListener);
+
+
+    }
+}
+```
+
+
+
+
+
+
+
+**长按事件**
+
+除了点击事件，Android还设计了另外一种长按事件，每当控件被按住超过500毫秒之后，就会触发该控件的长按事件。若要捕捉按钮的长按事件，可调用按钮对象的setOnLongClickListener方法设置长按监听器。
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Button
+            android:id="@+id/button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="请长按按钮"
+            android:textSize="16sp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
+public class MainActivity4 extends AppCompatActivity
+{
+    public static final String TAG = "MainActivity4";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main4);
+
+        findViewById(R.id.button4).setLongClickable(true);
+        findViewById(R.id.button4).setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v)
+            {
+                Log.d(TAG, "onClick: 长按按钮事件被触发了");
+                return true;
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+点击监听器和长按监听器不局限于按钮控件，其实它们都来源于视图基类View，凡是从 View派生而来的各类控件，均可注册点击监听器和长按监听器。譬如文本视图TextView，其对象也能调 用setOnClickListener方法与setOnLongClickListener方法，此时TextView控件就会响应点击动作和长 按动作。因为按钮存在按下和松开两种背景，便于提示用户该控件允许点击，但文本视图默认没有按压 背景，不方便判断是否被点击，所以一般不会让文本视图处理点击事件和长按事件
+
+
+
+
+
+
+
+### 禁用与恢复按钮
+
