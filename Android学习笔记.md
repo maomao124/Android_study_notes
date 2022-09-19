@@ -4133,3 +4133,167 @@ public class MainActivity extends AppCompatActivity
 
 ## 按钮触控
 
+### 按钮控件Button
+
+除了文本视图之外，按钮Button也是一种基础控件。因为Button是由TextView派生而来，所以文本视图 拥有的属性和方法，包括文本内容、文本大小、文本颜色等，按钮控件均能使用。不同的是，Button拥 有默认的按钮背景，而TextView默认无背景；Button的内部文本默认居中对齐，而TextView的内部文本 默认靠左对齐。
+
+
+
+![image-20220919210316281](img/Android学习笔记/image-20220919210316281.png)
+
+
+
+此外，按钮还要额外注意textAllCaps与onClick两个属性
+
+
+
+**textAllCaps属性**
+
+对于TextView来说，text属性设置了什么文本，文本视图就显示什么文本。但对于Button来说，不管 text属性设置的是大写字母还是小写字母，按钮控件都默认转成大写字母显示。
+
+该属性默认为true表 示全部转为大写，如果设置为false则表示不转为大写。于是在布局文件添加新的Button标签，该标签补 充了android:textAllCaps="false"
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动转大写"
+            android:textSize="20sp"
+            android:gravity="center"/>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefABC123你好"
+            android:textSize="16sp" />
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="保持原样"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_marginTop="30sp"/>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="abcdefABC123你好"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220919210137922](img/Android学习笔记/image-20220919210137922.png)
+
+
+
+
+
+
+
+**onClick属性**
+
+按钮之所以成为按钮，是因为它会响应按下动作，就手机而言，按下动作等同于点击操作，即手指轻触 屏幕然后马上松开。每当点击按钮之时，就表示用户确认了某个事项，接下来轮到App接着处理了。 onClick属性便用来接管用户的点击动作，该属性的值是个方法名，也就是当前页面的Java代码存在这么 一个方法：当用户点击按钮时，就自动调用该方法。
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="请点击按钮"
+            android:textSize="16sp"
+            android:onClick="onClick"/>
+
+
+
+</LinearLayout>
+```
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
+public class MainActivity3 extends AppCompatActivity
+{
+    public static final String TAG = "MainActivity3";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+    }
+
+    public void onClick(View view)
+    {
+        Log.d(TAG, "onClick: 按钮被点击了");
+    }
+}
+```
+
+
+
+
+
+![image-20220919211235572](img/Android学习笔记/image-20220919211235572.png)
+
+
+
+![image-20220919211249903](img/Android学习笔记/image-20220919211249903.png)
+
+
+
+
+
+
+
+### 点击事件和长按事件
+
+虽然按钮控件能够在XML文件中通过onClick属性指定点击方法，但是方法的名称可以随便叫，既能叫 doClick也能叫doTouch，甚至叫它doA或doB都没问题，这样很不利于规范化代码，倘若以后换了别人 接手，就不晓得doA或doB是干什么用的。因此在实际开发中，不推荐使用Button标签的onClick属性， 而是在代码中给按钮对象注册点击监听器
+
+
+
+![image-20220919211416990](img/Android学习笔记/image-20220919211416990.png)
+
+
+
