@@ -5507,3 +5507,111 @@ public class MainActivity extends AppCompatActivity
 
 
 ### 图像按钮ImageButton
+
+常见的按钮控件Button其实是文本按钮，因为按钮上面只能显示文字，不能显示图片，ImageButton才是显示图片的图像按钮。虽然ImageButton号称图像按钮，但它并非继承Button，而是继承了 ImageView
+
+
+
+![image-20220920121624815](img/Android学习笔记/image-20220920121624815.png)
+
+
+
+
+
+* Button既可显示文本也可显示图片（通过setBackgroundResource方法设置背景图片），而 ImageButton只能显示图片不能显示文本
+* ImageButton上的图像可按比例缩放，而Button通过背景设置的图像会拉伸变形，因为背景图采取 fitXY方式，无法按比例缩放
+* Button只能靠背景显示一张图片，而ImageButton可分别在前景和背景显示图片，从而实现两张图片叠加的效果
+
+
+
+不过使用ImageButton得注意，图像按钮默认的缩放类型为center（保持原始尺寸不缩放图片），而非 图像视图默认的fitCenter，倘若图片尺寸较大，那么图像按钮将无法显示整个图片。为避免显示不完整 的情况，XML文件中的ImageButton标签必须指定fitCenter的缩放类型
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="50dp">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击下面的图片按钮"
+            android:layout_marginBottom="20dp"
+            android:textSize="20sp" />
+
+    <ImageButton
+            android:id="@+id/ImageButton1"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:background="@drawable/img"
+            android:scaleType="fitCenter"/>
+
+</LinearLayout>
+```
+
+
+
+```java
+package mao.android_imagebutton;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    public static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ImageButton imageButton1 = findViewById(R.id.ImageButton1);
+        imageButton1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Log.d(TAG, "onClick: 点击");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20220920123129213](img/Android学习笔记/image-20220920123129213.png)
+
+
+
+![image-20220920123140277](img/Android学习笔记/image-20220920123140277.png)
+
+
+
+
+
+
+
+
+
+
+
+### 同时展示文本与图像
+
