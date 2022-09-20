@@ -4538,3 +4538,361 @@ public class MainActivity4 extends AppCompatActivity
 
 ### 禁用与恢复按钮
 
+尽管按钮控件生来就是给人点击的，可是某些情况希望暂时禁止点击操作，譬如用户在注册的时候，有 的网站要求用户必须同意指定条款，而且至少浏览10秒之后才能点击注册按钮。那么在10秒之前，注册 按钮应当置灰且不能点击，等过了10秒之后，注册按钮才恢复正常。在这样的业务场景中，按钮先后拥 有两种状态，即不可用状态与可用状态
+
+* 不可用按钮：按钮不允许点击，即使点击也没反应，同时按钮文字为灰色
+* 可用按钮：按钮允许点击，点击按钮会触发点击事件，同时按钮文字为正常的黑色
+
+
+
+从上述的区别说明可知，不可用与可用状态主要有两点差异：其一，是否允许点击；其二，按钮文字的 颜色。就文字颜色而言，可在布局文件中使用textColor属性设置颜色，也可在Java代码中调用 setTextColor方法设置颜色。至于是否允许点击，则需引入新属性android:enabled，该属性值为true时 表示启用按钮，即允许点击按钮；该属性值为false时表示禁用按钮，即不允许点击按钮。在Java代码 中，则可通过setEnabled方法设置按钮的可用状态（true表示启用，false表示禁用）
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="按钮为启用状态"
+            android:textSize="20sp"
+            android:textColor="#ff00ff" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="按钮为禁用状态"
+            android:textSize="20sp"
+            android:textColor="@color/purple_500"
+            android:enabled="false" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220919214632043](img/Android学习笔记/image-20220919214632043.png)
+
+
+
+
+
+**模拟验证码发送按钮**
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Button
+            android:id="@+id/button6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="50dp"
+            android:text="@string/send_code"
+            android:textColor="@color/design_default_color_secondary"
+            android:textSize="20sp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.locks.LockSupport;
+
+public class MainActivity6 extends AppCompatActivity
+{
+
+    private Button button;
+
+    public static final String TAG = "MainActivity6";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main6);
+        button = findViewById(R.id.button6);
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                handler();
+            }
+        });
+    }
+
+    private void handler()
+    {
+        Log.d(TAG, "onClick: 调用");
+        if (!button.isEnabled())
+        {
+            //其实跑不到这里
+            Log.d(TAG, "onClick: 不可用");
+        }
+        //当前可用
+        button.setEnabled(false);
+        final int[] i = {10};
+
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                button.setText(String.valueOf(i[0]));
+                if (i[0] < 0)
+                {
+                    MainActivity6.this.runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            //Thread.sleep();方法调用会无响应
+                            //LockSupport.park也是一样，原子操作(cas)也是一样
+                            //Android系统中的视图组件并不是线程安全的，
+                            // 如果要更新视图，必须在主线程中更新，不可以在子线程中执行更新的操作。
+                            //Only the original thread that created a view hierarchy can touch its views.
+                            //解决方案：MainActivity6.this.runOnUiThread
+                            //或者使用Handler对象
+                            button.setEnabled(true);
+                            button.setText("重新发送验证码");
+                            timer.cancel();
+                        }
+                    });
+                }
+                i[0]--;
+            }
+        }, 0, 1000);
+
+    }
+}
+```
+
+
+
+**注意：**
+
+**Thread.sleep();方法调用会无响应，LockSupport.park也是一样，原子操作(cas)也是一样**
+**Android系统中的视图组件并不是线程安全的，**
+**如果要更新视图，必须在主线程中更新，不可以在子线程中执行更新的操作。**
+**Only the original thread that created a view hierarchy can touch its views.**
+**解决方案：MainActivity6.this.runOnUiThread，或者使用Handler对象**
+
+
+
+
+
+运行
+
+
+
+![image-20220919223412123](img/Android学习笔记/image-20220919223412123.png)
+
+
+
+
+
+![image-20220919223422919](img/Android学习笔记/image-20220919223422919.png)
+
+
+
+![image-20220919223433310](img/Android学习笔记/image-20220919223433310.png)
+
+
+
+![image-20220919223441285](img/Android学习笔记/image-20220919223441285.png)
+
+
+
+
+
+
+
+主页面
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:gravity="center"
+        android:orientation="vertical">
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面1"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面2"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面3"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面4"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/button7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="页面5"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+</LinearLayout>
+```
+
+
+
+```java
+package mao.android_button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //也可以不使用匿名内部类的方法设置监听器，也可以使用lambda表达式创建，
+        //也可以复用一个View.OnClickListener实例
+/*        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });*/
+
+        View.OnClickListener onClickListener = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (v.getId() == R.id.button1)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity2.class));
+                }
+                else if (v.getId() == R.id.button2)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity3.class));
+                }
+                else if (v.getId()==R.id.button3)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity4.class));
+                }
+                else if (v.getId()==R.id.button5)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity5.class));
+                }
+                else if (v.getId()==R.id.button7)
+                {
+                    startActivity(new Intent(MainActivity.this, MainActivity6.class));
+                }
+                else
+                {
+                    //...
+                }
+            }
+        };
+
+        findViewById(R.id.button1).setOnClickListener(onClickListener);
+        findViewById(R.id.button2).setOnClickListener(onClickListener);
+        findViewById(R.id.button3).setOnClickListener(onClickListener);
+        findViewById(R.id.button5).setOnClickListener(onClickListener);
+        findViewById(R.id.button7).setOnClickListener(onClickListener);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
