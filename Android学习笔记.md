@@ -4896,3 +4896,562 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+## 图像显示
+
+### 图像视图ImageView
+
+显示文本用到了文本视图TextView，显示图像则用到图像视图ImageView。由于图像通常保存为单独的 图片文件，因此需要先把图片放到res/drawable目录，然后再去引用该图片的资源名称。比如现在有张 苹果图片名为apple.png，那么XML文件通过属性android:src设置图片资源，属性值格式形如 “@drawable/不含扩展名的图片名称”。
+
+```xml
+<ImageView
+android:layout_width="match_parent"
+android:layout_height="200dp"
+android:src="@drawable/apple" />
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img"
+            android:contentDescription="图片" />
+
+</LinearLayout>
+```
+
+
+
+![image-20220920103451606](img/Android学习笔记/image-20220920103451606.png)
+
+
+
+
+
+ImageView本身默认图片居中显示，不管图片有多大抑或有多小，图像视图都会自动缩放图片，使之刚 好够着ImageView的边界，并且缩放后的图片保持原始的宽高比例，看起来图片很完美地占据视图中 央。这种缩放类型在XML文件中通过属性android:scaleType定义，即使图像视图未明确指定该属性，系 统也会默认其值为fitCenter，表示让图像缩放后居中显示。
+
+
+
+![image-20220920103608154](img/Android学习笔记/image-20220920103608154.png)
+
+
+
+在Java代码中可调用setScaleType方法设置图像视图的缩放类型
+
+
+
+```java
+package mao.android_imageview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.ImageView;
+
+public class MainActivity10 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main10);
+        ImageView imageView1 = findViewById(R.id.ImageView1);
+        imageView1.setScaleType(ImageView.ScaleType.CENTER);
+    }
+}
+```
+
+
+
+枚举
+
+```java
+/**
+ * Options for scaling the bounds of an image to the bounds of this view.
+ */
+public enum ScaleType {
+    /**
+     * Scale using the image matrix when drawing. The image matrix can be set using
+     * {@link ImageView#setImageMatrix(Matrix)}. From XML, use this syntax:
+     * <code>android:scaleType="matrix"</code>.
+     */
+    MATRIX      (0),
+    /**
+     * Scale the image using {@link Matrix.ScaleToFit#FILL}.
+     * From XML, use this syntax: <code>android:scaleType="fitXY"</code>.
+     */
+    FIT_XY      (1),
+    /**
+     * Scale the image using {@link Matrix.ScaleToFit#START}.
+     * From XML, use this syntax: <code>android:scaleType="fitStart"</code>.
+     */
+    FIT_START   (2),
+    /**
+     * Scale the image using {@link Matrix.ScaleToFit#CENTER}.
+     * From XML, use this syntax:
+     * <code>android:scaleType="fitCenter"</code>.
+     */
+    FIT_CENTER  (3),
+    /**
+     * Scale the image using {@link Matrix.ScaleToFit#END}.
+     * From XML, use this syntax: <code>android:scaleType="fitEnd"</code>.
+     */
+    FIT_END     (4),
+    /**
+     * Center the image in the view, but perform no scaling.
+     * From XML, use this syntax: <code>android:scaleType="center"</code>.
+     */
+    CENTER      (5),
+    /**
+     * Scale the image uniformly (maintain the image's aspect ratio) so
+     * that both dimensions (width and height) of the image will be equal
+     * to or larger than the corresponding dimension of the view
+     * (minus padding). The image is then centered in the view.
+     * From XML, use this syntax: <code>android:scaleType="centerCrop"</code>.
+     */
+    CENTER_CROP (6),
+    /**
+     * Scale the image uniformly (maintain the image's aspect ratio) so
+     * that both dimensions (width and height) of the image will be equal
+     * to or less than the corresponding dimension of the view
+     * (minus padding). The image is then centered in the view.
+     * From XML, use this syntax: <code>android:scaleType="centerInside"</code>.
+     */
+    CENTER_INSIDE (7);
+
+    ScaleType(int ni) {
+        nativeInt = ni;
+    }
+    final int nativeInt;
+}
+```
+
+
+
+
+
+缩放类型
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="fitCenter"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="centerCrop"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="centerInside"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="center"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity7"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="fitXY"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity8"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="fitStart"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity9"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片"
+            android:scaleType="fitEnd"/>
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity10"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#444444">
+
+
+    <ImageView
+            android:id="@+id/ImageView1"
+            android:background="@color/cardview_shadow_start_color"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/img"
+            android:contentDescription="图片" />
+
+</LinearLayout>
+```
+
+
+
+主页面
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="默认scaleType"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="fitCenter"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+
+    <Button
+            android:id="@+id/button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="centerCrop"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="centerInside"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="center"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="fitXY"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="fitStart"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="fitEnd"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+    <Button
+            android:id="@+id/button9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="通过java代码设置"
+            android:textColor="@color/purple_200"
+            android:textSize="25sp"
+            android:textAllCaps="false"/>
+
+
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+```java
+package mao.android_imageview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity3.class));
+            }
+        });
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity4.class));
+            }
+        });
+        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity5.class));
+            }
+        });
+        findViewById(R.id.button5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity6.class));
+            }
+        });
+        findViewById(R.id.button6).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity7.class));
+            }
+        });
+        findViewById(R.id.button7).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity8.class));
+            }
+        });
+        findViewById(R.id.button8).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity9.class));
+            }
+        });
+        findViewById(R.id.button9).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity10.class));
+            }
+        });
+    }
+}
+```
