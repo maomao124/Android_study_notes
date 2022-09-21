@@ -6409,3 +6409,275 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 ### Activity的启动和结束
 
+
+
+启动一个活动页面：
+
+```java
+startActivity(new Intent(this, ActFinishActivity.class));
+```
+
+结束当前的活动页面：
+
+```java
+finish();
+```
+
+
+
+
+
+### Activity的生命周期
+
+App引入活动的概念而非传统的页面概念，单从字面意思理解，页面更像是静态的，而 活动更像是动态的。犹如花开花落那般，活动也有从含苞待放到盛开再到凋零的生命过程。每次创建新 的活动页面，自动生成的Java代码都给出了onCreate方法，该方法用于执行活动创建的相关操作，包括加载XML布局、设置文本视图的初始文字、注册按钮控件的点击监听，等等。onCreate方法所代表的创 建动作，正是一个活动最开始的行为，除了onCreate，活动还有其他几种生命周期行为，它们对应的方法说明如下：
+
+* onCreate：创建活动。此时会把页面布局加载进内存，进入了初始状态
+* onStart：开启活动。此时会把活动页面显示在屏幕上，进入了就绪状态
+* onResume：恢复活动。此时活动页面进入活跃状态，能够与用户正常交互，例如允许响应用户的 点击动作、允许用户输入文字等
+* onPause：暂停活动。此时活动页面进入暂停状态（也就是退回就绪状态），无法与用户正常交互
+* onStop：停止活动。此时活动页面将不在屏幕上显示
+* onDestroy：销毁活动。此时回收活动占用的系统资源，把页面从内存中清除掉
+* onRestart：重启活动。处于停止状态的活动，若想重新开启的话，无须经历onCreate的重复创建 过程，而是走onRestart的重启过程
+* onNewIntent：重用已有的活动实例
+
+
+
+![image-20220921174355496](img/Android学习笔记/image-20220921174355496.png)
+
+
+
+
+
+打开新页面的方法调用顺序为：
+
+**onCreate→onStart→onResume**
+
+
+
+关闭旧页面的方法调用顺序为：
+
+**onPause→onStop→onDestroy**
+
+
+
+
+
+如果一个Activity已经启动过，并且存在当前应用的Activity任务栈中，启动模式为singleTask， singleInstance或singleTop(此时已在任务栈顶端)，那么在此启动或回到这个Activity的时候，不 会创建新的实例，也就是不会执行onCreate方法，而是执行onNewIntent方法
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textSize="20sp"
+                android:textColor="@color/purple_200"
+                app:layout_constraintTop_toTopOf="parent" />
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_activity;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 文本视图
+     */
+    private TextView textView;
+
+    /**
+     * SimpleDateFormat
+     */
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    /**
+     * 标签
+     */
+    public static final String TAG = "MainActivity";
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        textView = findViewById(R.id.TextView);
+        Log.d(TAG, "onCreate: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onCreate");
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        Log.d(TAG, "onStart: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onStart");
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onResume");
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onPause");
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        Log.d(TAG, "onStop: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onStop");
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+        Log.d(TAG, "onRestart: ");
+        textView.setText(textView.getText() + "\n" + simpleDateFormat.format(new Date()) + "---> onRestart");
+    }
+
+
+}
+```
+
+
+
+
+
+![image-20220921183816553](img/Android学习笔记/image-20220921183816553.png)
+
+
+
+
+
+
+
+### Activity的启动模式
+
+从第一个活动跳到第二个活动，接着结束第二个活动就能返回第一个活动，可是为什么 不直接返回桌面呢？这要从Android的内核设计说起了，系统给每个正在运行的App都分配了活动栈，栈 里面容纳着已经创建且尚未销毁的活动信息。鉴于栈是一种先进后出、后进先出的数据结构，故而后面 入栈的活动总是先出栈，假设3个活动的入栈顺序为：活动A→活动B→活动C，则它们的出栈顺序将变 为：活动C→活动B→活动A，可见活动C结束之后会返回活动B，而不是返回活动A或者别的地方
+
+假定某个App分配到的活动栈大小为3，该App先后打开两个活动
+
+
+
+![image-20220921184952639](img/Android学习笔记/image-20220921184952639.png)
+
+
+
+依次结束已打开的两个活动
+
+
+
+![image-20220921185014464](img/Android学习笔记/image-20220921185014464.png)
+
+
+
+不过前述的出入栈情况仅是默认的标准模式，实际上Android允许在创建活动时指定该活动的启动模 式，通过启动模式控制活动的出入栈行为。App提供了两种办法用于设置活动页面的启动模式，其一是 修改AndroidManifest.xml，在指定的activity节点添加属性android:launchMode，表示本活动以哪个 启动模式运行。其二是在代码中调用Intent对象的setFlags方法，表明后续打开的活动页面采用该启动标志
+
+
+
+**launchMode属性的取值说明：**
+
+* standard：标准模式，无论何时启动哪个活动，都是重新创建该页面的实例并放入栈顶。如果不指定launchMode属性，则默认为标准模式
+* singleTop：启动新活动时，判断如果栈顶正好就是该活动的实例，则重用该实例；否则创建新的实例并放入栈顶，也就是按照standard模式处理
+* singleTask：启动新活动时，判断如果栈中存在该活动的实例，则重用该实例， 并清除位于该实例上面的所有实例；否则按照standard模式处理
+* singleInstance：启动新活动时，将该活动的实例放入一个新栈中，原栈的实例列 表保持不变
+
+
+
+```xml
+<activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:launchMode="standard">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+</activity>
+```
+
+
+
+
+
+**启动标志的取值说明：**
+
+* Intent.FLAG_ACTIVITY_NEW_TASK：开辟一个新的任务栈
+* Intent.FLAG_ACTIVITY_SINGLE_TOP：当栈顶为待跳转的活动实例之时，则重用栈顶的实例
+* Intent.FLAG_ACTIVITY_CLEAR_TOP：当栈中存在待跳转的活动实例时，则重新创建一个新实例， 并清除原实例上方的所有实例
+* Intent.FLAG_ACTIVITY_NO_HISTORY：栈中不保存新启动的活动实例
+* Intent.FLAG_ACTIVITY_CLEAR_TASK：跳转到新页面时，栈中的原有实例都被清空
+
+
+
+![image-20220921185732813](img/Android学习笔记/image-20220921185732813.png)
+
+
+
+
+
+
+
