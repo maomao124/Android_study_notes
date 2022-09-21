@@ -6371,6 +6371,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+运行
+
+![image-20220921172824546](img/Android学习笔记/image-20220921172824546.png)
+
+
+
+![image-20220921172953401](img/Android学习笔记/image-20220921172953401.png)
+
+
+
+![image-20220921173007455](img/Android学习笔记/image-20220921173007455.png)
+
+
+
+![image-20220921173022428](img/Android学习笔记/image-20220921173022428.png)
+
+
+
+![image-20220921173252657](img/Android学习笔记/image-20220921173252657.png)
+
+
+
+
+
 
 
 
