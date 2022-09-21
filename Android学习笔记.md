@@ -6991,3 +6991,762 @@ intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_NEW_TASK);
 
 
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_b_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转A"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_a_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转B"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/button_self_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自己"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity7"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_b_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转A"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity8"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_a_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转B"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/button_self_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自己"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity9"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_b_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转A"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity10"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_a_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转B"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/button_self_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自己"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity11"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_b_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转A"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+逻辑代码
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.main_button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+        findViewById(R.id.main_button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity4.class));
+            }
+        });
+        findViewById(R.id.main_button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity6.class));
+            }
+        });
+        findViewById(R.id.main_button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity8.class));
+            }
+        });
+        findViewById(R.id.main_button5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity10.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+        findViewById(R.id.button_a_1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity2.this, MainActivity3.class));
+            }
+        });
+
+        findViewById(R.id.button_self_1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity2.this, MainActivity2.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity3 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        findViewById(R.id.button_b_1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity3.this, MainActivity2.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity4 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main4);
+
+        findViewById(R.id.button_a_2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity4.this, MainActivity5.class));
+            }
+        });
+
+        findViewById(R.id.button_self_2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity4.this, MainActivity4.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity5 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main5);
+
+        findViewById(R.id.button_b_2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity5.this, MainActivity4.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity6 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main6);
+
+        findViewById(R.id.button_a_3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity6.this, MainActivity7.class));
+            }
+        });
+
+        findViewById(R.id.button_self_3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity6.this, MainActivity6.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity7 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main7);
+
+        findViewById(R.id.button_b_3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity7.this, MainActivity6.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity8 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main8);
+
+        findViewById(R.id.button_a_4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity8.this, MainActivity9.class));
+            }
+        });
+
+        findViewById(R.id.button_self_4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity8.this, MainActivity8.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity9 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main9);
+
+        findViewById(R.id.button_b_4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity9.this, MainActivity8.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity10 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main10);
+
+        findViewById(R.id.button_a_5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity10.this, MainActivity11.class));
+            }
+        });
+
+        findViewById(R.id.button_self_5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity10.this, MainActivity10.class));
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_activity_boot_mode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity11 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main11);
+
+        findViewById(R.id.button_b_5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity11.this, MainActivity10.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+
+
+清单文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_activity_boot_mode">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_Activity_boot_mode"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity11"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity10"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity9"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity8"
+                android:exported="false"
+                android:launchMode="singleInstance" />
+        <activity
+                android:name=".MainActivity7"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity6"
+                android:exported="false"
+                android:launchMode="singleTask" />
+        <activity
+                android:name=".MainActivity5"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity4"
+                android:exported="false"
+                android:launchMode="singleTop" />
+        <activity
+                android:name=".MainActivity3"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity2"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:launchMode="standard">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+![image-20220921210513990](img/Android学习笔记/image-20220921210513990.png)
+
+
+
+
+
+
+
+
+
+
+
+## 在活动之间传递消息
+
