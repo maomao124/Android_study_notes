@@ -5615,3 +5615,110 @@ public class MainActivity extends AppCompatActivity
 
 ### 同时展示文本与图像
 
+现在有了Button可在按钮上显示文字，又有ImageButton可在按钮上显示图像，照理说绝大多数场合都够用了。然而现实项目中的需求往往捉摸不定，例如客户要求在按钮文字的左边加一个图标，这样按钮 内部既有文字又有图片，Button和ImageButton都没法直接使用。若用LinearLayout对 ImageView和TextView组合布局，虽然可行，XML文件却变得冗长许多。
+
+其实有个既简单又灵活的办法，要想在文字周围放置图片，使用按钮控件Button就能实现。
+
+* drawableTop：指定文字上方的图片
+* drawableBottom：指定文字下方的图片
+* drawableLeft：指定文字左边的图片。
+* drawableRight：指定文字右边的图片
+* drawablePadding：指定图片与文字的间距
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图标在文字左侧"
+            android:drawablePadding="5dp"
+            android:drawableLeft="@drawable/ic_launcher_foreground"
+            android:textSize="16sp" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图标在文字右侧"
+            android:drawablePadding="5dp"
+            android:drawableRight="@drawable/ic_launcher_foreground"
+            android:textSize="16sp" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图标在文字上面"
+            android:drawablePadding="5dp"
+            android:drawableTop="@drawable/ic_launcher_foreground"
+            android:textSize="16sp" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图标在文字下面"
+            android:drawablePadding="5dp"
+            android:drawableBottom="@drawable/ic_launcher_foreground"
+            android:textSize="16sp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220920131510542](img/Android学习笔记/image-20220920131510542.png)
+
+
+
+
+
+
+
+
+
+
+
+## 计算器
+
+计算器的界面分为两大部分，第一部分是上方的计算表达式，既包括用户的按键输入，也包括计算结果 数字；第二部分是下方的各个按键，例如：从0到9的数字按钮、加减乘除与等号、正负号按钮、小数点 按钮、求倒数按钮、平方按钮、开方按钮，以及退格、清空、取消等控制按钮。通过这些按键操作，能 够实现整数和小数的四则运算，以及求倒数、求平方、求开方等简单运算
+
+
+
+按照计算器App的效果图，大致分布着下列Android控件：
+
+* 线性布局LinearLayout：因为计算器界面整体从上往下布局，所以需要垂直方向的LinearLayout
+* 网格布局GridLayout：计算器下半部分的几排按钮，正好成五行四列表格分布，适合采用GridLayout
+* 滚动视图ScrollView：虽然计算器界面不宽也不高，但是以防万一，最好还是加个垂直方向的ScrollView
+* 文本视图TextView：很明显顶部标题“简单计算器”就是TextView，且文字居中显示；标题下面的计算结果也需要使用TextView，且文字靠右靠下显示
+* 按钮Button：几乎所有的数字与运算符按钮都采用了Button控件
+* 图像按钮ImageButton：开根号的运算符“√”虽然能够打出来，但是右上角少了一横， 所以该按钮要显示一张标准的开根号图片，这用到了ImageButton
+
+
+
+App同用户交互的过程中，时常要向用户反馈一些信息，例如：点错了按钮、输入了非法字符等等，诸 如此类。对于这些一句话的提示，Android设计了Toast控件，用于展示短暂的提示文字。
+
+```java
+Toast.makeText(MainActivity.this, "提示文字", Toast.LENGTH_SHORT).show();
+```
+
+
+
+对于简单计算来说，每次运算至少需要两个操作数，比如加减乘除四则运算就要求有两个操作数，求倒数、求平方、求开方只要求一个操作数；并且每次运算过程有且仅有一个运算符（等号不计在内）
+
+
+
+
+
