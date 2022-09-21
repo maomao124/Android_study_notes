@@ -4891,7 +4891,21 @@ public class MainActivity extends AppCompatActivity
 
 
 
+## 消息提示
 
+### Toast
+
+App同用户交互的过程中，时常要向用户反馈一些信息，例如：点错了按钮、输入了非法字符等等，诸如此类。对于这些一句话的提示，Android设计了Toast控件，用于展示短暂的提示文字。
+
+```java
+Toast.makeText(MainActivity.this, "提示文字", Toast.LENGTH_SHORT).show();
+```
+
+其中show方法用来展示提示窗，而makeText方 法用来构建提示文字的模板。makeText的第一个参数为当前页面的实例；第二个参数为准备显示的提示文本；第三个参数规定了提示窗的驻留时长，为Toast.LENGTH_SHORT表示停留 2秒后消失，为Toast.LENGTH_LONG表示停留3.5秒后消失
+
+
+
+![image-20220921172441952](img/Android学习笔记/image-20220921172441952.png)
 
 
 
@@ -5708,17 +5722,666 @@ public class MainActivity extends AppCompatActivity
 
 
 
-App同用户交互的过程中，时常要向用户反馈一些信息，例如：点错了按钮、输入了非法字符等等，诸 如此类。对于这些一句话的提示，Android设计了Toast控件，用于展示短暂的提示文字。
-
-```java
-Toast.makeText(MainActivity.this, "提示文字", Toast.LENGTH_SHORT).show();
-```
-
 
 
 对于简单计算来说，每次运算至少需要两个操作数，比如加减乘除四则运算就要求有两个操作数，求倒数、求平方、求开方只要求一个操作数；并且每次运算过程有且仅有一个运算符（等号不计在内）
 
 
 
+布局
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:padding="5dp"
+        android:orientation="vertical">
+
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/simple_calculator"
+                    android:textColor="#00ffff"
+                    android:textSize="20sp" />
+
+            <TextView
+                    android:id="@+id/tv_result"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right|bottom"
+                    android:lines="5"
+                    android:text="0"
+                    android:textColor="#ff0000"
+                    android:textSize="26sp"
+                    android:layout_marginBottom="@dimen/show_text_marginBottom"/>
+
+            <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="4"
+                    android:rowCount="5">
+
+                <Button
+                        android:id="@+id/btn_cancel"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/cancel"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_divide"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/divide"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_multiply"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/multiply"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_clear"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/clear"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_seven"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/seven"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_eight"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/eight"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_nine"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/nine"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_plus"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/plus"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_four"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/four"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_five"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/five"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_six"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/six"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_minus"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/minus"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_one"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/one"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_two"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/two"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_three"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/three"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <ImageButton
+                        android:id="@+id/ib_sqrt"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:src="@drawable/sqrt"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:background="@color/purple_200"
+                        android:contentDescription="@string/sprt"
+                        android:scaleType="centerInside" />
+
+                <Button
+                        android:id="@+id/btn_reciprocal"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/reciprocal"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_1_x" />
+
+                <Button
+                        android:id="@+id/btn_zero"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/zero"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_dot"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/dot"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+                <Button
+                        android:id="@+id/btn_equal"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_columnWeight="1"
+                        android:gravity="center"
+                        android:layout_margin="@dimen/Button_mrgin"
+                        android:text="@string/equal"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/button_font_size" />
+
+            </GridLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+逻辑代码
+
+```java
+package mao.android_calculator;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener
+{
+    /**
+     * 标签
+     */
+    public static final String TAG = "MainActivity";
+
+    private TextView tv_result;
+    // 第一个操作数
+    private String firstNum = "";
+    // 运算符
+    private String operator = "";
+    // 第二个操作数
+    private String secondNum = "";
+    // 当前的计算结果
+    private String result = "";
+    // 显示的文本内容
+    private String showText = "";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Toast.makeText(this, "mao " +
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                Toast.LENGTH_SHORT).show();
+
+        // 从布局文件中获取名叫tv_result的文本视图
+        tv_result = findViewById(R.id.tv_result);
+        // 下面给每个按钮控件都注册了点击监听器
+        findViewById(R.id.btn_cancel).setOnClickListener(this);
+        // “除法”按钮
+        findViewById(R.id.btn_divide).setOnClickListener(this);
+        // “乘法”按钮
+        findViewById(R.id.btn_multiply).setOnClickListener(this);
+        // “清除”按钮
+        findViewById(R.id.btn_clear).setOnClickListener(this);
+        // 数字7
+        findViewById(R.id.btn_seven).setOnClickListener(this);
+        // 数字8
+        findViewById(R.id.btn_eight).setOnClickListener(this);
+        // 数字9
+        findViewById(R.id.btn_nine).setOnClickListener(this);
+        // “加法”按钮
+        findViewById(R.id.btn_plus).setOnClickListener(this);
+        // 数字4
+        findViewById(R.id.btn_four).setOnClickListener(this);
+        // 数字5
+        findViewById(R.id.btn_five).setOnClickListener(this);
+        // 数字6
+        findViewById(R.id.btn_six).setOnClickListener(this);
+        // “减法”按钮
+        findViewById(R.id.btn_minus).setOnClickListener(this);
+        // 数字1
+        findViewById(R.id.btn_one).setOnClickListener(this);
+        // 数字2
+        findViewById(R.id.btn_two).setOnClickListener(this);
+        // 数字3
+        findViewById(R.id.btn_three).setOnClickListener(this);
+        // 求倒数按钮
+        findViewById(R.id.btn_reciprocal).setOnClickListener(this);
+        // 数字0
+        findViewById(R.id.btn_zero).setOnClickListener(this);
+        // “小数点”按钮
+        findViewById(R.id.btn_dot).setOnClickListener(this);
+        // “等号”按钮
+        findViewById(R.id.btn_equal).setOnClickListener(this);
+        // “开平方”按钮
+        findViewById(R.id.ib_sqrt).setOnClickListener(this);
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v)
+    {
+        String inputText;
+        // 如果是开根号按钮
+        if (v.getId() == R.id.ib_sqrt)
+        {
+            inputText = "√";
+        }
+        else
+        {
+            // 除了开根号之外的其他按钮
+            inputText = ((TextView) v).getText().toString();
+        }
+        switch (v.getId())
+        {
+            // 点击了清除按钮
+            case R.id.btn_clear:
+                clear();
+                break;
+            // 点击了取消按钮
+            case R.id.btn_cancel:
+                break;
+            // 点击了加、减、乘、除按钮
+            case R.id.btn_plus:
+            case R.id.btn_minus:
+            case R.id.btn_multiply:
+            case R.id.btn_divide:
+                plus_minus_multiply_divide(inputText);
+                break;
+            // 点击了等号按钮
+            case R.id.btn_equal:
+                equal();
+                break;
+            // 点击了开根号按钮
+            case R.id.ib_sqrt:
+                sqrt();
+                break;
+            // 点击了求倒数按钮
+            case R.id.btn_reciprocal:
+                reciprocal();
+                break;
+            // 点击了其他按钮，包括数字和小数点
+            default:
+                caseDefault(inputText);
+        }
+
+    }
+
+    /**
+     * 加减乘除
+     *
+     * @param inputText 输入文本
+     */
+    private void plus_minus_multiply_divide(String inputText)
+    {
+        if (firstNum.equals("."))
+        {
+            return;
+        }
+        operator = inputText; // 运算符
+        if (!secondNum.equals(""))
+        {
+            double result = calculateFour();
+            this.result = String.valueOf(result);
+            firstNum = this.result;
+            secondNum = "";
+
+        }
+        refreshText(showText + operator);
+        Log.d(TAG, "onClick: showText=" + showText
+                + ", operator=" + operator);
+        Log.d(TAG, "onClick: firstNum="
+                + firstNum + ",secondNum=" + secondNum);
+        Log.d(TAG, "onClick: result=" + result);
+        return;
+    }
+
+    /**
+     * caseDefault
+     *
+     * @param inputText 输入文本
+     */
+    private void caseDefault(String inputText)
+    {
+        // 上次的运算结果已经出来了
+        if (result.length() > 0 && operator.equals(""))
+        {
+            clear();
+        }
+
+        // 无运算符，则继续拼接第一个操作数
+        if (operator.equals(""))
+        {
+            firstNum = firstNum + inputText;
+        }
+        else
+        {
+            // 有运算符，则继续拼接第二个操作数
+            secondNum = secondNum + inputText;
+        }
+        // 整数不需要前面的0
+        if (showText.equals("0") && !inputText.equals("."))
+        {
+            refreshText(inputText);
+        }
+        else
+        {
+            refreshText(showText + inputText);
+        }
+        return;
+    }
+
+
+    /**
+     * 等号
+     */
+    private void equal()
+    {
+        // 加减乘除四则运算
+        double calculate_result = calculateFour();
+        refreshOperate(String.valueOf(calculate_result));
+        refreshText(showText + "=" + result);
+        return;
+    }
+
+    /**
+     * 求倒数
+     */
+    private void reciprocal()
+    {
+        if (firstNum.equals("."))
+        {
+            return;
+        }
+        double reciprocal_result;
+        if (firstNum.equals(""))
+        {
+            reciprocal_result = 0;
+        }
+        else
+        {
+            reciprocal_result = 1.0 / Double.parseDouble(firstNum);
+        }
+        refreshOperate(String.valueOf(reciprocal_result));
+        refreshText(showText + "/=" + result);
+        return;
+    }
+
+
+    /**
+     * √
+     */
+    private void sqrt()
+    {
+        if (firstNum.equals("."))
+        {
+            return;
+        }
+        double sqrt_result;
+        if (firstNum.equals(""))
+        {
+            sqrt_result = 0;
+        }
+        else
+        {
+            sqrt_result = Math.sqrt(Double.parseDouble(firstNum));
+        }
+        refreshOperate(String.valueOf(sqrt_result));
+        refreshText(showText + "√=" + result);
+        return;
+    }
+
+
+    /**
+     * 加减乘除四则运算，返回计算结果
+     *
+     * @return double
+     */
+    private double calculateFour()
+    {
+        if (firstNum.equals("") && secondNum.equals(""))
+        {
+            clear();
+            return 0;
+        }
+        Log.d(TAG, "calculateFour: firstNum="
+                + firstNum + ",secondNum=" + secondNum);
+        switch (operator)
+        {
+            case "＋":
+                if (secondNum.equals(""))
+                {
+                    return Double.parseDouble(firstNum);
+                }
+                if (firstNum.equals(""))
+                {
+                    return Double.parseDouble(secondNum);
+                }
+                return Double.parseDouble(firstNum) + Double.parseDouble(secondNum);
+            case "－":
+                if (secondNum.equals(""))
+                {
+                    return Double.parseDouble(firstNum);
+                }
+                //-7
+                if (firstNum.equals(""))
+                {
+                    return -1 * (Double.parseDouble(secondNum));
+                }
+                return Double.parseDouble(firstNum) - Double.parseDouble(secondNum);
+            case "×":
+                if (secondNum.equals(""))
+                {
+                    return Double.parseDouble(firstNum);
+                }
+                if (firstNum.equals(""))
+                {
+                    return Double.parseDouble(secondNum);
+                }
+                return Double.parseDouble(firstNum) * Double.parseDouble(secondNum);
+            default:
+                if (secondNum.equals(""))
+                {
+                    return Double.parseDouble(firstNum);
+                }
+                if (firstNum.equals(""))
+                {
+                    return Double.parseDouble(secondNum);
+                }
+                return Double.parseDouble(firstNum) / Double.parseDouble(secondNum);
+        }
+    }
+
+    /**
+     * 清空并初始化
+     */
+    private void clear()
+    {
+        refreshOperate("");
+        refreshText("");
+    }
+
+    /**
+     * 刷新运算结果
+     *
+     * @param new_result 新结果
+     */
+    private void refreshOperate(String new_result)
+    {
+        result = new_result;
+        firstNum = result;
+        secondNum = "";
+        operator = "";
+    }
+
+    /**
+     * 刷新文本显示
+     *
+     * @param text 文本
+     */
+    private void refreshText(String text)
+    {
+        showText = text;
+        tv_result.setText(showText);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 活动Activity
+
+## 启停活动页面
+
+### Activity的启动和结束
 
