@@ -6642,7 +6642,7 @@ public class MainActivity extends AppCompatActivity
 * standard：标准模式，无论何时启动哪个活动，都是重新创建该页面的实例并放入栈顶。如果不指定launchMode属性，则默认为标准模式
 * singleTop：启动新活动时，判断如果栈顶正好就是该活动的实例，则重用该实例；否则创建新的实例并放入栈顶，也就是按照standard模式处理
 * singleTask：启动新活动时，判断如果栈中存在该活动的实例，则重用该实例， 并清除位于该实例上面的所有实例；否则按照standard模式处理
-* singleInstance：启动新活动时，将该活动的实例放入一个新栈中，原栈的实例列 表保持不变
+* singleInstance：启动新活动时，将该活动的实例放入一个新栈中，原栈的实例列表保持不变
 
 
 
@@ -6678,6 +6678,316 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+```java
+Intent intent = new Intent(MainActivity11.this, MainActivity10.class);
+intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+startActivity(intent);
+```
+
+
+
+
+
+**在两个活动之间交替跳转**
+
+假设活动A有个按钮，点击该按钮会跳到活动B；同时活动B也有个按钮，点击按钮会跳到活动A；从首页 打开活动A之后，就点击按钮在活动A与活动B之间轮流跳转。此时活动页面的跳转流程为：首页→活动 A→活动B→活动A→活动B→活动A→活动B→……多次跳转之后想回到首页，正常的话返回流程是这样 的：……→活动B→活动A→活动B→活动A→活动B→活动A→首页，注意每个箭头都代表按一次返回键
+
+可见要按下许多次返回键才能返回首页。其实在活动A和活动B之间本不应该重复返回，因为回来回去总 是这两个页面有什么意义呢？照理说每个活动返回一次足矣，同一个地方返回两次已经是多余的了，再 返回应当回到首页才是。也就是说，不管过去的时候怎么跳转，回来的时候应该按照这个流程：……→活 动B→活动A→首页，或者按照这个流程：……→活动A→活动B→首页，总之已经返回了的页面，决不再 返回第二次
+
+对于不允许重复返回的情况，可以设置启动标志FLAG_ACTIVITY_CLEAR_TOP，即使活动栈里面存在待 跳转的活动实例，也会重新创建该活动的实例，并清除原实例上方的所有实例，保证栈中最多只有该活 动的唯一实例，从而避免了无谓的重复返回
+
+
+
+
+
+**登录成功后不再返回登录页面**
+
+很多App第一次打开都要求用户登录，登录成功再进入App首页，如果这时按下返回键，发现并没有回 到上一个登录页面，而是直接退出App了，这又是什么缘故呢？原来用户登录成功后，App便记下用户的登录信息，接下来默认该用户是登录状态，自然不必重新输入用户名和密码了。既然默认用户已经登录，哪里还需要回到登录页面？不光登录页面，登录之前的其他页面包括获取验证码、找回密码等页面都不应回去
+
+对于回不去的登录页面情况，可以设置启动标志FLAG_ACTIVITY_CLEAR_TASK，该标志会清空当前活动 栈里的所有实例。不过全部清空之后，意味着当前栈没法用了，必须另外找个活动栈才行，也就是同时 设置启动标志FLAG_ACTIVITY_NEW_TASK，该标志用于开辟新任务的活动栈
+
+```java
+intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_NEW_TASK);
+```
+
+
+
+
+
+#### 默认启动模式 standard
+
+该模式可以被设定，不在 manifest 设定时候，Activity 的默认模式就是 standard。在该模式下，启动 的 Activity 会依照启动顺序被依次压入 Task 栈中
+
+
+
+![image-20220921204753599](img/Android学习笔记/image-20220921204753599.png)
+
+
+
+
+
+#### 栈顶复用模式 singleTop
+
+在该模式下，如果栈顶 Activity 为我们要新建的 Activity（目标Activity），那么就不会重复创建新的 Activity
+
+
+
+![image-20220921204833809](img/Android学习笔记/image-20220921204833809.png)
+
+
+
+
+
+**应用场景**
+
+适合开启渠道多、多应用开启调用的 Activity，通过这种设置可以避免已经创建过的 Activity 被重复创建，多数通过动态设置使用
+
+
+
+
+
+#### 栈内复用模式 singleTask
+
+与 singleTop 模式相似，只不过 singleTop 模式是只是针对栈顶的元素，而 singleTask 模式下，如果 task 栈内存在目标 Activity 实例，则将 task 内的对应 Activity 实例之上的所有 Activity 弹出栈，并将对 应 Activity 置于栈顶，获得焦点
+
+
+
+![image-20220921204928314](img/Android学习笔记/image-20220921204928314.png)
+
+
+
+
+
+**应用场景**
+
+* 程序主界面：我们肯定不希望主界面被创建多次，而且在主界面退出的时候退出整个 App 是最好的效 果
+* 耗费系统资源的Activity：对于那些及其耗费系统资源的 Activity，我们可以考虑将其设为 singleTask 模式，减少资源耗费
+
+
+
+
+
+#### 全局唯一模式 singleInstance
+
+在该模式下，我们会为目标 Activity 创建一个新的 Task 栈，将目标 Activity 放入新的 Task，并让目标 Activity获得焦点。新的 Task 有且只有这一个 Activity 实例。 如果已经创建过目标 Activity 实例，则 不会创建新的 Task，而是将以前创建过的 Activity 唤醒
+
+
+
+![image-20220921205024157](img/Android学习笔记/image-20220921205024157.png)
+
+
+
+
+
+
+
+#### 动态设置启动模式
+
+在上述所有情况，都是我们在Manifest中通过 launchMode 属性设置的，这个被称为静态设置，动态设置是通过 Java 代码设置的
+
+如果同时有动态和静态设置，那么动态的优先级更高。
+
+
+
+**FLAG_ACTIVITY_NEW_TASK**
+
+此 Flag 跟 singleInstance 很相似，在给目标 Activity 设立此 Flag 后，会根据目标 Activity 的 affinity 进 行匹配，如果已经存在与其affinity 相同的 task，则将目标 Activity 压入此 Task。反之没有的话，则新 建一个 task，新建的 task 的 affinity 值与目标 Activity 相同，然后将目标 Activity 压入此栈
+
+但它与 singleInstance 有不同的点
+
+* 新的 Task 没有说只能存放一个目标 Activity，只是说决定是否新建一个 Task，而 singleInstance 模式下新的 Task 只能放置一个目标 Activity
+* 在同一应用下，如果 Activity 都是默认的 affinity，那么此 Flag 无效，而 singleInstance 默认情况 也会创建新的 Task
+
+
+
+**FLAG_ACTIVITY_SINGLE_TOP**
+
+此 Flag 与静态设置中的 singleTop 效果相同
+
+
+
+**FLAG_ACTIVITY_CLEAR_TOP**
+
+当设置此 Flag 时，目标 Activity 会检查 Task 中是否存在此实例，如果没有则添加压入栈。如果有，就将位于 Task 中的对应 Activity 其上的所有 Activity 弹出栈
+
+
+
+
+
+
+
+#### 代码
+
+![image-20220921205829727](img/Android学习笔记/image-20220921205829727.png)
+
+
+
+**顺序从1到11**
+
+
+
+布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:id="@+id/main_button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="默认standard"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/main_button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="singleTop"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/main_button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="singleTask"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/main_button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="singleInstance"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/main_button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="通过代码设置：Intent.FLAG_ACTIVITY_CLEAR_TOP"
+            android:textAllCaps="false"
+            android:textSize="16sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_a_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转B"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/button_self_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自己"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_b_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转A"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/button_a_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转B"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+    <Button
+            android:id="@+id/button_self_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自己"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
 
 
 
