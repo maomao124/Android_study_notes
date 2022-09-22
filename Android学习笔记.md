@@ -7925,3 +7925,186 @@ public class MainActivity extends AppCompatActivity
 
 ### 向下一个Activity发送数据
 
+Intent对象的setData方法只指定到达目标的路径，并非本次通信所携带的参数信息，真 正的参数信息存放在Extras中。Intent重载了很多种putExtra方法传递各种类型的参数，包括整型、双精度型、字符串等基本数据类型，甚至Serializable这样的序列化结构。只是调用putExtra方法显然不好管理，像送快递一样大小包裹随便扔，不但找起来不方便，丢了也难以知道。所以Android引入了 Bundle概念，可以把Bundle理解为超市的寄包柜或快递收件柜，大小包裹由Bundle统一存取，方便又安全。
+
+Bundle内部用于存放消息的数据结构是Map映射，既可添加或删除元素，还可判断元素是否存在。开发者若要把Bundle数据全部打包好，只需调用一次意图对象的putExtras方法；若要把Bundle数据全部取 出来，也只需调用一次意图对象的getExtras方法
+
+
+
+| 数据类型 | 读方法 | 写方法 |
+| :------: | :----: | :----: |
+|整型数| getInt| putInt|
+|浮点数| getFloat| putFloat|
+|双精度数 |getDouble| putDouble|
+|布尔值| getBoolean| putBoolean|
+|字符串| getString| putString|
+|字符串数组| getStringArray| putStringArray|
+|字符串列表 |getStringArrayList| putStringArrayList|
+|可序列化结构 |getSerializable| putSerializable|
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:id="@+id/b1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="发送数据" />
+
+    <TextView
+            android:id="@+id/tv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/tv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp" />
+
+    <Button
+            android:id="@+id/b2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="返回数据" />
+
+</LinearLayout>
+```
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 得到int随机数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    public static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.b1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                //intent.putExtra("str", "随机数为：");
+                Bundle bundle = new Bundle();
+                bundle.putString("str", "随机数为：");
+                bundle.putInt("random", getIntRandom(0, 100));
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+    }
+}
+```
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+        TextView textView = findViewById(R.id.tv2);
+        Bundle bundle = getIntent().getExtras();
+        String str = bundle.getString("str");
+        int random = bundle.getInt("random");
+        textView.setText(str + random);
+    }
+}
+```
+
+
+
+
+
+![image-20220922224619351](img/Android学习笔记/image-20220922224619351.png)
+
+
+
+![image-20220922224629978](img/Android学习笔记/image-20220922224629978.png)
+
+
+
+![image-20220922224652885](img/Android学习笔记/image-20220922224652885.png)
+
+
+
+
+
+
+
+### 向上一个Activity返回数据
+
+
+
