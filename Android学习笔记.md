@@ -8106,5 +8106,296 @@ public class MainActivity2 extends AppCompatActivity
 
 ### 向上一个Activity返回数据
 
+数据传递经常是相互的，上一个页面不但把请求数据发送到下一个页面，有时候还要处理下一个页面的 应答数据，所谓应答发生在下一个页面返回到上一个页面之际。如果只把请求数据发送到下一个页面， 上一个页面调用startActivity方法即可；如果还要处理下一个页面的应答数据，此时就得分多步处理
 
+
+
+步骤：
+
+* 上一个页面打包好请求数据，调用startActivityForResult方法执行跳转动作
+* 下一个页面接收并解析请求数据，进行相应处理
+* 下一个页面在返回上一个页面时，打包应答数据并调用setResult方法返回数据包裹
+* 上一个页面重写方法onActivityResult，解析获得下一个页面的返回数据
+
+
+
+
+
+步骤一，上一个页面打包好请求数据，调用startActivityForResult方法执行跳转动作，表示需要处理下 一个页面的应答数据，该方法的第二个参数表示请求代码，它用于标识每个跳转的唯一性。
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 得到int随机数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    public static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.b1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                //intent.putExtra("str", "随机数为：");
+                Bundle bundle = new Bundle();
+                bundle.putString("str", "随机数为：");
+                bundle.putInt("random", getIntRandom(0, 100));
+                intent.putExtras(bundle);
+                //startActivity(intent);
+                startActivityForResult(intent, 0);
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+步骤二，下一个页面接收并解析请求数据，进行相应处理。
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+        TextView textView = findViewById(R.id.tv2);
+        Bundle bundle = getIntent().getExtras();
+        String str = bundle.getString("str");
+        int random = bundle.getInt("random");
+        textView.setText(str + random);
+    }
+}
+```
+
+
+
+
+
+步骤三，下一个页面在返回上一个页面时，打包应答数据并调用setResult方法返回数据包裹。setResult 方法的第一个参数表示应答代码（成功还是失败），第二个参数为携带包裹的意图对象
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    /**
+     * 得到double型随机数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return double
+     */
+    public static double getDoubleRandom(double min, double max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (Math.random() * (max - min));
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+        TextView textView = findViewById(R.id.tv2);
+        Bundle bundle = getIntent().getExtras();
+        String str = bundle.getString("str");
+        int random = bundle.getInt("random");
+        textView.setText(str + random);
+
+        findViewById(R.id.b2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent();
+                Bundle bundle1 = new Bundle();
+                bundle1.putString("response_str", "返回的随机数：");
+                bundle1.putDouble("response_random", getDoubleRandom(100, 900));
+                intent.putExtras(bundle1);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+步骤四，上一个页面重写方法onActivityResult，该方法的输入参数包含请求代码和结果代码，其中请求代码用于判断这次返回对应哪个跳转，结果代码用于判断下一个页面是否处理成功。如果下一个页面处理成功，再对返回数据解包操作
+
+
+
+```java
+package mao.android_send_data_and_return_data;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView1;
+
+    /**
+     * 得到int随机数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    public static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.b1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                //intent.putExtra("str", "随机数为：");
+                Bundle bundle = new Bundle();
+                bundle.putString("str", "随机数为：");
+                bundle.putInt("random", getIntRandom(0, 100));
+                intent.putExtras(bundle);
+                //startActivity(intent);
+                startActivityForResult(intent, 0);
+            }
+        });
+
+        textView1 = findViewById(R.id.tv1);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (data != null && requestCode == 0 && resultCode == Activity.RESULT_OK)
+        {
+            Bundle bundle = data.getExtras();
+            String responseStr = bundle.getString("response_str");
+            double responseRandom = bundle.getDouble("response_random");
+            textView1.setText(responseStr + responseRandom);
+        }
+
+    }
+}
+```
+
+
+
+
+
+![image-20220922230616940](img/Android学习笔记/image-20220922230616940.png)
+
+
+
+![image-20220922230629180](img/Android学习笔记/image-20220922230629180.png)
+
+
+
+![image-20220922230640313](img/Android学习笔记/image-20220922230640313.png)
+
+
+
+![image-20220922230648808](img/Android学习笔记/image-20220922230648808.png)
+
+
+
+![image-20220922230656898](img/Android学习笔记/image-20220922230656898.png)
+
+
+
+
+
+
+
+
+
+## 为活动补充附加信息
+
+### 利用资源文件配置字符串
 
