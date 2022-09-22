@@ -7740,6 +7740,12 @@ public class MainActivity11 extends AppCompatActivity
 
 
 
+仔细观察切换活动的动画效果
+
+
+
+
+
 
 
 
@@ -7749,4 +7755,173 @@ public class MainActivity11 extends AppCompatActivity
 
 
 ## 在活动之间传递消息
+
+### 显式Intent和隐式Intent
+
+Intent的中文名 是意图，意思是我想让你干什么，简单地说，就是传递消息。Intent是各个组件之间信息沟通的桥梁， 既能在Activity之间沟通，又能在Activity与Service之间沟通，也能在Activity与Broadcast之间沟通。总 而言之，Intent用于Android各组件之间的通信，它主要完成下列3部分工作：
+
+* 标明本次通信请求从哪里来、到哪里去、要怎么走
+* 发起方携带本次通信需要的数据内容，接收方从收到的意图中解析数据
+* 发起方若想判断接收方的处理结果，意图就要负责让接收方传回应答的数据内容
+
+
+
+| 元素名称 | 设置方法 | 说明与用途 |
+| :------: | :------: | :--------: |
+|Component |setComponent| 组件，它指定意图的来源与目标|
+|Action| setAction| 动作，它指定意图的动作行为|
+|Data |setData |即Uri，它指定动作要操纵的数据路径|
+|Category |addCategory |类别，它指定意图的操作类别|
+|Type| setType |数据类型，它指定消息的数据类型|
+|Extras| putExtras| 扩展信息，它指定装载的包裹信息|
+|Flags| setFlags| 标志位，它指定活动的启动标志|
+
+
+
+
+
+#### 显式Intent
+
+**显式Intent，直接指定来源活动与目标活动，属于精确匹配**
+
+在构建一个意图对象时，需要指定两个参数，第一个参数表示跳转的来源页面，即“来源Activity.this”； 第二个参数表示待跳转的页面，即“目标Activity.class”
+
+```java
+Intent intent = new Intent(this, Activity2.class);
+```
+
+或者
+
+```java
+Intent intent = new Intent(); // 创建一个新意图
+intent.setClass(this, Activity2.class); // 设置意图要跳转的目标活动
+```
+
+或者
+
+```java
+Intent intent = new Intent(); // 创建一个新意图
+// 创建包含目标活动在内的组件名称对象
+ComponentName component = new ComponentName(this, Activity2.class);
+intent.setComponent(component); // 设置意图携带的组件信息
+```
+
+
+
+
+
+
+
+#### 隐式Intent
+
+**隐式Intent，没有明确指定要跳转的目标活动，只给出一个动作字符串让系统自动匹配，属于模糊匹配**
+
+通常App不希望向外部暴露活动名称，只给出一个事先定义好的标记串，这样大家约定俗成、按图索骥 就好，隐式Intent便起到了标记过滤作用。这个动作名称标记串，可以是自己定义的动作，也可以是已有的系统动作
+
+
+
+| Intent 类的系统动作常量名 | 系统动作的常量值 | 说明 |
+| :-----------------------: | :--------------: | :--: |
+|ACTION_MAIN |android.intent.action.MAIN| App启动时的入口|
+|ACTION_VIEW| android.intent.action.VIEW |向用户显示数据|
+|ACTION_SEND |android.intent.action.SEND| 分享内容|
+|ACTION_CALL| android.intent.action.CALL| 直接拨号|
+|ACITON_DIAL| android.intent.action.DIAL |准备拨号|
+|ACTION_SENDTO |android.intent.action.SENDTO |发送短信|
+|ACTION_ANSWER |android.intent.action.ANSWER |接听电话|
+
+
+
+动作名称既可以通过setAction方法指定，也可以通过构造函数Intent(String action)直接生成意图对象。 当然，由于动作是模糊匹配，因此有时需要更详细的路径
+
+Uri数据可通过构造函数Intent(String action, Uri uri)在生成对象时一起指定，也可通过setData方法指定
+
+Category可通过addCategory 方法指定
+
+
+
+```java
+package mao.android_explicit_intent_and_implicit_intent;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Button button1 = findViewById(R.id.Button1);
+        button1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String phoneNo = "10001";
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_DIAL);
+                Uri uri = Uri.parse("tel:" + phoneNo);
+                intent.setData(uri);
+                startActivity(intent);
+
+            }
+        });
+
+    }
+}
+```
+
+
+
+隐式Intent还用到了过滤器的概念，把不符合匹配条件的过滤掉，剩下符合条件的按照优先顺序调用。 
+
+譬如创建一个App模块，AndroidManifest.xml里的intent-filter就是配置文件中的过滤器。
+
+像最常见的 首页活动MainAcitivity，它的activity节点下面便设置了action和category的过滤条件。
+
+其中 android.intent.action.MAIN表示App的入口动作，而android.intent.category.LAUNCHER表示在桌面上显示App图标
+
+
+
+```xml
+<activity
+        android:name=".MainActivity"
+        android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+</activity>
+```
+
+
+
+
+
+![image-20220922222708988](img/Android学习笔记/image-20220922222708988.png)
+
+
+
+![image-20220922222724366](img/Android学习笔记/image-20220922222724366.png)
+
+
+
+
+
+
+
+
+
+### 向下一个Activity发送数据
 
