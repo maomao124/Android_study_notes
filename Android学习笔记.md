@@ -8489,5 +8489,366 @@ String value = bundle.getString("key");
 
 ### 给应用页面注册快捷方式
 
+元数据不单单能传递简单的字符串参数，还能传送更复杂的资源数据，从Android 7.1开始新增的快捷方式便用到了这点
 
+
+
+首先打开res/values目录下的strings.xml，在resources节点内部添加下述的3组（每组两个，共6个）字 符串配置，每组都代表一个菜单项，每组又分为长名称和短名称，平时优先展示长名称，当长名称放不下时才展示短名称。
+
+
+
+```xml
+<resources>
+    <string name="app_name">android_register_shortcuts</string>
+
+    <string name="first_short">first</string>
+    <string name="first_long">页面1</string>
+    <string name="second_short">second</string>
+    <string name="second_long">页面2</string>
+    <string name="third_short">third</string>
+    <string name="third_long">页面3</string>
+
+</resources>
+```
+
+
+
+
+
+准备三个页面
+
+
+
+![image-20220923140845256](img/Android学习笔记/image-20220923140845256.png)
+
+
+
+主页面
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="主页面\n请使用快捷方式打开其它页面"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="26sp"
+            android:textColor="@color/teal_200"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+三个页面
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="页面1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="26sp"
+            android:textColor="@color/teal_200"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="页面2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="26sp"
+            android:textColor="@color/teal_200"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="页面3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="26sp"
+            android:textColor="@color/teal_200"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+
+
+接着在res目录下创建名为xml的文件夹，并在该文件夹创建shortcuts.xml
+
+
+
+![image-20220923134025145](img/Android学习笔记/image-20220923134025145.png)
+
+
+
+
+
+
+
+```xml
+<?xml version ="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Add shortcuts that launch your app to a specific screen or task. -->
+    <!-- Learn more at https://developer.android.com/guide/topics/ui/shortcuts/creating-shortcuts -->
+    <!--     <shortcut android:shortcutId="SHORTCUT_ID" -->
+    <!--         android:enabled="true" -->
+    <!--         android:shortcutShortLabel="SHORTCUT_SHORT_LABEL" -->
+    <!--         android:shortcutLongLabel="SHORTCUT_LONG_LABEL" -->
+    <!--         android:shortcutDisabledMessage="SHORTCUT_DISABLED_MESSAGE"> -->
+    <!--         <intent -->
+    <!--             android:action="android.intent.action.VIEW" -->
+    <!--             android:targetClass="REPLACE_IT_WITH_FULL_QUALIFIED_CLASS" -->
+    <!--             android:targetPackage="REPLACE_IT_WITH_TARGET_PACKAGE" /> -->
+    <!--     </shortcut> -->
+
+    <!-- Integrate with Google Assistant App Actions for launching your app with various voice commands. -->
+    <!-- Learn more at: https://developers.google.com/assistant/app/overview -->
+    <!-- <capability android:name="actions.intent.OPEN_APP_FEATURE"> -->
+    <!--     Provide query fulfillment instructions for this capability, or bind it to a shortcut. -->
+    <!--     Learn more at: https://developers.google.com/assistant/app/action-schema -->
+    <!-- </capability> -->
+
+
+    <shortcut
+            android:shortcutId="first"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher"
+            android:shortcutShortLabel="@string/first_short"
+            android:shortcutLongLabel="@string/first_long">
+        <!-- targetClass指定了点击该项菜单后要打开哪个活动页面 -->
+        <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="mao.android_register_shortcuts"
+                android:targetClass="mao.android_register_shortcuts.MainActivity2">
+
+            <categories android:name="android.shortcut.conversation" />
+
+        </intent>
+
+    </shortcut>
+
+
+    <shortcut
+            android:shortcutId="second"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher"
+            android:shortcutShortLabel="@string/second_short"
+            android:shortcutLongLabel="@string/second_long">
+        <!-- targetClass指定了点击该项菜单后要打开哪个活动页面 -->
+        <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="mao.android_register_shortcuts"
+                android:targetClass="mao.android_register_shortcuts.MainActivity3">
+
+            <categories android:name="android.shortcut.conversation" />
+
+        </intent>
+
+    </shortcut>
+
+
+    <shortcut
+            android:shortcutId="third"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher"
+            android:shortcutShortLabel="@string/third_short"
+            android:shortcutLongLabel="@string/third_long">
+        <!-- targetClass指定了点击该项菜单后要打开哪个活动页面 -->
+        <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="mao.android_register_shortcuts"
+                android:targetClass="mao.android_register_shortcuts.MainActivity4">
+
+            <categories android:name="android.shortcut.conversation" />
+
+        </intent>
+
+    </shortcut>
+
+</shortcuts>
+```
+
+
+
+
+
+由上述的XML例子中看到，每个shortcut节点都代表了一个菜单项，该节点的各属性说明如下：
+
+* shortcutId：快捷方式的编号
+* enabled：是否启用快捷方式。true表示启用，false表示禁用
+* icon：快捷菜单左侧的图标
+* shortcutShortLabel：快捷菜单的短标签
+* shortcutLongLabel：快捷菜单的长标签。优先展示长标签的文本，长标签放不下时才展示短标签的文本
+
+
+
+以上的节点属性仅仅指明了每项菜单的基本规格，点击菜单项之后的跳转动作还要由shortcut内部的 intent节点定义，该节点主要有targetPackage与targetClass两个属性需要修改，其中targetPackage属性固定为当前App的包名，而targetClass属性描述了菜单项对应的活动类完整路径
+
+
+
+然后打开AndroidManifest.xml，找到MainActivity所在的activity节点，在该节点内部补充如下的元数 据配置，其中name属性为android.app.shortcuts，而resource属性为@xml/shortcuts
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_register_shortcuts">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_register_shortcuts"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity4"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity3"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity2"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- 指定快捷方式。在桌面上长按应用图标，就会弹出@xml/shortcuts所描述的快捷菜单 -->
+            <meta-data
+                    android:name="android.app.shortcuts"
+                    android:resource="@xml/shortcuts" />
+
+
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+运行
+
+
+
+![image-20220923141042184](img/Android学习笔记/image-20220923141042184.png)
+
+
+
+
+
+![image-20220923141058551](img/Android学习笔记/image-20220923141058551.png)
+
+
+
+![image-20220923141114199](img/Android学习笔记/image-20220923141114199.png)
+
+
+
+![image-20220923141124622](img/Android学习笔记/image-20220923141124622.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 中级控件
+
+## 图形定制
 
