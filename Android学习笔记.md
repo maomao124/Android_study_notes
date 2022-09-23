@@ -8399,3 +8399,95 @@ public class MainActivity extends AppCompatActivity
 
 ### 利用资源文件配置字符串
 
+利用Bundle固然能在页面跳转的时候传送数据，但这仅限于在代码中传递参数，如果要求临时修改某个 参数的数值，就得去改Java代码。
+
+每次改动代码都得重新编译，让Android Studio编译的功夫也稍微费点时间
+
+对于可能手工变动的参数，通常把参数名称与参数值的对应关系写入配置文件，由程序在运 行时读取配置文件，这样只需修改配置文件就能改变对应数据了。res\values目录下面的strings.xml就用来配置字符串形式的参数
+
+
+
+```xml
+<string name="key">value</string>
+```
+
+
+
+调用getString方法即可根据“R.string.参数名称”获得指定参数的字符串值
+
+
+
+```java
+String value = getString(R.string.key);
+```
+
+
+
+getString方法来自于Context类，由于页面所在的活动类AppCompatActivity追根溯源来自 Context这个抽象类，因此凡是活动页面代码都能直接调用getString方法
+
+
+
+
+
+### 利用元数据传递配置信息
+
+尽管资源文件能够配置字符串参数，然而有时候为安全起见，某个参数要给某个活动专用，并不希望其他活动也能获取该参数，此时就不方便到处使用getString了
+
+Activity提供了元数据（Metadata） 的概念，元数据是一种描述其他数据的数据，它相当于描述固定活动的参数信息。
+
+打开 AndroidManifest.xml，在测试活动的activity节点内部添加meta-data标签，通过属性name指定元数据 的名称，通过属性value指定元数据的值。
+
+
+
+```xml
+<activity android:name=".MetaDataActivity">
+	<meta-data android:name="key" android:value="value" />
+</activity>
+```
+
+
+
+元数据的value属性既可直接填字符串，也可引用strings.xml已定义的字符串资源，引用格式形如 “@string/字符串的资源名称”
+
+
+
+```xml
+<activity android:name=".MetaDataActivity">
+	<meta-data
+		android:name="key"
+		android:value="@string/key" />
+</activity>
+```
+
+
+
+
+
+配置好了activity节点的meta-data标签，再回到Java代码获取元数据信息，获取步骤分为下列3步：
+
+* 调用getPackageManager方法获得当前应用的包管理器
+* 调用包管理器的getActivityInfo方法获得当前活动的信息对象
+* 活动信息对象的metaData是Bundle包裹类型，调用包裹对象的getString即可获得指定名称的参数值
+
+
+
+```java
+// 获取应用包管理器
+PackageManager pm = getPackageManager(); 
+//从应用包管理器中获取当前的活动信息
+ActivityInfo act = pm.getActivityInfo(getComponentName(),PackageManager.GET_META_DATA);
+//获取活动附加的元数据信息
+Bundle bundle = act.metaData; 
+String value = bundle.getString("key"); 
+```
+
+
+
+
+
+
+
+### 给应用页面注册快捷方式
+
+
+
