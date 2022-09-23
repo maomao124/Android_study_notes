@@ -9262,3 +9262,128 @@ gradient是shape的下级节点，它描述了形状图形的颜色渐变。若�
 
 
 
+
+
+### 九宫格图片
+
+将某张图片设置成视图背景时，如果图片尺寸太小，则系统会自动拉伸图片使之填满背景。可是一旦图片拉得过大，其画面容易变得模糊
+
+
+
+![image-20220923194527171](img/Android学习笔记/image-20220923194527171.png)
+
+
+
+为了解决这个问题，Android专门设计了点九图片。点九图片的扩展名是png，文件名后面常带有“.9”字 样。因为该图片划分了3×3的九宫格区域，所以得名点九图片，也叫九宫格图片。如果背景是一个形状 图形，其stroke节点的width属性已经设置了固定数值（如1dp），那么无论该图形被拉到多大，描边宽 度始终是1dp。点九图片的实现原理与之类似，即拉伸图形时，只拉伸内部区域，不拉伸边缘线条
+
+
+
+用Android Studio制作一张点九图片：
+
+![image-20220923194757175](img/Android学习笔记/image-20220923194757175.png)
+
+
+
+![image-20220923194858686](img/Android学习笔记/image-20220923194858686.png)
+
+
+
+![image-20220923195529573](img/Android学习笔记/image-20220923195529573.png)
+
+
+
+
+
+
+
+
+
+
+
+### 状态列表图形
+
+常见的图形文件一般为静态图形，但有时会用到动态图形，比如按钮控件的背景在正常情况下是凸起 的，在按下时是凹陷的，从按下到弹起的过程，用户便晓得点击了该按钮。根据不同的触摸情况变更图 形状态，这种情况用到了Drawable的一个子类StateListDrawable（状态列表图形），它在XML文件中 规定了不同状态时候所呈现的图形列表
+
+
+
+接下来演示一下状态列表图形的界面效果，右击drawable目录，并依次选择右键菜单的 New→Drawable resource file，在弹窗中输入文件名称再单击OK按钮，即可自动生成一个XML描述文件。往该文件填入下面的状态列表图形定义
+
+
+
+![image-20220923200807341](img/Android学习笔记/image-20220923200807341.png)
+
+
+
+![image-20220923200901567](img/Android学习笔记/image-20220923200901567.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="true" android:drawable="@drawable/img" />
+
+    <item android:drawable="@drawable/shape4" />
+
+</selector>
+```
+
+
+
+上述XML文件的关键点是state_pressed属性，该属性表示按下状态，值为true表示按下时显示 button_pressed图像，其余情况显示button_normal图像
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity8"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:text="原生"
+            android:layout_margin="10dp" />
+
+    <ImageButton
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:background="@drawable/button_selector"
+            android:contentDescription="九宫格" />
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220923201643476](img/Android学习笔记/image-20220923201643476.png)
+
+
+
+![image-20220923201651844](img/Android学习笔记/image-20220923201651844.png)
+
+
+
+
+
+
+
+
+
+
+
+## 选择按钮
+
