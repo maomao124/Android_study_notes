@@ -9555,5 +9555,219 @@ Switch是开关按钮，它像一个高级版本的CheckBox，在选中与取消
 
 
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="WiFi开关"
+                android:textSize="20sp" />
+
+        <Switch
+                android:id="@+id/switch1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="蓝牙开关"
+                android:textSize="20sp" />
+
+        <Switch
+                android:id="@+id/switch2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="移动数据开关"
+                android:textSize="20sp" />
+
+        <Switch
+                android:id="@+id/switch3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_switch;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        Switch switch1 = findViewById(R.id.switch1);
+        Switch switch2 = findViewById(R.id.switch2);
+        Switch switch3 = findViewById(R.id.switch3);
+
+        switch1.setChecked(true);
+
+        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    Toast.makeText(MainActivity2.this, "WiFi已打开", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this, "WiFi已关闭", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    Toast.makeText(MainActivity2.this, "蓝牙已打开", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this, "蓝牙已关闭", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        switch3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    Toast.makeText(MainActivity2.this, "移动数据已打开", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this, "移动数据已关闭", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+}
+```
+
+
+
+![image-20220923212000369](img/Android学习笔记/image-20220923212000369.png)
+
+
+
+
+
+![image-20220923212026472](img/Android学习笔记/image-20220923212026472.png)
+
+
+
+
+
+现在要让Android实现类似iOS的开关按钮，主要思路是借助状态列表图形，首先创建一个图形专用的 XML文件，给状态列表指定选中与未选中时候的开关图标
+
+
+
+```xml
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_checked="true" android:drawable="@drawable/switch_on"/>
+	<item android:drawable="@drawable/switch_off"/>
+</selector>
+```
+
+
+
+然后把CheckBox标签的background属性设置为@drawable/switch_selector，同时将button属性设置为@null
+
+
+
+```xml
+<CheckBox
+	android:id="@+id/status"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:background="@drawable/switch_selector"
+	android:button="@null" />
+```
+
+
+
+
+
+
+
+
+
+### 单选按钮RadioButton
+
 
 
