@@ -9387,3 +9387,173 @@ gradient是shape的下级节点，它描述了形状图形的颜色渐变。若�
 
 ## 选择按钮
 
+### 复选框CheckBox
+
+在Android体系中，CompoundButton类是抽象的 复合按钮，因为是抽象类，所以它不能直接使用。实际开发中用的是CompoundButton的几个派生类， 主要有复选框CheckBox、单选按钮RadioButton以及开关按钮Switch，这些派生类均可使用 CompoundButton的属性和方法。加之CompoundButton本身继承了Button类，故以上几种按钮同时 具备Button的属性和方法
+
+
+
+![image-20220923203913968](img/Android学习笔记/image-20220923203913968.png)
+
+
+
+
+
+![image-20220923204011967](img/Android学习笔记/image-20220923204011967.png)
+
+
+
+
+
+![image-20220923204044538](img/Android学习笔记/image-20220923204044538.png)
+
+
+
+
+
+CompoundButton在XML文件中主要使用下面两个属性
+
+* checked：指定按钮的勾选状态，true表示勾选，false则表示未勾选。默认为未勾选
+* button：指定左侧勾选图标的图形资源，如果不指定就使用系统的默认图标
+
+
+
+CompoundButton在Java代码中主要使用下列4种方法：
+
+* setChecked：设置按钮的勾选状态
+* setButtonDrawable：设置左侧勾选图标的图形资源
+* setOnCheckedChangeListener：设置勾选状态变化的监听器
+* sChecked：判断按钮是否勾选
+
+
+
+复选框CheckBox是CompoundButton一个最简单的实现控件，点击复选框将它勾选，再次点击取消勾 选。复选框对象调用setOnCheckedChangeListener方法设置勾选监听器，这样在勾选和取消勾选时就 会触发监听器的勾选事件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <CheckBox
+            android:id="@+id/checkbox1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="复选框1"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:checked="false" />
+
+    <CheckBox
+            android:id="@+id/checkbox2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="复选框2"
+            android:padding="10dp"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_checkbox;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Toast;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        CheckBox checkBox1 = findViewById(R.id.checkbox1);
+
+        checkBox1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    buttonView.setText("选中状态");
+                }
+                else
+                {
+                    buttonView.setText("取消选中");
+                }
+            }
+        });
+
+        CheckBox checkBox2 = findViewById(R.id.checkbox2);
+        checkBox2.setChecked(true);
+        checkBox2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    Toast.makeText(MainActivity2.this, "选中状态", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this, "取消选中", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20220923205359515](img/Android学习笔记/image-20220923205359515.png)
+
+
+
+![image-20220923205412445](img/Android学习笔记/image-20220923205412445.png)
+
+
+
+
+
+
+
+
+
+### 开关按钮Switch
+
+Switch是开关按钮，它像一个高级版本的CheckBox，在选中与取消选中时可展现的界面元素比复选框丰富
+
+* textOn：设置右侧开启时的文本
+* textOff：设置左侧关闭时的文本
+* track：设置开关轨道的背景
+* thumb：设置开关标识的图标
+
+
+
+
+
+
+
