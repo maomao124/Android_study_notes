@@ -8919,5 +8919,346 @@ size是shape的下级节点，它描述了形状图形的宽高尺寸。若无si
 
 #### stroke
 
+stroke是shape的下级节点，它描述了形状图形的描边规格。若无stroke节点，则表示不存在描边
+
+* color：颜色类型，描边的颜色
+* dashGap：像素类型，每段虚线之间的间隔
+* dashWidth：像素类型，每段虚线的宽度。若dashGap和dashWidth有一个值为0，则描边为实线
+* width：像素类型，描边的厚度
+
+
+
+
+
+#### corners
+
+corners是shape的下级节点，它描述了形状图形的圆角大小。若无corners节点，则表示没有圆角
+
+* bottomLeftRadius：像素类型，左下圆角的半径
+* bottomRightRadius：像素类型，右下圆角的半径
+* topLeftRadius：像素类型，左上圆角的半径
+* topRightRadius：像素类型，右上圆角的半径
+* radius：像素类型，4个圆角的半径（若有上面4个圆角半径的定义，则不需要radius定义）
+
+
+
+
+
+#### solid
+
+solid是shape的下级节点，它描述了形状图形的填充色彩。若无solid节点，则表示无填充颜色
+
+* color：颜色类型，内部填充的颜色
+
+
+
+
+
+#### padding
+
+padding是shape的下级节点，它描述了形状图形与周围边界的间隔。若无padding节点，则表示四周不 设间隔
+
+* top：像素类型，与上方的间隔
+* bottom：像素类型，与下方的间隔
+* left：像素类型，与左边的间隔
+* right：像素类型，与右边的间隔
+
+
+
+
+
+#### gradient
+
+gradient是shape的下级节点，它描述了形状图形的颜色渐变。若无gradient节点，则表示没有渐变效果
+
+* angle：整型，渐变的起始角度。为0时表示时钟的9点位置，值增大表示往逆时针方向旋转。例 如，值为90表示6点位置，值为180表示3点位置，值为270表示0点/12点位置
+* type：字符串类型，渐变类型
+  * linear：线性渐变，默认值
+  * radial：放射渐变，起始颜色就是圆心颜色
+  * sweep：滚动渐变，即一个线段以某个端点为圆心做360度旋转
+* centerX：浮点型，圆心的X坐标。当android:type="linear"时不可用
+* centerY：浮点型，圆心的Y坐标。当android:type="linear"时不可用
+* gradientRadius：整型，渐变的半径。当android:type="radial"时需要设置该属性
+* centerColor：颜色类型，渐变的中间颜色
+* startColor：颜色类型，渐变的起始颜色
+* endColor：颜色类型，渐变的终止颜色
+* useLevel：布尔类型，设置为true为无渐变色、false为有渐变色
+
+
+
+
+
+
+
+#### 步骤
+
+
+
+首先右击drawable目录，并依次选择右键菜单的 New→Drawable resource file，在弹窗中输入文件名称再单击OK按钮
+
+
+
+![image-20220923185512946](img/Android学习笔记/image-20220923185512946.png)
+
+
+
+
+
+![image-20220923190021506](img/Android学习笔记/image-20220923190021506.png)
+
+
+
+![image-20220923190054503](img/Android学习笔记/image-20220923190054503.png)
+
+
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#ff0077" />
+    <corners android:radius="30dp" />
+
+    <stroke
+            android:color="@color/design_default_color_primary"
+            android:width="5dp" />
+
+</shape>
+```
+
+
+
+![image-20220923193902489](img/Android学习笔记/image-20220923193902489.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="oval">
+
+    <solid android:color="@color/purple_200" />
+    <stroke
+            android:color="#5500ff"
+            android:width="5dp"
+            android:dashGap="5dp"
+            android:dashWidth="5dp" />
+
+</shape>
+```
+
+
+
+
+
+![image-20220923193916856](img/Android学习笔记/image-20220923193916856.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="oval">
+
+
+    <solid android:color="@color/purple_200" />
+
+    <gradient
+
+            android:startColor="#ff0000"
+            android:centerColor="@color/purple_200"
+            android:endColor="#00ccff"
+            android:centerX="0.5"
+            android:centerY="0.5"
+            android:gradientRadius="400dp"
+            android:type="radial"/>
+
+</shape>
+```
+
+
+
+![image-20220923193931433](img/Android学习笔记/image-20220923193931433.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <gradient
+            android:startColor="#FF9800"
+            android:centerColor="#11A5E8"
+            android:endColor="#5C00FF"
+            android:angle="45" />
+
+    <corners android:radius="10dp" />
+
+</shape>
+```
+
+
+
+![image-20220923193947464](img/Android学习笔记/image-20220923193947464.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <gradient
+            android:startColor="#00ccff"
+            android:endColor="#ff00aa"
+            android:centerX="0.5"
+            android:centerY="0.5"
+            android:type="sweep" />
+
+    <corners android:radius="50dp" />
+
+</shape>
+```
+
+
+
+
+
+![image-20220923194003535](img/Android学习笔记/image-20220923194003535.png)
+
+
+
+
+
+布局
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape1" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape2" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape3" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape4" />
+
+</LinearLayout>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape5" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+![image-20220923194207993](img/Android学习笔记/image-20220923194207993.png)
+
+
+
 
 
