@@ -10961,3 +10961,103 @@ DatePickerDialog相当于在AlertDialog上装载了DatePicker，编码时只需�
 
 
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    
+    <TextView
+            android:id="@+id/result1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_datepickerdialog;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.widget.DatePicker;
+import android.widget.TextView;
+
+import java.util.Calendar;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        TextView textView = findViewById(R.id.result1);
+
+        Calendar calendar = Calendar.getInstance();
+
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth)
+            {
+                textView.setText("当前选择的是" + year + "年" + (month + 1) + "月" + dayOfMonth + "日");
+            }
+        },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+
+        datePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                finish();
+            }
+        });
+
+        datePickerDialog.show();
+    }
+}
+```
+
+
+
+
+
+![image-20220924221359765](img/Android学习笔记/image-20220924221359765.png)
+
+
+
+
+
+
+
+
+
+
+
+### 时间框TimePicker
+
+既然有了日期选择器，还得有对应的时间选择器。
+
