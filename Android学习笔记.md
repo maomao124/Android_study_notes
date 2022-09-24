@@ -10000,5 +10000,261 @@ public class MainActivity2 extends AppCompatActivity
 
 ### 编辑框EditText
 
+编辑框EditText用于接收软键盘输入的文字，例如用户名、密码、评价内容等，它由文本视图派生而来，除了TextView已有的各种属性和方法，EditText还支持下列XML属性
 
+* inputType：指定输入的文本类型。若同时使用多种文本类型，则可 使用竖线“|”把多种文本类型拼接起来
+  * text： 文本
+  * textPassword： 文本密码。显示时用圆点“·”代替
+  * number： 整型数
+  * numberSigned： 带符号的数字。允许在开头带负号“－”
+  * numberDecimal： 带小数点的数字
+  * numberPassword： 数字密码。显示时用圆点“·”代替
+  * datetime： 时间日期格式。除了数字外，还允许输入横线、斜杆、空格、冒号
+  * date： 日期格式。除了数字外，还允许输入横线“-”和斜杆“/”
+  * time： 时间格式。除了数字外，还允许输入冒号“:”
+* maxLength：指定文本允许输入的最大长度
+* hint：指定提示文本的内容
+* textColorHint：指定提示文本的颜色
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入用户名"
+            android:layout_margin="5dp"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="text"
+            android:autofillHints="username" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入密码"
+            android:layout_margin="5dp"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220924194326239](img/Android学习笔记/image-20220924194326239.png)
+
+
+
+![image-20220924194350428](img/Android学习笔记/image-20220924194350428.png)
+
+
+
+
+
+根据以上图示可知编辑框的各属性正常工作，不过编辑框有根下划线，未输入时显示灰色，正在输入时显示其它颜色，这种效果是怎么实现的呢？其实下划线没用到新属性，而用了已有的背景属性background； 至于未输入与正在输入两种情况的颜色差异，乃是因为使用了状态列表图形，编辑框获得焦点时（正在输入）显示其它颜色的下划线，其余时候显示灰色下划线。当然EditText默认的下划线背景不甚好看，下面将利用状态列表图形将编辑框背景改为更加美观的圆角矩形
+
+
+
+首先编写圆角矩形的形状图形文件
+
+
+
+![image-20220924194649124](img/Android学习笔记/image-20220924194649124.png)
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#ffddff" />
+
+    <stroke
+            android:color="#00ddff"
+            android:width="3dp" />
+
+    <corners android:radius="10dp" />
+
+    <padding
+            android:bottom="2dp"
+            android:left="2dp"
+            android:right="2dp"
+            android:top="2dp" />
+
+</shape>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#ccccff" />
+
+    <stroke
+            android:color="#00ddff"
+            android:width="3dp" />
+
+    <corners android:radius="10dp" />
+
+    <padding
+            android:bottom="2dp"
+            android:left="2dp"
+            android:right="2dp"
+            android:top="2dp" />
+
+</shape>
+```
+
+
+
+
+
+接着编写编辑框背景的状态列表图形文件，主要在selector节点下添加两个item，一个item设置了获得 焦点时刻（android:state_focused="true"）的图形为@drawable/shape_edit_focus；另一个item设置 了图形@drawable/shape_edit_normal但未指定任何状态，表示其他情况都展示该图形
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true" android:drawable="@drawable/shape1" />
+
+    <item android:drawable="@drawable/shape2" />
+
+</selector>
+```
+
+
+
+
+
+然后编写页面的XML布局文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入用户名"
+            android:layout_margin="5dp"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="text"
+            android:autofillHints="username" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入密码"
+            android:layout_margin="5dp"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入用户名"
+            android:layout_margin="5dp"
+            android:background="@null"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="text"
+            android:autofillHints="username" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入密码"
+            android:layout_margin="5dp"
+            android:background="@null"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入用户名"
+            android:layout_margin="5dp"
+            android:background="@drawable/edit_text"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="text"
+            android:autofillHints="username" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入密码"
+            android:layout_margin="5dp"
+            android:background="@drawable/edit_text"
+            android:maxLength="10"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20220924200158410](img/Android学习笔记/image-20220924200158410.png)
+
+
+
+![image-20220924200216729](img/Android学习笔记/image-20220924200216729.png)
+
+
+
+
+
+指定提示文本的颜色
+
+
+
+![image-20220924200629338](img/Android学习笔记/image-20220924200629338.png)
+
+
+
+
+
+
+
+
+
+### 焦点变更监听器
 
