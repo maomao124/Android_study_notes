@@ -9769,5 +9769,236 @@ public class MainActivity2 extends AppCompatActivity
 
 ### 单选按钮RadioButton
 
+所谓单选按钮，指的是在一组按钮中选择其中一项，并且不能多选，这要求有个容器确定这组按钮的范围，这个容器便是单选组RadioGroup。
+
+单选组实质上是个布局，同一组RadioButton都要放在同一个 RadioGroup节点下。
+
+RadioGroup提供了orientation属性指定下级控件的排列方向，该属性为 horizontal时，单选按钮在水平方向排列；
+
+该属性为vertical时，单选按钮在垂直方向排列。 RadioGroup下面除了RadioButton，还可以挂载其他子控件（如TextView、ImageView等）。
+
+如此看来，单选组相当于特殊的线性布局，它们主要有以下两个区别：
+
+* 单选组多了管理单选按钮的功能，而线性布局不具备该功能
+* 如果不指定orientation属性，那么单选组默认垂直排列，而线性布局默认水平排列
+
+
+
+
+
+RadioGroup在Java代码中的3个常用方法：
+
+* check：选中指定资源编号的单选按钮
+* getCheckedRadioButtonId：获取已选中单选按钮的资源编号
+* setOnCheckedChangeListener：设置单选按钮勾选变化的监听器
+
+
+
+与CheckBox不同的是，RadioButton默认未选中，点击后显示选中，但是再次点击不会取消选中。只有 点击同组的其他单选按钮时，原来选中的单选按钮才会取消选中。另需注意，单选按钮的选中事件不是 由RadioButton处理，而是由RadioGroup处理
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="question1: 1+1=?" />
+
+    <RadioGroup
+            android:id="@+id/question1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <RadioButton
+                android:id="@+id/a"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="A:1"
+                android:textSize="20sp"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/b"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="B:2"
+                android:textSize="20sp"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/c"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="C:3"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/d"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="D:4"
+                android:padding="5dp" />
+
+    </RadioGroup>
+
+
+
+    <TextView
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="question2: 3+4=?" />
+
+    <RadioGroup
+            android:id="@+id/question2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <RadioButton
+                android:id="@+id/a2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="A:2"
+                android:textSize="20sp"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/b2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="B:4"
+                android:textSize="20sp"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/c2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="C:7"
+                android:padding="5dp" />
+
+        <RadioButton
+                android:id="@+id/d2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="D:9"
+                android:padding="5dp" />
+
+    </RadioGroup>
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_radiobutton;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.RadioGroup;
+import android.widget.Toast;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        RadioGroup radioGroup = findViewById(R.id.question1);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                if (checkedId==R.id.b)
+                {
+                    Toast.makeText(MainActivity2.this,"YES", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this,"ERROR", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        RadioGroup radioGroup2 = findViewById(R.id.question2);
+        radioGroup2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                if (checkedId==R.id.c2)
+                {
+                    Toast.makeText(MainActivity2.this,"YES", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(MainActivity2.this,"ERROR", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20220924192345359](img/Android学习笔记/image-20220924192345359.png)
+
+
+
+
+
+
+
+
+
+
+
+## 文本输入
+
+### 编辑框EditText
+
 
 
