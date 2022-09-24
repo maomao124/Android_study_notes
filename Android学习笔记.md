@@ -10576,3 +10576,388 @@ public class MainActivity6 extends AppCompatActivity
 
 ## 对话框
 
+### 提醒对话框AlertDialog
+
+AlertDialog名为提醒对话框，它是Android中最常用的对话框，可以完成常见的交互操作，例如提示、 确认、选择等功能。由于AlertDialog没有公开的构造方法，因此必须借助建造器AlertDialog.Builder才 能完成参数设置，AlertDialog.Builder的常用方法说明如下：
+
+* setIcon：设置对话框的标题图标。 
+* setTitle：设置对话框的标题文本。 
+* setMessage：设置对话框的内容文本。 
+* setPositiveButton：设置肯定按钮的信息，包括按钮文本和点击监听器。 
+* setNegativeButton：设置否定按钮的信息，包括按钮文本和点击监听器。 
+* setNeutralButton：设置中性按钮的信息，包括按钮文本和点击监听器，该方法比较少用
+
+
+
+通过AlertDialog.Builder设置完对话框参数，还需调用建造器的create方法才能生成对话框实例。最后调用对话框实例的show方法，在页面上弹出提醒对话框
+
+
+
+
+
+```java
+package mao.android_alertdialog;
+
+
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("标题")
+                .setIcon(R.drawable.ic_launcher_foreground)
+                .setMessage("内容")
+                .setPositiveButton("确定按钮", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        Toast.makeText(MainActivity2.this, "点击确定", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("取消按钮", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        Toast.makeText(MainActivity2.this, "点击取消", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .setNeutralButton("中性按钮", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        Toast.makeText(MainActivity2.this, "暂时不确定", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .create().show();
+    }
+}
+```
+
+
+
+
+
+![image-20220924211906452](img/Android学习笔记/image-20220924211906452.png)
+
+
+
+
+
+### 日期框DatePicker
+
+虽然EditText提供了inputType="date"的日期输入，但是很少有人会手工输入完整日期，况且EditText 还不支持“ 年 ** 月 **日”这样的中文日期，所以系统提供了专门的日期选择器DatePicker，供用户选择具体的年月日。
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <DatePicker
+            android:id="@+id/DatePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+    <Button
+            android:id="@+id/button_DatePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <DatePicker
+            android:id="@+id/DatePicker2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:datePickerMode="spinner" />
+
+    <Button
+            android:id="@+id/button_DatePicker2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <DatePicker
+            android:id="@+id/DatePicker3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false" />
+
+    <Button
+            android:id="@+id/button_DatePicker3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_datepicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        DatePicker datePicker = findViewById(R.id.DatePicker);
+        TextView textView = findViewById(R.id.result1);
+        Button button = findViewById(R.id.button_DatePicker);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int year = datePicker.getYear();
+                int month = datePicker.getMonth() + 1;
+                int dayOfMonth = datePicker.getDayOfMonth();
+                textView.setText("当前选择的是" + year + "年" + month + "月" + dayOfMonth + "日");
+            }
+        });
+
+    }
+}
+```
+
+
+
+
+
+```java
+package mao.android_datepicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
+
+public class MainActivity3 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        DatePicker datePicker = findViewById(R.id.DatePicker2);
+        TextView textView = findViewById(R.id.result2);
+        Button button = findViewById(R.id.button_DatePicker2);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int year = datePicker.getYear();
+                int month = datePicker.getMonth() + 1;
+                int dayOfMonth = datePicker.getDayOfMonth();
+                textView.setText("当前选择的是" + year + "年" + month + "月" + dayOfMonth + "日");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+```java
+package mao.android_datepicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
+
+public class MainActivity4 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main4);
+
+        DatePicker datePicker = findViewById(R.id.DatePicker3);
+        TextView textView = findViewById(R.id.result3);
+        Button button = findViewById(R.id.button_DatePicker3);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int year = datePicker.getYear();
+                int month = datePicker.getMonth() + 1;
+                int dayOfMonth = datePicker.getDayOfMonth();
+                textView.setText("当前选择的是" + year + "年" + month + "月" + dayOfMonth + "日");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20220924215218299](img/Android学习笔记/image-20220924215218299.png)
+
+
+
+
+
+![image-20220924215232393](img/Android学习笔记/image-20220924215232393.png)
+
+
+
+
+
+![image-20220924215303000](img/Android学习笔记/image-20220924215303000.png)
+
+
+
+
+
+![image-20220924215328972](img/Android学习笔记/image-20220924215328972.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 日期对话框DatePickerDialog
+
+DatePicker并非弹窗模式，而是在当前页面占据一块区域，并且不会自动关闭。 按习惯来说，日期控件应该弹出对话框，选择完日期就要自动关闭对话框。因此，很少直接在界面上显示DatePicker，而是利用已经封装好的日期选择对话DatePickerDialog
+
+
+
+DatePickerDialog相当于在AlertDialog上装载了DatePicker，编码时只需调用构造方法设置当前的年、 月、日，然后调用show方法即可弹出日期对话框。日期选择事件则由监听器OnDateSetListener负责响 应，在该监听器的onDateSet方法中，开发者获取用户选择的具体日期，再做后续处理。特别注意 onDateSet的月份参数，它的起始值不是1而是0。也就是说，一月份对应的参数值为0，十二月份对应的参数值为11
+
+
+
+
+
