@@ -11061,3 +11061,381 @@ public class MainActivity2 extends AppCompatActivity
 
 既然有了日期选择器，还得有对应的时间选择器。
 
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TimePicker
+            android:id="@+id/TimePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+    <Button
+            android:id="@+id/button_TimePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TimePicker
+            android:id="@+id/TimePicker2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:timePickerMode="spinner" />
+
+    <Button
+            android:id="@+id/button_TimePicker2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TimePicker
+            android:id="@+id/TimePicker3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+    <Button
+            android:id="@+id/button_TimePicker3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TimePicker
+            android:id="@+id/TimePicker4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:timePickerMode="spinner" />
+
+    <Button
+            android:id="@+id/button_TimePicker4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:layout_margin="10dp" />
+
+    <TextView
+            android:id="@+id/result4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_timepicker;
+
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        TimePicker timePicker = findViewById(R.id.TimePicker);
+        TextView textView = findViewById(R.id.result1);
+        Button button = findViewById(R.id.button_TimePicker);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int hour = timePicker.getHour();
+                int minute = timePicker.getMinute();
+                textView.setText("当前选择的是" + hour + "时" + minute + "分");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+```java
+package mao.android_timepicker;
+
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity3 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        TimePicker timePicker = findViewById(R.id.TimePicker2);
+        TextView textView = findViewById(R.id.result2);
+        Button button = findViewById(R.id.button_TimePicker2);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int hour = timePicker.getHour();
+                int minute = timePicker.getMinute();
+                textView.setText("当前选择的是" + hour + "时" + minute + "分");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+```java
+package mao.android_timepicker;
+
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity4 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main4);
+
+        TimePicker timePicker = findViewById(R.id.TimePicker3);
+        TextView textView = findViewById(R.id.result3);
+        Button button = findViewById(R.id.button_TimePicker3);
+
+        timePicker.setIs24HourView(true);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int hour = timePicker.getHour();
+                int minute = timePicker.getMinute();
+                textView.setText("当前选择的是" + hour + "时" + minute + "分");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+```java
+package mao.android_timepicker;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+public class MainActivity5 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main5);
+
+        TimePicker timePicker = findViewById(R.id.TimePicker4);
+        TextView textView = findViewById(R.id.result4);
+        Button button = findViewById(R.id.button_TimePicker4);
+
+        timePicker.setIs24HourView(true);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                int hour = timePicker.getHour();
+                int minute = timePicker.getMinute();
+                textView.setText("当前选择的是" + hour + "时" + minute + "分");
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20220924223728052](img/Android学习笔记/image-20220924223728052.png)
+
+
+
+![image-20220924223740297](img/Android学习笔记/image-20220924223740297.png)
+
+
+
+
+
+![image-20220924223752219](img/Android学习笔记/image-20220924223752219.png)
+
+
+
+
+
+![image-20220924223805222](img/Android学习笔记/image-20220924223805222.png)
+
+
+
+
+
+![image-20220924223820825](img/Android学习笔记/image-20220924223820825.png)
+
+
+
+
+
+![image-20220924223835301](img/Android学习笔记/image-20220924223835301.png)
+
+
+
+
+
+
+
+
+
+### 时间对话框TimePickerDialog
+
+
+
