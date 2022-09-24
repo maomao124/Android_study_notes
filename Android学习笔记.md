@@ -10258,3 +10258,321 @@ public class MainActivity2 extends AppCompatActivity
 
 ### 焦点变更监听器
 
+虽然编辑框EditText提供了maxLength属性，用来设置可输入文本的最大长度，但是它没提供对应的 minLength属性，也就无法设置可输入文本的最小长度。譬如手机号码为固定的11位数字，用户必须输 满11位才是合法的，然而编辑框不会自动检查手机号码是否达到11位，即使用户少输一位只输入十位数 字，编辑框依然认为这是合法的手机号
+
+
+
+既然编辑框不会自动校验手机号是否达到11位，势必要求代码另行检查。一种想法是在用户点击登录按 钮时再判断，不过通常此时已经输完手机号与密码，为啥不能在输入密码之前就判断手机号码的位数 呢？早点检查可以帮助用户早点发现错误，特别是表单元素较多的时候，更能改善用户的使用体验。就 上面的登录例子而言，手机号编辑框下方为密码框，那么能否给密码框注册点击事件，以便在用户准备输入密码时就校验手机号的位数呢？
+
+然而实际运行App却发现，先输入手机号码再输入密码，一开始并不会触发密码框的点击事件，再次点 击密码框才会触发点击事件。缘由是编辑框比较特殊，要点击两次后才会触发点击事件，因为第一次点击只触发焦点变更事件，第二次点击才触发点击事件。编辑框的所谓焦点，直观上就看那个闪动的光 标，哪个编辑框有光标，焦点就落在哪里。光标在编辑框之间切换，便产生了焦点变更事件，所以对于编辑框来说，应当注册焦点变更监听器，而非注册点击监听器。
+
+
+
+焦点变更监听器来自于接口View.OnFocusChangeListener，若想注册该监听器，就要调用编辑框对象 的setOnFocusChangeListener方法，即可在光标切换之时（获得光标和失去光标）触发焦点变更事件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:id="@+id/phone_n1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入11位的手机号码"
+            android:layout_margin="5dp"
+            android:maxLength="11"
+            android:textSize="20sp"
+            android:inputType="number"
+             />
+
+    <EditText
+            android:id="@+id/password1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入6位数字密码"
+            android:layout_margin="5dp"
+            android:maxLength="6"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_edittext;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class MainActivity5 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main5);
+
+        EditText editText_phone = findViewById(R.id.phone_n1);
+        EditText editText_password = findViewById(R.id.password1);
+
+        editText_phone.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus)
+            {
+                if (v.getId() == R.id.phone_n1 && !hasFocus)
+                {
+                    String phone = editText_phone.getText().toString();
+                    if (phone.length() < 11)
+                    {
+                        //editText_phone.requestFocus();
+                        Toast.makeText(MainActivity5.this, "手机号码长度不足11位", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+
+        editText_password.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus)
+            {
+                if (v.getId() == R.id.password1 && !hasFocus)
+                {
+                    String password = editText_password.getText().toString();
+                    if (password.length() < 6)
+                    {
+                        //editText_password.requestFocus();
+                        Toast.makeText(MainActivity5.this, "密码长度不足6位", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+
+
+### 文本变化监听器
+
+输入法的软键盘往往会遮住页面下半部分，使得“登录”“确认”“下一步”等按钮看不到了，用户若想点击这 些按钮还得再点一次返回键才能关闭软键盘。为了方便用户操作，最好在满足特定条件时自动关闭软键盘，比如手机号码输入满11位后自动关闭软键盘，又如密码输入满6位后自动关闭软键盘，等等。达到指定位数便自动关闭键盘的功能，可以再分解为两个独立的功能点，一个是如何关闭软键盘，另一个是 如何判断已输入的文字达到指定位数
+
+
+
+
+
+**如何关闭软键盘**
+
+关闭软键盘要由系统服务INPUT_METHOD_SERVICE服务处理
+
+
+
+```java
+/**
+     * 关闭(隐藏)输入法
+     *
+     * @param activity 活动
+     * @param view     视图
+     */
+    public void closeInput(Activity activity, View view)
+    {
+        //从系统服务中获取输入法管理器
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        //关闭屏幕上的输入法软键盘
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+```
+
+
+
+
+
+**如何判断已输入的文字达到指定位数**
+
+该功能点要求实时监控当前已输入的文本长度，这个监控操作用到文本监听器接口TextWatcher，该接 口提供了3个监控方法，具体说明如下：
+
+* beforeTextChanged：在文本改变之前触发
+* onTextChanged：在文本改变过程中触发
+* afterTextChanged：在文本改变之后触发
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:id="@+id/phone_n2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入11位的手机号码"
+            android:layout_margin="5dp"
+            android:maxLength="11"
+            android:textSize="20sp"
+            android:inputType="number"
+            />
+
+    <EditText
+            android:id="@+id/password2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入6位数字密码"
+            android:layout_margin="5dp"
+            android:maxLength="6"
+            android:textSize="20sp"
+            android:inputType="numberPassword" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_edittext;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+
+import com.google.android.material.internal.TextWatcherAdapter;
+
+public class MainActivity6 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main6);
+
+        EditText editText_phone = findViewById(R.id.phone_n2);
+        EditText editText_password = findViewById(R.id.password2);
+
+        //可以使用对应的接口适配器模式，可以提取并重用代码
+        editText_phone.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                String phone = editText_phone.getText().toString();
+                if (phone.length() == 11)
+                {
+                    closeInput(MainActivity6.this, editText_phone);
+                }
+            }
+        });
+
+        editText_password.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                String password = editText_password.getText().toString();
+                if (password.length() == 6)
+                {
+                    closeInput(MainActivity6.this, editText_password);
+                }
+            }
+        });
+
+
+    }
+
+    /**
+     * 关闭(隐藏)输入法
+     *
+     * @param activity 活动
+     * @param view     视图
+     */
+    public void closeInput(Activity activity, View view)
+    {
+        //从系统服务中获取输入法管理器
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        //关闭屏幕上的输入法软键盘
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+## 对话框
+
