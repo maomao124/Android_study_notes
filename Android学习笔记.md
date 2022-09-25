@@ -11585,7 +11585,7 @@ public class MainActivity2 extends AppCompatActivity
 
 ### 逻辑细节
 
-**关于自动清空错误的密码**
+#### **关于自动清空错误的密码**
 
 这里有个细微的用户体验问题：用户会去找回密码，肯定是发现输入的密码不对；那么修改密码后回到 登录页面，如果密码框里还是刚才的错误密码，用户只能先清空错误密码，然后才能输入新密码。一个 App要想让用户觉得好用，就得急用户之所急，想用户之所想，像刚才那个错误密码的情况，应当由 App在返回登录页面时自动清空原来的错误密码
 
@@ -11595,7 +11595,7 @@ public class MainActivity2 extends AppCompatActivity
 
 
 
-**关于自动隐藏输入法面板**
+#### **关于自动隐藏输入法面板**
 
 在输入手机号码或者密码的时候，屏幕下方都会弹出输入法面板，供用户按键输入数字和字母。但是输 入法面板往往占据屏幕下方大块空间，很是碍手碍脚，用户输入完11位的手机号码时，还得再按一下返 回键来关闭输入法面板，接着才能继续输入密码。理想的做法是：一旦用户输完11位手机号码，App就 要自动隐藏输入法。同理，一旦用户输完6位密码或者6位验证码，App也要自动隐藏输入法。要想让 App具备这种智能的判断功能，就得给文本编辑框添加监听器，只要当前编辑框输入文本长度达到11位 或者和6位，App就自动隐藏输入法面板
 
@@ -11603,7 +11603,7 @@ public class MainActivity2 extends AppCompatActivity
 
 
 
-**关于密码修改的校验操作**
+#### **关于密码修改的校验操作**
 
 由于密码对于用户来说是很重要的信息，因此必须认真校验新密码的合法性
 
@@ -11623,4 +11623,906 @@ public class MainActivity2 extends AppCompatActivity
 
 
 ### 实现
+
+
+
+#### dimens.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="main_paddingTop">50dp</dimen>
+    <dimen name="main_paddingLeftAndRight">5dp</dimen>
+    <dimen name="editText_paddingLeftAndRight">10dp</dimen>
+    <dimen name="common_font_size">17sp</dimen>
+    <dimen name="button_font_size">20sp</dimen>
+    <dimen name="item_layout_height">50dp</dimen>
+</resources>
+```
+
+
+
+#### strings.xml
+
+```xml
+<resources>
+    <string name="app_name">android_login_page</string>
+
+    <string name="login_by_password">密码登录</string>
+    <string name="login_by_verifycode">验证码登录</string>
+    <string name="phone_number">手机号码：</string>
+    <string name="input_phone_number">请输入手机号码</string>
+    <string name="login_password">登录密码：</string>
+    <string name="input_password">请输入密码</string>
+    <string name="forget_password">忘记密码</string>
+    <string name="remember_password">记住密码</string>
+    <string name="login">登&#160; &#160; &#160; 录</string>
+    <string name="input_new_password">输入新密码：</string>
+    <string name="input_new_password_hint">请输入新密码</string>
+    <string name="confirm_new_password">确认新密码：</string>
+    <string name="input_new_password_again">请再次输入新密码</string>
+    <string name="verifycode">&#160; &#160; 验证码：</string>
+    <string name="verifycode2">&#160; &#160; &#160; &#160; 验证码：</string>
+    <string name="input_verifycode">请输入验证码</string>
+    <string name="get_verifycode">获取验证码</string>
+    <string name="done">确&#160; &#160; &#160;定</string>
+
+</resources>
+```
+
+
+
+
+
+#### 图形shape1.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="@color/purple_200" />
+    <corners android:radius="15dp" />
+
+</shape>
+```
+
+
+
+
+
+#### 主登录页面布局
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/main_paddingLeftAndRight"
+        android:paddingRight="@dimen/main_paddingLeftAndRight"
+        android:paddingTop="@dimen/main_paddingTop">
+
+    <RadioGroup
+            android:id="@+id/rg_login"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <RadioButton
+                android:id="@+id/rb_password"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="@string/login_by_password"
+                android:textSize="@dimen/common_font_size" />
+
+        <RadioButton
+                android:id="@+id/rb_verifycode"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/login_by_verifycode"
+                android:textSize="@dimen/common_font_size" />
+
+    </RadioGroup>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/phone_number"
+                android:textColor="@color/black"
+                android:textSize="@dimen/common_font_size" />
+
+        <EditText
+                android:id="@+id/et_phone"
+                android:paddingLeft="@dimen/editText_paddingLeftAndRight"
+                android:paddingRight="@dimen/editText_paddingLeftAndRight"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/shape1"
+                android:hint="@string/input_phone_number"
+                android:inputType="phone"
+                android:maxLength="11"
+                android:textSize="@dimen/common_font_size" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <TextView
+                android:id="@+id/tv_password"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/login_password"
+                android:textColor="@color/black"
+                android:textSize="@dimen/common_font_size" />
+
+        <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+            <EditText
+                    android:id="@+id/et_password"
+                    android:paddingLeft="@dimen/editText_paddingLeftAndRight"
+                    android:paddingRight="@dimen/editText_paddingLeftAndRight"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape1"
+                    android:hint="@string/input_password"
+                    android:inputType="numberPassword"
+                    android:maxLength="6"
+                    android:textSize="@dimen/common_font_size" />
+
+            <Button
+                    android:id="@+id/btn_forget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/forget_password"
+                    android:textSize="@dimen/common_font_size" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <CheckBox
+            android:id="@+id/ck_remember"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/remember_password"
+            android:textSize="@dimen/common_font_size" />
+
+    <Button
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login"
+            android:textSize="@dimen/button_font_size" />
+
+</LinearLayout>
+```
+
+
+
+
+
+#### 忘记密码页面布局
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/main_paddingLeftAndRight"
+        android:paddingRight="@dimen/main_paddingLeftAndRight"
+        android:paddingTop="@dimen/main_paddingTop">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/input_new_password"
+                android:textColor="@color/black"
+                android:textSize="@dimen/common_font_size" />
+
+        <EditText
+                android:id="@+id/et_password_first"
+                android:layout_width="0dp"
+                android:paddingLeft="@dimen/editText_paddingLeftAndRight"
+                android:paddingRight="@dimen/editText_paddingLeftAndRight"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/shape1"
+                android:hint="@string/input_new_password_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:textSize="@dimen/common_font_size" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/confirm_new_password"
+                android:textColor="@color/black"
+                android:textSize="@dimen/common_font_size" />
+
+        <EditText
+                android:id="@+id/et_password_second"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/editText_paddingLeftAndRight"
+                android:paddingRight="@dimen/editText_paddingLeftAndRight"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/shape1"
+                android:hint="@string/input_new_password_again"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:textSize="@dimen/common_font_size" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_layout_height"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/verifycode2"
+                android:textColor="@color/black"
+                android:textSize="@dimen/common_font_size" />
+
+        <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+            <EditText
+                    android:id="@+id/et_verifycode"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:paddingLeft="@dimen/editText_paddingLeftAndRight"
+                    android:paddingRight="@dimen/editText_paddingLeftAndRight"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape1"
+                    android:hint="@string/input_verifycode"
+                    android:inputType="numberPassword"
+                    android:maxLength="6"
+                    android:textSize="@dimen/common_font_size" />
+
+            <Button
+                    android:id="@+id/btn_verifycode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/get_verifycode"
+                    android:textSize="@dimen/common_font_size" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <Button
+            android:id="@+id/btn_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/done"
+            android:textSize="@dimen/button_font_size" />
+
+</LinearLayout>
+```
+
+
+
+
+
+#### 登录页面逻辑代码
+
+```java
+package mao.android_login_page;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Random;
+
+/**
+ * Class(类名): MainActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/25
+ * Time(创建时间)： 20:49
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, View.OnClickListener
+{
+    private TextView tv_password;
+    private EditText et_password;
+    private Button btn_forget;
+    private CheckBox ck_remember;
+    private EditText et_phone;
+    private RadioButton rb_password;
+    private RadioButton rb_verifyCode;
+    private ActivityResultLauncher<Intent> register;
+    @SuppressWarnings("all")
+    private Button btn_login;
+    private String password = "123456";
+    private String verifyCode;
+
+    private static final String TAG = "loginPage";
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        RadioGroup rb_login = findViewById(R.id.rg_login);
+        tv_password = findViewById(R.id.tv_password);
+        et_phone = findViewById(R.id.et_phone);
+        et_password = findViewById(R.id.et_password);
+        btn_forget = findViewById(R.id.btn_forget);
+        ck_remember = findViewById(R.id.ck_remember);
+        rb_password = findViewById(R.id.rb_password);
+        rb_verifyCode = findViewById(R.id.rb_verifycode);
+        btn_login = findViewById(R.id.btn_login);
+        // 给rg_login设置单选监听器
+        rb_login.setOnCheckedChangeListener(this);
+        // 给et_phone添加文本变更监听器
+        et_phone.addTextChangedListener(new HideTextWatcher(et_phone, 11));
+        // 给et_password添加文本变更监听器
+        et_password.addTextChangedListener(new HideTextWatcher(et_password, 6));
+        btn_forget.setOnClickListener(this);
+        btn_login.setOnClickListener(this);
+
+        register = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>()
+        {
+            @Override
+            public void onActivityResult(ActivityResult result)
+            {
+                Intent intent = result.getData();
+                if (intent != null && result.getResultCode() == Activity.RESULT_OK)
+                {
+                    // 用户密码已改为新密码，故更新密码变量
+                    password = intent.getStringExtra("new_password");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId)
+    {
+        if (checkedId == R.id.rb_password)
+        {
+            // 选择了密码登录
+            changeRadioGroupPassword();
+        }
+        else if (checkedId == R.id.rb_verifycode)
+        {
+            // 选择了验证码登录
+            changeRadioGroupVerifycode();
+        }
+        else
+        {
+            //异常
+            Log.w(TAG, "onCheckedChanged: error");
+        }
+       /* switch (checkedId)
+        {
+            case R.id.rb_password:
+                changeRadioGroupPassword();
+                break;
+            case R.id.rb_verifycode:
+                changeRadioGroupVerifycode();
+                break;
+        }*/
+    }
+
+    private void changeRadioGroupVerifycode()
+    {
+        tv_password.setText(getString(R.string.verifycode));
+        et_password.setHint(getString(R.string.input_verifycode));
+        btn_forget.setText(getString(R.string.get_verifycode));
+        ck_remember.setVisibility(View.GONE);
+    }
+
+    private void changeRadioGroupPassword()
+    {
+        tv_password.setText(getString(R.string.login_password));
+        et_password.setHint(getString(R.string.input_password));
+        btn_forget.setText(getString(R.string.forget_password));
+        ck_remember.setVisibility(View.VISIBLE);
+    }
+
+
+    @Override
+    public void onClick(View v)
+    {
+        //获取手机号码
+        String phone = et_phone.getText().toString();
+        if (phone.length() < 11)
+        {
+            Toast.makeText(this, "请输入正确的手机号", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (v.getId() == R.id.btn_forget)
+        {
+            // 选择了密码方式校验，此时要跳到找回密码页面
+            clickForget(phone);
+        }
+        else if (v.getId() == R.id.btn_login)
+        {
+            // 密码方式校验
+            clickLogin();
+        }
+        else
+        {
+            Log.w(TAG, "onClick: error");
+        }
+
+        /*switch (v.getId())
+        {
+            case R.id.btn_forget:
+                // 选择了密码方式校验，此时要跳到找回密码页面
+                clickForget(phone);
+                break;
+            case R.id.btn_login:
+                // 密码方式校验
+                clickLogin();
+                break;
+        }*/
+    }
+
+    private void clickLogin()
+    {
+        if (rb_password.isChecked())
+        {
+            if (!password.equals(et_password.getText().toString()))
+            {
+                Toast.makeText(this, "请输入正确的密码", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // 提示用户登录成功
+            loginSuccess();
+        }
+        else if (rb_verifyCode.isChecked())
+        {
+            if (verifyCode == null)
+            {
+                Toast.makeText(this, "请先获取验证码", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // 验证码方式校验
+            if (!verifyCode.equals(et_password.getText().toString()))
+            {
+                Toast.makeText(this, "请输入正确的验证码", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // 提示用户登录成功
+            loginSuccess();
+        }
+    }
+
+    /**
+     * 处理点击忘记密码选项
+     *
+     * @param phone 电话
+     */
+    @SuppressLint("DefaultLocale")
+    private void clickForget(String phone)
+    {
+        if (rb_password.isChecked())
+        {
+            // 以下携带手机号码跳转到找回密码页面
+            Intent intent = new Intent(this, MainActivity2.class);
+            intent.putExtra("phone", phone);
+            register.launch(intent);
+        }
+        else if (rb_verifyCode.isChecked())
+        {
+            // 生成六位随机数字的验证码
+            verifyCode = String.format("%06d", new Random().nextInt(999999));
+            // 以下弹出提醒对话框，提示用户记住六位验证码数字
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("请记住验证码");
+            builder.setMessage("手机号" + phone + ",本次验证码是" + verifyCode + ",请输入验证码");
+            builder.setPositiveButton("好的", null);
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+
+    /**
+     * 登录成功
+     */
+    private void loginSuccess()
+    {
+        String desc = String.format("您的手机号码是%s，恭喜你通过登录验证，点击“确定”按钮返回上个页面",
+                et_phone.getText().toString());
+        // 以下弹出提醒对话框，提示用户登录成功
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("登录成功");
+        builder.setMessage(desc);
+        builder.setPositiveButton("确定返回", (dialog, which) ->
+        {
+            // 结束当前的活动页面
+            finish();
+        });
+        builder.setNegativeButton("我再看看", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    class HideTextWatcher implements TextWatcher
+    {
+        private final EditText editText;
+        private final int maxLength;
+
+        public HideTextWatcher(EditText v, int maxLength)
+        {
+            this.editText = v;
+            this.maxLength = maxLength;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after)
+        {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count)
+        {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s)
+        {
+            if (s.toString().length() == maxLength)
+            {
+                // 隐藏输入法软键盘
+                closeInput(MainActivity.this, editText);
+            }
+        }
+    }
+
+    /**
+     * 关闭(隐藏)输入法
+     *
+     * @param activity 活动
+     * @param view     视图
+     */
+    public void closeInput(Activity activity, View view)
+    {
+        //从系统服务中获取输入法管理器
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        //关闭屏幕上的输入法软键盘
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+}
+```
+
+
+
+
+
+#### 忘记密码页面逻辑代码
+
+```java
+package mao.android_login_page;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.android.material.internal.TextWatcherAdapter;
+
+import java.util.Random;
+
+/**
+ * Class(类名): MainActivity2
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/25
+ * Time(创建时间)： 20:48
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainActivity2 extends AppCompatActivity implements View.OnClickListener
+{
+    private String phone;
+    private String verifyCode;
+    private EditText et_password_first;
+    private EditText et_password_second;
+    private EditText et_verifyCode;
+
+    public static final String TAG = "forget_password_page";
+
+    @SuppressLint("RestrictedApi")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        et_password_first = findViewById(R.id.et_password_first);
+        et_password_second = findViewById(R.id.et_password_second);
+        et_verifyCode = findViewById(R.id.et_verifycode);
+        // 从上一个页面获取要修改密码的手机号码
+        phone = getIntent().getStringExtra("phone");
+
+        findViewById(R.id.btn_verifycode).setOnClickListener(this);
+        findViewById(R.id.btn_confirm).setOnClickListener(this);
+
+        et_password_first.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                if (s.toString().length() == 6)
+                {
+                    // 隐藏输入法软键盘
+                    closeInput(MainActivity2.this, et_password_first);
+                }
+            }
+        });
+
+        et_password_second.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                if (s.toString().length() == 6)
+                {
+                    // 隐藏输入法软键盘
+                    closeInput(MainActivity2.this, et_password_second);
+                }
+            }
+        });
+
+        et_verifyCode.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                if (s.toString().length() == 6)
+                {
+                    // 隐藏输入法软键盘
+                    closeInput(MainActivity2.this, et_verifyCode);
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void onClick(View v)
+    {
+        if (v.getId() == R.id.btn_verifycode)
+        {
+            // 点击了“获取验证码”按钮
+            clickVerifyCode();
+        }
+        else if (v.getId() == R.id.btn_confirm)
+        {
+            // 点击了“确定”按钮
+            clickConfirm();
+        }
+        else
+        {
+            Log.w(TAG, "onClick: error");
+        }
+
+    }
+
+    /**
+     * 处理点击确认按钮
+     */
+    private void clickConfirm()
+    {
+        String password_first = et_password_first.getText().toString();
+        String password_second = et_password_second.getText().toString();
+        if (password_first.length() < 6)
+        {
+            Toast.makeText(this, "请输入正确的密码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!password_first.equals(password_second))
+        {
+            Toast.makeText(this, "两次输入的新密码不一致", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (verifyCode == null)
+        {
+            Toast.makeText(this, "请先获取验证码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!verifyCode.equals(et_verifyCode.getText().toString()))
+        {
+            Toast.makeText(this, "请输入正确的验证码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "密码修改成功", Toast.LENGTH_SHORT).show();
+        // 以下把修改好的新密码返回给上一个页面
+        Intent intent = new Intent();
+        intent.putExtra("new_password", password_first);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+
+    /**
+     * 处理点击验证码按钮
+     */
+    @SuppressLint("DefaultLocale")
+    private void clickVerifyCode()
+    {
+        // 生成六位随机数字的验证码
+        verifyCode = String.format("%06d", new Random().nextInt(999999));
+        // 以下弹出提醒对话框，提示用户记住六位验证码数字
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("请记住验证码");
+        builder.setMessage("手机号" + phone + ",本次验证码是" + verifyCode + ",请输入验证码");
+        builder.setPositiveButton("好的", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    /**
+     * 关闭(隐藏)输入法
+     *
+     * @param activity 活动
+     * @param view     视图
+     */
+    public void closeInput(Activity activity, View view)
+    {
+        //从系统服务中获取输入法管理器
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        //关闭屏幕上的输入法软键盘
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+}
+```
+
+
+
+
+
+
+
+### 运行效果
+
+
+
+
+
+
 
