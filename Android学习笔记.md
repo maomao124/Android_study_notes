@@ -12520,9 +12520,53 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
 ### 运行效果
 
+![image-20220925225058813](img/Android学习笔记/image-20220925225058813.png)
+
+
+
+![image-20220925225152555](img/Android学习笔记/image-20220925225152555.png)
+
+
+
+![image-20220925225201628](img/Android学习笔记/image-20220925225201628.png)
+
+
+
+![image-20220925225216344](img/Android学习笔记/image-20220925225216344.png)
+
+
+
+![image-20220925225250506](img/Android学习笔记/image-20220925225250506.png)
 
 
 
 
 
+![image-20220925225349931](img/Android学习笔记/image-20220925225349931.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 数据存储
 
