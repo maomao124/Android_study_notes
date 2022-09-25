@@ -11437,5 +11437,104 @@ public class MainActivity5 extends AppCompatActivity
 
 ### 时间对话框TimePickerDialog
 
+构造方法传的是当前的小时与分钟，最后一个参数表示是否采取24小时制，一般为true表示小时 的数值范围为0～23；若为false则表示采取12小时制
+
+
+
+
+
+```XML
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <TextView
+            android:id="@+id/result1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_timepickerdialog;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.TimePickerDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        TextView textView = findViewById(R.id.result1);
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute)
+            {
+                textView.setText("当前选择的是" + hourOfDay + "时" + minute + "分");
+            }
+        }, Calendar.getInstance().get(Calendar.HOUR_OF_DAY), Calendar.getInstance().get(Calendar.MINUTE), true);
+
+        timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                finish();
+            }
+        });
+
+        timePickerDialog.create();
+        timePickerDialog.show();
+    }
+}
+```
+
+
+
+![image-20220925132754553](img/Android学习笔记/image-20220925132754553.png)
+
+
+
+![image-20220925132821030](img/Android学习笔记/image-20220925132821030.png)
+
+
+
+
+
+
+
+
+
+## 登录页面
+
 
 
