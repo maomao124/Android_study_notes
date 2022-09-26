@@ -13464,5 +13464,80 @@ ALTER TABLE user_info ADD COLUMN phone VARCHAR;
 
 ### 数据库管理器SQLiteDatabase
 
+SQL语句毕竟只是SQL命令，若要在Java代码中操纵SQLite，还需专门的工具类。SQLiteDatabase便是 Android提供的SQLite数据库管理器，开发者可以在活动页面代码调用openOrCreateDatabase方法获取数据库实例
+
+数据库管理器SQLiteDatabase提供了若干操作 数据表的API，常用的方法有3类：
+
+
+
+#### 管理类，用于数据库层面的操作
+
+* openDatabase：打开指定路径的数据库
+* isOpen：判断数据库是否已打开
+* close：关闭数据库
+* getVersion：获取数据库的版本号
+* setVersion：设置数据库的版本号
+
+
+
+#### 事务类，用于事务层面的操作
+
+* beginTransaction：开始事务
+* setTransactionSuccessful：设置事务的成功标志
+* endTransaction：结束事务。执行本方法时，系统会判断之前是否调用了setTransactionSuccessful方法，如果之前已调用该方法就提交事务，如果没有调用该方法就回滚事务。
+
+
+
+#### 数据处理类，用于数据表层面的操作
+
+* execSQL：执行拼接好的SQL控制语句。一般用于建表、删表、变更表结构
+* delete：删除符合条件的记录。 
+* update：更新符合条件的记录信息。 
+* insert：插入一条记录。 
+* query：执行查询操作，并返回结果集的游标。 
+* rawQuery：执行拼接好的SQL查询语句，并返回结果集的游标
+
+
+
+
+
+
+
+### 数据库帮助器SQLiteOpenHelper
+
+由于SQLiteDatabase存在局限性，一不小心就会重复打开数据库，处理数据库的升级也不方便；因此 Android提供了数据库帮助器SQLiteOpenHelper，帮助开发者合理使用SQLite
+
+
+
+SQLiteOpenHelper的具体使用步骤如下：
+
+* 步骤一，新建一个继承自SQLiteOpenHelper的数据库操作类，按提示重写onCreate和onUpgrade两个 方法。其中，onCreate方法只在第一次打开数据库时执行，在此可以创建表结构；而onUpgrade方法在 数据库版本升高时执行，在此可以根据新旧版本号变更表结构
+* 步骤二，为保证数据库安全使用，需要封装几个必要方法，包括获取单例对象、打开数据库连接、关闭数据库连接，说明如下：
+  * 获取单例对象：确保在App运行过程中数据库只会打开一次，避免重复打开引起错误
+  * 打开数据库连接：SQLite有锁机制，即读锁和写锁的处理；故而数据库连接也分两种，读连接可调用getReadableDatabase方法获得，写连接可调用getWritableDatabase获得
+  * 关闭数据库连接：数据库操作完毕，调用数据库实例的close方法关闭连接
+* 步骤三， 提供对表记录增加、删除、修改、查询的操作方法。能被SQLite直接使用的数据结构是ContentValues类，它类似于映射Map，也提供了put和get方法存取键值对。区别之处在于：ContentValues的键只能是字符串，不能是其他类型。ContentValues主要用于增加记录和更新记录，对应数据库的insert和update方法。记录的查询操作用到了游标类Cursor，调用query和rawQuery方法返回的都是Cursor对象，若要获取全部的查询结果，则需根据游标的指示一条一条遍历结果集合。Cursor的常用方法可分为3类，说明如下：
+  * 游标控制类方法，用于指定游标的状态
+    * close：关闭游标
+    * isClosed：判断游标是否关闭
+    * isFirst：判断游标是否在开头
+    * isLast：判断游标是否在末尾
+  * 游标移动类方法，把游标移动到指定位置
+    * moveToFirst：移动游标到开头
+    * moveToLast：移动游标到末尾
+    * moveToNext：移动游标到下一条记录
+    * moveToPrevious：移动游标到上一条记录
+    * move：往后移动游标若干条记录
+    * moveToPosition：移动游标到指定位置的记录
+  * 获取记录类方法，可获取记录的数量、类型以及取值
+    * getCount：获取结果记录的数量
+    * getInt：获取指定字段的整型值
+    * getLong：获取指定字段的长整型值
+    * getFloat：获取指定字段的浮点数值
+    * getString：获取指定字段的字符串值
+    * getType：获取指定字段的字段类型
+
+
+
 
 
