@@ -12570,3 +12570,59 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
 # 数据存储
 
+## 共享参数SharedPreferences
+
+### 共享参数的用法
+
+SharedPreferences是Android的一个轻量级存储工具，它采用的存储结构是Key-Value的键值对方式， 类似于Java的Properties，二者都是把Key-Value的键值对保存在配置文件中。不同的是，Properties的文件内容形如Key=Value，而SharedPreferences的存储介质是XML文件，且以XML标记保存键值对。 保存共享参数键值对信息的文件路径为：/data/data/应用包名/shared_prefs/文件名.xml
+
+
+
+基于XML格式的特点，共享参数主要用于如下场合：
+
+* 简单且孤立的数据。若是复杂且相互关联的数据，则要保存于关系数据库
+* 文本形式的数据。若是二进制数据，则要保存至文件
+* 需要持久化存储的数据。App退出后再次启动时，之前保存的数据仍然有效
+
+
+
+实际开发中，共享参数经常存储的数据包括：App的个性化配置信息、用户使用App的行为信息、临时需要保存的片段信息等
+
+
+
+共享参数对数据的存储和读取操作类似于Map，也有存储数据的put方法，以及读取数据的get方法。调用getSharedPreferences方法可以获得共享参数实例
+
+```java
+SharedPreferences shared = getSharedPreferences("share", MODE_PRIVATE);
+```
+
+getSharedPreferences方法的第一个参数是文件名，填share表示共享参数的文件名 是share.xml；第二个参数是操作模式，填MODE_PRIVATE表示私有模式
+
+
+
+往共享参数存储数据要借助于Editor类
+
+```java
+SharedPreferences.Editor editor = shared.edit(); // 获得编辑器的对象
+editor.putString("key", "value");
+editor.commit(); // 提交编辑器中的修改
+```
+
+
+
+从共享参数读取数据相对简单，直接调用共享参数实例的getxxx方法即可读取键值，注意 getxxx方法 的第二个参数表示默认值
+
+```java
+String key= shared.getString ( "key","");
+```
+
+
+
+
+
+
+
+
+
+
+
