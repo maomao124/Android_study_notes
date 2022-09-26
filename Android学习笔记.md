@@ -12956,3 +12956,41 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+
+找到/data/data/应用包名/shared_prefs/text.xml
+
+
+
+![image-20220926131124522](img/Android学习笔记/image-20220926131124522.png)
+
+
+
+![image-20220926131252181](img/Android学习笔记/image-20220926131252181.png)
+
+
+
+![image-20220926131313769](img/Android学习笔记/image-20220926131313769.png)
+
+
+
+```xml
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="name">zad</string>
+    <float name="weight" value="68.96" />
+    <long name="id" value="123455665422" />
+    <int name="age" value="20" />
+</map>
+```
+
+
+
+
+
+
+
+
+
+### 实现记住密码功能
+
