@@ -12624,5 +12624,335 @@ String key= shared.getString ( "key","");
 
 
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="5dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="学号"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="请输入学号"
+                android:maxLength="13"
+                android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="姓名"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="请输入姓名"
+                android:maxLength="10"
+                android:inputType="text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="年龄"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_age"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="年龄"
+                android:maxLength="2"
+                android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="体重"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_weight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="体重"
+                android:inputType="numberDecimal" />
+
+    </LinearLayout>
+
+
+    <Button
+            android:id="@+id/Button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="保存数据"
+            android:textSize="20sp"
+            android:layout_margin="10dp" />
+
+    <Button
+            android:id="@+id/Button_load"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="读取数据"
+            android:textSize="20sp"
+            android:layout_margin="10dp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_sharedpreferences;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+/**
+ * Class(类名): MainActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/25
+ * Time(创建时间)： 23:01
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * save按钮
+     */
+    private Button saveButton;
+    /**
+     * load按钮
+     */
+    private Button loadButton;
+
+    /**
+     * 学号编辑文本
+     */
+    private EditText idEditText;
+
+    /**
+     * 名称编辑文本
+     */
+    private EditText nameEditText;
+
+    /**
+     * 年龄编辑文本
+     */
+    private EditText ageEditText;
+
+    /**
+     * 体重编辑文本
+     */
+    private EditText weightEditText;
+
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        saveButton = findViewById(R.id.Button_save);
+        loadButton = findViewById(R.id.Button_load);
+
+        idEditText = findViewById(R.id.EditText_id);
+        nameEditText = findViewById(R.id.EditText_name);
+        ageEditText = findViewById(R.id.EditText_age);
+        weightEditText = findViewById(R.id.EditText_weight);
+
+        saveButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save();
+            }
+        });
+
+        loadButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                load();
+            }
+        });
+
+        //load();
+    }
+
+
+    /**
+     * 保存
+     */
+    private void save()
+    {
+        try
+        {
+            long id = Long.parseLong(idEditText.getText().toString());
+            String name = nameEditText.getText().toString();
+            int age = Integer.parseInt(ageEditText.getText().toString());
+            float weight = Float.parseFloat(weightEditText.getText().toString());
+
+            SharedPreferences.Editor editor = getSharedPreferences("text", MODE_PRIVATE).edit();
+
+            editor.putLong("id", id);
+            editor.putString("name", name);
+            editor.putInt("age", age);
+            editor.putFloat("weight", weight);
+
+            editor.commit();
+            //异步
+            //editor.apply();
+
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "save: ", e);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("异常")
+                    .setMessage("出现异常，请检查输入\n异常内容为\n：" + e.getMessage())
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+
+
+    }
+
+    /**
+     * 加载
+     */
+    private void load()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences("text", MODE_PRIVATE);
+        long id = sharedPreferences.getLong("id", 0);
+        String name = sharedPreferences.getString("name", "");
+        int age = sharedPreferences.getInt("age", 0);
+        float weight = sharedPreferences.getFloat("weight", 0.0f);
+
+        idEditText.setText(String.valueOf(id));
+        nameEditText.setText(name);
+        ageEditText.setText(String.valueOf(age));
+        weightEditText.setText(String.valueOf(weight));
+
+
+        String str = "学号：" + id + "\n姓名：" + name + "\n年龄：" + age + "\n体重：" + weight;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("读取到的内容")
+                .setMessage(str)
+                .setPositiveButton("确定", null)
+                .create()
+                .show();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        save();
+    }
+}
+```
+
+
+
+
+
+![image-20220926130623181](img/Android学习笔记/image-20220926130623181.png)
+
+
+
+![image-20220926130637748](img/Android学习笔记/image-20220926130637748.png)
+
+
+
+![image-20220926130648247](img/Android学习笔记/image-20220926130648247.png)
+
+
+
+![image-20220926130712109](img/Android学习笔记/image-20220926130712109.png)
+
+
+
+![image-20220926130723100](img/Android学习笔记/image-20220926130723100.png)
+
+
+
+![image-20220926130748996](img/Android学习笔记/image-20220926130748996.png)
+
+
+
 
 
