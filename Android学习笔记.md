@@ -15701,3 +15701,762 @@ public class MainActivity extends AppCompatActivity
 
 
 
+更改之前共享参数SharedPreferences那一节的项目
+
+
+
+添加实体类
+
+```java
+package mao.android_read_and_write_text_files_on_memory_cards.entity;
+
+import java.io.Serializable;
+
+/**
+ * Project name(项目名称)：android_read_and_write_text_files_on_memory_cards
+ * Package(包名): mao.android_read_and_write_text_files_on_memory_cards.entity
+ * Class(类名): Student
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/27
+ * Time(创建时间)： 20:34
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Student implements Serializable
+{
+    /**
+     * id
+     */
+    private Long id;
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 年龄
+     */
+    private Integer age;
+    /**
+     * 重量
+     */
+    private Float weight;
+
+
+    /**
+     * Instantiates a new Student.
+     */
+    public Student()
+    {
+    }
+
+    /**
+     * Instantiates a new Student.
+     *
+     * @param id     the id
+     * @param name   the name
+     * @param age    the age
+     * @param weight the weight
+     */
+    public Student(Long id, String name, Integer age, Float weight)
+    {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.weight = weight;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public Long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets age.
+     *
+     * @return the age
+     */
+    public Integer getAge()
+    {
+        return age;
+    }
+
+    /**
+     * Sets age.
+     *
+     * @param age the age
+     */
+    public void setAge(Integer age)
+    {
+        this.age = age;
+    }
+
+    /**
+     * Gets weight.
+     *
+     * @return the weight
+     */
+    public Float getWeight()
+    {
+        return weight;
+    }
+
+    /**
+     * Sets weight.
+     *
+     * @param weight the weight
+     */
+    public void setWeight(Float weight)
+    {
+        this.weight = weight;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Student student = (Student) o;
+
+        if (getId() != null ? !getId().equals(student.getId()) : student.getId() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(student.getName()) : student.getName() != null)
+        {
+            return false;
+        }
+        if (getAge() != null ? !getAge().equals(student.getAge()) : student.getAge() != null)
+        {
+            return false;
+        }
+        return getWeight() != null ? getWeight().equals(student.getWeight()) : student.getWeight() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAge() != null ? getAge().hashCode() : 0);
+        result = 31 * result + (getWeight() != null ? getWeight().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("age：").append(age).append('\n');
+        stringbuilder.append("weight：").append(weight).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+对象的序列化类
+
+
+
+```java
+package mao.android_read_and_write_text_files_on_memory_cards.io;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+/**
+ * Project name(项目名称)：android_read_and_write_text_files_on_memory_cards
+ * Package(包名): mao.android_read_and_write_text_files_on_memory_cards.io
+ * Class(类名): ObjectFileIO
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/27
+ * Time(创建时间)： 20:36
+ * Version(版本): 1.0
+ * Description(描述)： 以前学java se 时写的，有些东西不能用
+ */
+
+public class ObjectFileIO
+{
+    private static boolean isWarning = true;
+
+    public static void setIsWarning(boolean isWarning)
+    {
+        ObjectFileIO.isWarning = isWarning;
+    }
+
+    /**
+     * 将对象写入到文件里
+     *
+     * @param object 要写入的对象
+     * @param path   文件的路径
+     * @return 写入成功，则返回true，写入失败，则返回false
+     */
+    public static boolean write(Object object, String path)
+    {
+        File file = null;
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+        try                                  //文件流打开，文件读写
+        {
+            file = new File(path);
+            fileOutputStream = new FileOutputStream(file);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(object);
+            return true;
+        }
+        catch (FileNotFoundException e)      //文件未找到
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            System.err.println("文件未找到！！！  " + "\n错误内容：" + e.getMessage());
+            return false;
+        }
+        catch (Exception e)                  //其它异常
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            e.printStackTrace();
+            return false;
+        }
+        finally
+        {
+            try                              //关闭流
+            {
+                if (fileOutputStream != null)
+                {
+                    fileOutputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+            try                              //关闭流
+            {
+                if (objectOutputStream != null)
+                {
+                    objectOutputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    /**
+     * 从文件里读取对象
+     *
+     * @param path 文件的路径
+     * @return Object 对象。如果读取失败，则返回null
+     */
+    public static Object read(String path)
+    {
+        File file = null;
+        FileInputStream fileInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        try                                  //文件流打开，文件读写
+        {
+            file = new File(path);
+            fileInputStream = new FileInputStream(file);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            return objectInputStream.readObject();
+        }
+        catch (FileNotFoundException e)      //文件未找到
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            System.err.println("文件未找到！！！  " + "\n错误内容：" + e.getMessage());
+            return null;
+        }
+        catch (Exception e)                  //其它异常
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            e.printStackTrace();
+            return null;
+        }
+        finally
+        {
+            try                              //关闭流
+            {
+                if (fileInputStream != null)
+                {
+                    fileInputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+
+            try                              //关闭流
+            {
+                if (objectInputStream != null)
+                {
+                    objectInputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 从文件里读取对象
+     *
+     * @param path  文件的路径
+     * @param clazz 要返回的的对象的类的字节码
+     * @param <T>   泛型T
+     * @return 泛型对象，如果读取失败，则返回null
+     */
+    @SuppressWarnings("all")
+    public static <T> T read(String path, Class<T> clazz)
+    {
+        T t = null;
+        File file = null;
+        FileInputStream fileInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        try                                  //文件流打开，文件读写
+        {
+            file = new File(path);
+            fileInputStream = new FileInputStream(file);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            t = (T) objectInputStream.readObject();
+            return t;
+        }
+        catch (FileNotFoundException e)      //文件未找到
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            System.err.println("文件未找到！！！  " + "\n错误内容：" + e.getMessage());
+            return null;
+        }
+        catch (Exception e)                  //其它异常
+        {
+            if (isWarning)
+            {
+                //Toolkit.getDefaultToolkit().beep();
+            }
+            e.printStackTrace();
+            return null;
+        }
+        finally
+        {
+            try                              //关闭流
+            {
+                if (fileInputStream != null)
+                {
+                    fileInputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+
+            try                              //关闭流
+            {
+                if (objectInputStream != null)
+                {
+                    objectInputStream.close();
+                }
+            }
+            catch (NullPointerException e)    //空指针异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                System.err.println("文件已经被关闭，无法再次关闭！！！");
+            }
+            catch (Exception e)              //其它异常
+            {
+                if (isWarning)
+                {
+                    //Toolkit.getDefaultToolkit().beep();
+                }
+                e.printStackTrace();
+            }
+        }
+    }
+
+}
+```
+
+
+
+
+
+MainActivity
+
+
+
+```java
+package mao.android_read_and_write_text_files_on_memory_cards;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import java.io.File;
+
+import mao.android_read_and_write_text_files_on_memory_cards.entity.Student;
+import mao.android_read_and_write_text_files_on_memory_cards.io.ObjectFileIO;
+
+
+/**
+ * Class(类名): MainActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/27
+ * Time(创建时间)： 20:33
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class MainActivity extends AppCompatActivity
+{
+    /**
+     * save按钮
+     */
+    private Button saveButton;
+    /**
+     * load按钮
+     */
+    private Button loadButton;
+
+    /**
+     * 学号编辑文本
+     */
+    private EditText idEditText;
+
+    /**
+     * 名称编辑文本
+     */
+    private EditText nameEditText;
+
+    /**
+     * 年龄编辑文本
+     */
+    private EditText ageEditText;
+
+    /**
+     * 体重编辑文本
+     */
+    private EditText weightEditText;
+
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        saveButton = findViewById(R.id.Button_save);
+        loadButton = findViewById(R.id.Button_load);
+
+        idEditText = findViewById(R.id.EditText_id);
+        nameEditText = findViewById(R.id.EditText_name);
+        ageEditText = findViewById(R.id.EditText_age);
+        weightEditText = findViewById(R.id.EditText_weight);
+
+        saveButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save();
+            }
+        });
+
+        loadButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                load();
+            }
+        });
+
+        //load();
+    }
+
+
+    /**
+     * 保存
+     */
+    private void save()
+    {
+        try
+        {
+            long id = Long.parseLong(idEditText.getText().toString());
+            String name = nameEditText.getText().toString();
+            int age = Integer.parseInt(ageEditText.getText().toString());
+            float weight = Float.parseFloat(weightEditText.getText().toString());
+
+//            SharedPreferences.Editor editor = getSharedPreferences("text", MODE_PRIVATE).edit();
+//
+//            editor.putLong("id", id);
+//            editor.putString("name", name);
+//            editor.putInt("age", age);
+//            editor.putFloat("weight", weight);
+//
+//            editor.commit();
+
+
+            Student student = new Student(id, name, age, weight);
+            File file = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+
+            boolean b = ObjectFileIO.write(student, file.toString() + "/test.txt");
+            if (!b)
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("异常")
+                        .setMessage("写入失败")
+                        .setPositiveButton("确定", null)
+                        .create()
+                        .show();
+                return;
+            }
+
+            //异步
+            //editor.apply();
+
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "save: ", e);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("异常")
+                    .setMessage("出现异常，请检查输入\n异常内容为：\n" + e.getMessage())
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+
+
+    }
+
+    /**
+     * 加载
+     */
+    private void load()
+    {
+//        SharedPreferences sharedPreferences = getSharedPreferences("text", MODE_PRIVATE);
+//        long id = sharedPreferences.getLong("id", 0);
+//        String name = sharedPreferences.getString("name", "");
+//        int age = sharedPreferences.getInt("age", 0);
+//        float weight = sharedPreferences.getFloat("weight", 0.0f);
+
+
+        try
+        {
+            File file = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+            Student student = ObjectFileIO.read(file.toString() + "/test.txt", Student.class);
+
+            if (student == null)
+            {
+                throw new Exception("读取失败");
+            }
+            Long id = student.getId();
+            String name = student.getName();
+            Integer age = student.getAge();
+            Float weight = student.getWeight();
+
+            idEditText.setText(String.valueOf(id));
+            nameEditText.setText(name);
+            ageEditText.setText(String.valueOf(age));
+            weightEditText.setText(String.valueOf(weight));
+
+
+            String str = "学号：" + id + "\n姓名：" + name + "\n年龄：" + age + "\n体重："
+                    + weight + "\n\n文件路径：" + file.toString() + "/test.txt";
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("读取到的内容")
+                    .setMessage(str)
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "save: ", e);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("异常")
+                    .setMessage("出现异常，请检查输入\n异常内容为：\n" + e.getMessage())
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        save();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20220927205740158](img/Android学习笔记/image-20220927205740158.png)
+
+
+
