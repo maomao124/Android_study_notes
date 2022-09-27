@@ -13541,3 +13541,998 @@ SQLiteOpenHelper的具体使用步骤如下：
 
 
 
+
+
+#### 改进项目
+
+改进之前SharedPreferences那一节的项目
+
+
+
+添加滚动面板
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="5dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="学号"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="请输入学号"
+                android:maxLength="13"
+                android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="姓名"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="请输入姓名"
+                android:maxLength="10"
+                android:inputType="text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="年龄"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_age"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="年龄"
+                android:maxLength="2"
+                android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+        <TextView
+                android:layout_width="55dp"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="体重"
+                android:textSize="24sp" />
+
+        <EditText
+                android:id="@+id/EditText_weight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autofillHints="体重"
+                android:inputType="numberDecimal" />
+
+    </LinearLayout>
+
+
+    <Button
+            android:id="@+id/Button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="保存数据"
+            android:textSize="20sp"
+            android:layout_margin="10dp" />
+
+    <Button
+            android:id="@+id/Button_load"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="读取数据"
+            android:textSize="20sp"
+            android:layout_margin="10dp" />
+
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/TextView_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp" />
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+添加实体类
+
+
+
+```java
+package mao.android_sqliteopenhelper.entity;
+
+
+/**
+ * Project name(项目名称)：android_SQLiteOpenHelper
+ * Package(包名): mao.android_sqliteopenhelper.entity
+ * Class(类名): Student
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/26
+ * Time(创建时间)： 22:30
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Student
+{
+    /**
+     * id
+     */
+    private Long id;
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 年龄
+     */
+    private Integer age;
+    /**
+     * 重量
+     */
+    private Float weight;
+
+    /**
+     * 构造方法
+     */
+    public Student()
+    {
+
+    }
+
+    /**
+     * 构造方法
+     *
+     * @param id     id
+     * @param name   名字
+     * @param age    年龄
+     * @param weight 重量
+     */
+    public Student(Long id, String name, Integer age, Float weight)
+    {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.weight = weight;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public Long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets age.
+     *
+     * @return the age
+     */
+    public Integer getAge()
+    {
+        return age;
+    }
+
+    /**
+     * Sets age.
+     *
+     * @param age the age
+     */
+    public void setAge(Integer age)
+    {
+        this.age = age;
+    }
+
+    /**
+     * Gets weight.
+     *
+     * @return the weight
+     */
+    public Float getWeight()
+    {
+        return weight;
+    }
+
+    /**
+     * Sets weight.
+     *
+     * @param weight the weight
+     */
+    public void setWeight(Float weight)
+    {
+        this.weight = weight;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Student student = (Student) o;
+
+        if (getId() != null ? !getId().equals(student.getId()) : student.getId() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(student.getName()) : student.getName() != null)
+        {
+            return false;
+        }
+        if (getAge() != null ? !getAge().equals(student.getAge()) : student.getAge() != null)
+        {
+            return false;
+        }
+        return getWeight() != null ? getWeight().equals(student.getWeight()) : student.getWeight() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAge() != null ? getAge().hashCode() : 0);
+        result = 31 * result + (getWeight() != null ? getWeight().hashCode() : 0);
+        return result;
+    }
+
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("age：").append(age).append('\n');
+        stringbuilder.append("weight：").append(weight).append('\n');
+        return stringbuilder.toString();
+    }
+
+    /**
+     * 构建器
+     *
+     * @author mao
+     */
+    public static class Builder
+    {
+        private Long id;
+        private String name;
+        private Integer age;
+        private Float weight;
+
+
+        public Builder setId(Long id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setName(String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setAge(Integer age)
+        {
+            this.age = age;
+            return this;
+        }
+
+        public Builder setWeight(Float weight)
+        {
+            this.weight = weight;
+            return this;
+        }
+
+        /**
+         * 构建
+         *
+         * @return {@link Student}
+         */
+        public Student build()
+        {
+            return new Student(id, name, age, weight);
+        }
+    }
+}
+```
+
+
+
+
+
+dao
+
+
+
+```java
+package mao.android_sqliteopenhelper.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_sqliteopenhelper.entity.Student;
+
+/**
+ * Project name(项目名称)：android_SQLiteOpenHelper
+ * Package(包名): mao.android_sqliteopenhelper.dao
+ * Class(类名): DBHelper
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/26
+ * Time(创建时间)： 22:08
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class DBHelper extends SQLiteOpenHelper
+{
+
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "student.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "student_info";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile DBHelper dbHelper = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "DBHelper";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public DBHelper(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link DBHelper}
+     */
+    public static DBHelper getInstance(Context context)
+    {
+        if (dbHelper == null)
+        {
+            synchronized (DBHelper.class)
+            {
+                if (dbHelper == null)
+                {
+                    dbHelper = new DBHelper(context);
+                }
+            }
+        }
+        return dbHelper;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = dbHelper.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = dbHelper.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " name VARCHAR NOT NULL," +
+                " age INTEGER NOT NULL," +
+                " weight FLOAT NOT NULL)";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Student}>
+     */
+    public List<Student> queryAll()
+    {
+        List<Student> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            Student student = new Student.Builder()
+                    .setId(cursor.getLong(0))
+                    .setName(cursor.getString(1))
+                    .setAge(cursor.getInt(2))
+                    .setWeight(cursor.getFloat(3))
+                    .build();
+            list.add(student);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+    /**
+     * 插入
+     *
+     * @param student 学生
+     * @return boolean
+     */
+    public boolean insert(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<Student> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (Student student : list)
+            {
+                boolean insert = this.insert(student);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param student 学生
+     * @return boolean
+     */
+    public boolean update(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{student.getId().toString()});
+        return update > 0;
+    }
+
+    /**
+     * 填充ContentValues
+     *
+     * @param student       Student
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(Student student, ContentValues contentValues)
+    {
+        contentValues.put("id", student.getId());
+        contentValues.put("name", student.getName());
+        contentValues.put("age", student.getAge());
+        contentValues.put("weight", student.getWeight());
+    }
+
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(long id)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id=?", new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+
+}
+```
+
+
+
+
+
+MainActivity
+
+```java
+package mao.android_sqliteopenhelper;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteConstraintException;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_sqliteopenhelper.dao.DBHelper;
+import mao.android_sqliteopenhelper.entity.Student;
+
+/**
+ * Class(类名): MainActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/26
+ * Time(创建时间)： 22:38
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * save按钮
+     */
+    private Button saveButton;
+    /**
+     * load按钮
+     */
+    private Button loadButton;
+
+    /**
+     * 学号编辑文本
+     */
+    private EditText idEditText;
+
+    /**
+     * 名称编辑文本
+     */
+    private EditText nameEditText;
+
+    /**
+     * 年龄编辑文本
+     */
+    private EditText ageEditText;
+
+    /**
+     * 体重编辑文本
+     */
+    private EditText weightEditText;
+
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    /**
+     * db helper
+     */
+    private DBHelper dbHelper;
+
+    /**
+     * 结果文本视图
+     */
+    private TextView resultTextView;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        saveButton = findViewById(R.id.Button_save);
+        loadButton = findViewById(R.id.Button_load);
+
+        idEditText = findViewById(R.id.EditText_id);
+        nameEditText = findViewById(R.id.EditText_name);
+        ageEditText = findViewById(R.id.EditText_age);
+        weightEditText = findViewById(R.id.EditText_weight);
+        resultTextView = findViewById(R.id.TextView_result);
+
+        saveButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save();
+            }
+        });
+
+        loadButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                load();
+            }
+        });
+
+        //load();
+    }
+
+
+    /**
+     * 保存
+     */
+    private void save()
+    {
+//        try
+//        {
+//            long id = Long.parseLong(idEditText.getText().toString());
+//            String name = nameEditText.getText().toString();
+//            int age = Integer.parseInt(ageEditText.getText().toString());
+//            float weight = Float.parseFloat(weightEditText.getText().toString());
+//
+//            SharedPreferences.Editor editor = getSharedPreferences("text", MODE_PRIVATE).edit();
+//
+//            editor.putLong("id", id);
+//            editor.putString("name", name);
+//            editor.putInt("age", age);
+//            editor.putFloat("weight", weight);
+//
+//            editor.commit();
+//            //异步
+//            //editor.apply();
+//
+//            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+//        }
+//        catch (Exception e)
+//        {
+//            Log.e(TAG, "save: ", e);
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setTitle("异常")
+//                    .setMessage("出现异常，请检查输入\n异常内容为\n：" + e.getMessage())
+//                    .setPositiveButton("确定", null)
+//                    .create()
+//                    .show();
+//        }
+
+        try
+        {
+            long id = Long.parseLong(idEditText.getText().toString());
+            String name = nameEditText.getText().toString();
+            int age = Integer.parseInt(ageEditText.getText().toString());
+            float weight = Float.parseFloat(weightEditText.getText().toString());
+
+            Student student = new Student(id, name, age, weight);
+            boolean insert = dbHelper.insert(student);
+            if (!insert)
+            {
+                //插入失败，存在主键，转换为更新
+                boolean update = dbHelper.update(student);
+                if (!update)
+                {
+                    Toast.makeText(this, "更新失败", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Log.d(TAG, "update: " + student);
+                Toast.makeText(this, "更新成功", Toast.LENGTH_SHORT).show();
+            }
+            Log.d(TAG, "save: " + student);
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "save: ", e);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("异常")
+                    .setMessage("出现异常，请检查输入\n异常内容为\n：" + e.getMessage())
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+    }
+
+    /**
+     * 加载
+     */
+    @SuppressLint("SetTextI18n")
+    private void load()
+    {
+//        SharedPreferences sharedPreferences = getSharedPreferences("text", MODE_PRIVATE);
+//        long id = sharedPreferences.getLong("id", 0);
+//        String name = sharedPreferences.getString("name", "");
+//        int age = sharedPreferences.getInt("age", 0);
+//        float weight = sharedPreferences.getFloat("weight", 0.0f);
+//
+//        idEditText.setText(String.valueOf(id));
+//        nameEditText.setText(name);
+//        ageEditText.setText(String.valueOf(age));
+//        weightEditText.setText(String.valueOf(weight));
+//
+//
+//        String str = "学号：" + id + "\n姓名：" + name + "\n年龄：" + age + "\n体重：" + weight;
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle("读取到的内容")
+//                .setMessage(str)
+//                .setPositiveButton("确定", null)
+//                .create()
+//                .show();
+
+
+        Log.d(TAG, "load: start");
+        List<Student> list = dbHelper.queryAll();
+        resultTextView.setText("");
+        for (Student student : list)
+        {
+            Log.d(TAG, "load: " + student);
+            Long id = student.getId();
+            String name = student.getName();
+            Integer age = student.getAge();
+            Float weight = student.getWeight();
+
+            String str = "\n\n\n学号：" + id + "\n姓名：" + name + "\n年龄：" + age + "\n体重：" + weight;
+            resultTextView.setText(resultTextView.getText().toString() + str);
+            if (idEditText.getText().toString().equals(id.toString()))
+            {
+                idEditText.setText(String.valueOf(id));
+                nameEditText.setText(name);
+                ageEditText.setText(String.valueOf(age));
+                weightEditText.setText(String.valueOf(weight));
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        save();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        dbHelper = DBHelper.getInstance(this);
+        dbHelper.openReadConnection();
+        dbHelper.openWriteConnection();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        dbHelper.closeConnection();
+    }
+}
+```
+
+
+
+
+
+![image-20220927103026556](img/Android学习笔记/image-20220927103026556.png)
+
+
+
+![image-20220927103153934](img/Android学习笔记/image-20220927103153934.png)
+
+
+
+
+
+
+
+
+
+#### 优化记住密码功能
+
+实现记住密码功能”中，虽然使用共享参数实现了记住密码功能，但是该方案只能记住一个用 户的登录信息，并且手机号码跟密码没有对应关系，如果换个手机号码登录，前一个用户的登录信息就 被覆盖了。真正的记住密码功能应当是这样的：先输入手机号码，然后根据手机号码匹配保存的密码， 一个手机号码对应一个密码，从而实现具体手机号码的密码记忆功能。 现在运用数据库技术分条存储各用户的登录信息，并支持根据手机号查找登录信息，从而同时记住多个 手机号的密码。
+
+* 声明一个数据库的帮助器对象，然后在活动页面的onResume方法中打开数据库连接，在onPasue 方法中关闭数据库连接
+* 登录成功时，如果用户勾选了“记住密码”，就将手机号码及其密码保存至数据库
+* 再次打开登录页面，用户输入手机号再点击密码框的时候，App根据手机号到数据库查找登录信息，并将记录结果中的密码填入密码框
+
+
+
