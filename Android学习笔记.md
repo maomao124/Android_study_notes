@@ -16484,3 +16484,404 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+
+
+
+### 在存储卡上读写图片文件
+
+文本文件读写可以转换为对字符串的读写，而图片文件保存的是图像数据，需要专门的位图工具Bitmap 处理。位图对象依据来源不同又分成3种获取方式，分别对应位图工厂BitmapFactory的下列3种方法：
+
+* decodeResource：从指定的资源文件中获取位图数据。例如下面代码表示从资源文件huawei.png 获取位图对象
+
+```java
+Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.huawei);
+```
+
+* decodeFile：从指定路径的文件中获取位图数据。注意从Android 10开始，该方法只适用于私有目录下的图片，不适用公共空间下的图片
+* decodeStream：从指定的输入流中获取位图数据。比如使用IO流打开图片文件，此时文件输入流对象即可作为decodeStream方法的入参
+
+```java
+/**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param path 路径
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(String path)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(path))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param file File对象
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(File file)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+```
+
+
+
+
+
+得到位图对象之后，就能在图像视图上显示位图。图像视图ImageView提供了下列方法显示各种来源的图片：
+
+* setImageResource：设置图像视图的图片资源，该方法的入参为资源图片的编号，形如 “R.drawable.去掉扩展名的图片名称”
+* setImageBitmap：设置图像视图的位图对象，该方法的入参为Bitmap类型
+* setImageURI：设置图像视图的路径对象，该方法的入参为Uri类型。字符串格式的文件路径可通过 代码“Uri.parse(file_path)”转换成路径对象
+
+
+
+把位图数据写入图片文件却只有一种，即通过位图对象的compress方法将位图数据压缩到文件输出流
+
+```java
+/**
+     * 把位图数据保存到指定路径的图片文件
+     *
+     * @param path   路径
+     * @param bitmap Bitmap对象
+     */
+    public static void saveImage(String path, Bitmap bitmap)
+    {
+        // 根据指定的文件路径构建文件输出流对象
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path))
+        {
+            // 把位图数据压缩到文件输出流中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+```
+
+
+
+
+
+首先准备一张图片，放在公共的下载目录里
+
+
+
+![image-20220927221109462](img/Android学习笔记/image-20220927221109462.png)
+
+
+
+
+
+布局文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="读取和写入图片文件" />
+
+    <ImageView
+            android:id="@+id/ImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="这里显示图片" />
+
+</LinearLayout>
+```
+
+
+
+代码
+
+
+
+```java
+package mao.android_read_and_write_picture_files_on_memory_card;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ImageView imageView = findViewById(R.id.ImageView);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/294.jpg";
+                Bitmap bitmap = openImage(path);
+                if (bitmap == null)
+                {
+                    Toast.makeText(MainActivity.this, "图片获取失败", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                imageView.setImageBitmap(bitmap);
+
+                String path1 = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/out.jpg";
+
+                boolean b = saveImage(path1, bitmap);
+                if (!b)
+                {
+                    Toast.makeText(MainActivity.this, "写入失败", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage("写入成功！\n文件位置：" + path1)
+                        .setPositiveButton("确定", null)
+                        .create()
+                        .show();
+            }
+        });
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param path 路径
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(String path)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(path))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param file File对象
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(File file)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+
+    /**
+     * 把位图数据保存到指定路径的图片文件
+     *
+     * @param path   路径
+     * @param bitmap Bitmap对象
+     */
+    public static boolean saveImage(String path, Bitmap bitmap)
+    {
+        // 根据指定的文件路径构建文件输出流对象
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path))
+        {
+            // 把位图数据压缩到文件输出流中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+
+
+```
+
+
+
+
+
+运行
+
+
+
+![image-20220927223119077](img/Android学习笔记/image-20220927223119077.png)
+
+
+
+没有权限访问
+
+
+
+![image-20220927223145859](img/Android学习笔记/image-20220927223145859.png)
+
+
+
+
+
+授予权限
+
+
+
+![image-20220927223206764](img/Android学习笔记/image-20220927223206764.png)
+
+
+
+![image-20220927223221252](img/Android学习笔记/image-20220927223221252.png)
+
+
+
+![image-20220927223236796](img/Android学习笔记/image-20220927223236796.png)
+
+
+
+
+
+如果是安卓10以上
+
+允许了还是会报没有权限
+
+
+
+Android10弃用了管理分区外部储存
+
+**需要在AndroidManifest.xml文件的application 标签下加一条属性 android:requestLegacyExternalStorage="true"**
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_read_and_write_picture_files_on_memory_card">
+
+
+    <!-- 存储卡读写 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAG" />
+
+
+    <application
+            android:allowBackup="true"
+            android:requestLegacyExternalStorage="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_read_and_write_picture_files_on_memory_card"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+![image-20220927224233263](img/Android学习笔记/image-20220927224233263.png)
+
+
+
+![image-20220927224245815](img/Android学习笔记/image-20220927224245815.png)
+
+
+
+![image-20220927224744110](img/Android学习笔记/image-20220927224744110.png)
+
+
+
+
+
+
+
+
+
+
+
+## 应用组件Application
+
