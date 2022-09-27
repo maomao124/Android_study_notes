@@ -15253,12 +15253,28 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     {
         if (rb_password.isChecked())
         {
-            if (!password.equals(et_password.getText().toString()))
+//            if (!password.equals(et_password.getText().toString()))
+//            {
+//                Toast.makeText(this, "请输入正确的密码", Toast.LENGTH_SHORT).show();
+//                return;
+//            }
+
+            User user = userDao.queryById(et_phone.getText().toString());
+            if (user == null)
+            {
+                if (!password.equals(et_password.getText().toString()))
+                {
+                    Toast.makeText(this, "请输入正确的密码", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                loginSuccess();
+                return;
+            }
+            if (!(et_password.getText().toString().equals(user.getPassword())))
             {
                 Toast.makeText(this, "请输入正确的密码", Toast.LENGTH_SHORT).show();
                 return;
             }
-            // 提示用户登录成功
             loginSuccess();
         }
         else if (rb_verifyCode.isChecked())
@@ -15477,4 +15493,88 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
 
 
+
+运行
+
+
+
+![image-20220927130037144](img/Android学习笔记/image-20220927130037144.png)
+
+
+
+![image-20220927130052045](img/Android学习笔记/image-20220927130052045.png)
+
+
+
+添加
+
+![image-20220927130156749](img/Android学习笔记/image-20220927130156749.png)
+
+
+
+重启后再进入
+
+![image-20220927130223417](img/Android学习笔记/image-20220927130223417.png)
+
+
+
+![image-20220927130242473](img/Android学习笔记/image-20220927130242473.png)
+
+
+
+更新以前的的号码的密码
+
+
+
+![image-20220927130350708](img/Android学习笔记/image-20220927130350708.png)
+
+
+
+![image-20220927130411103](img/Android学习笔记/image-20220927130411103.png)
+
+
+
+![image-20220927130430463](img/Android学习笔记/image-20220927130430463.png)
+
+
+
+重启
+
+
+
+![image-20220927130453069](img/Android学习笔记/image-20220927130453069.png)
+
+
+
+登录，取消勾选记住密码
+
+![image-20220927131441779](img/Android学习笔记/image-20220927131441779.png)
+
+
+
+![image-20220927131536452](img/Android学习笔记/image-20220927131536452.png)
+
+
+
+![image-20220927131544869](img/Android学习笔记/image-20220927131544869.png)
+
+
+
+已经被删除
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 存储卡的文件操作
+
+### 私有存储空间与公共存储空间
 
