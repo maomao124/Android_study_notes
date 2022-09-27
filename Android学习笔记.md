@@ -15578,3 +15578,126 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
 ### 私有存储空间与公共存储空间
 
+为了更规范地管理手机存储空间，Android从7.0开始将存储卡划分为私有存储和公共存储两大部分，也 就是分区存储方式，系统给每个App都分配了默认的私有存储空间。App在私有空间上读写文件无须任 何授权，但是若想在公共空间读写文件，则要在AndroidManifest.xml里面添加下述的权限配置
+
+
+
+```xml
+<!-- 存储卡读写 -->
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAG" />
+```
+
+
+
+但是即使App声明了完整的存储卡操作权限，系统仍然默认禁止该App访问公共空间。打开手机的系统设置界面，进入到具体应用的管理页面，会发现该应用的存储访问权限被禁止了
+
+
+
+当然图示的禁止访问只是不让访问存储卡的公共空间，App自身的私有空间依旧可以正常读写。这缘于 Android把存储卡分成了两块区域，一块是所有应用均可访问的公共空间，另一块是只有应用自己才可访问的专享空间。虽然Android给每个应用都分配了单独的安装目录，但是安装目录的空间很紧张，所 以Android在存储卡的“Android/data”目录下给每个应用又单独建了一个文件目录，用来保存应用自己 需要处理的临时文件。这个目录只有当前应用才能够读写文件，其他应用是不允许读写的。由于私有空 间本身已经加了访问权限控制，因此它不受系统禁止访问的影响，应用操作自己的文件目录自然不成问题。因为私有的文件目录只有属主应用才能访问，所以一旦属主应用被卸载，那么对应的目录也会被删掉
+
+
+
+既然存储卡分为公共空间和私有空间两部分，它们的空间路径获取也就有所不同。
+
+* 若想获取公共空间的存储路径，调用的是Environment.getExternalStoragePublicDirectory方法；
+* 若想获取应用私有空间的存储路径，调用的是getExternalFilesDir方法
+
+
+
+
+
+```java
+package mao.android_read_write_memory_card;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        TextView textView = findViewById(R.id.TextView_result);
+
+        // 获取系统的公共存储路径
+        String s = Environment.getExternalStorageDirectory().toString();
+        textView.setText(textView.getText() + "\n\n公共存储根路径：" + s);
+
+        s = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+
+        textView.setText(textView.getText() + "\n\n公共存储下载路径：" + s);
+
+        s = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
+
+        textView.setText(textView.getText() + "\n\n公共存储音乐路径：" + s);
+
+        s = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+
+        textView.setText(textView.getText() + "\n\n公共存储图片路径：" + s);
+
+        s = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString();
+
+        textView.setText(textView.getText() + "\n\n私有存储下载路径：" + s);
+
+        // Android10的存储空间默认采取分区方式，此处判断是传统方式还是分区方式
+        boolean externalStorageLegacy = Environment.isExternalStorageLegacy();
+
+        textView.setText(textView.getText() + "\n\n是否是分区方式：" + externalStorageLegacy);
+    }
+}
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <TextView
+            android:id="@+id/TextView_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20220927202257726](img/Android学习笔记/image-20220927202257726.png)
+
+
+
+
+
+
+
+
+
+### 在存储卡上读写文本文件
+
+
+
