@@ -16460,3 +16460,27 @@ public class MainActivity extends AppCompatActivity
 
 
 
+![image-20220927211134023](img/Android学习笔记/image-20220927211134023.png)
+
+
+
+点击保存
+
+
+
+重启
+
+
+
+![image-20220927211200903](img/Android学习笔记/image-20220927211200903.png)
+
+
+
+点击读取数据
+
+
+
+![image-20220927211217857](img/Android学习笔记/image-20220927211217857.png)
+
+
+
