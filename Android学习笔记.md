@@ -531,7 +531,7 @@ Android Studio是谷歌官方推出的App开发环境，它提供了三种操作
 
 
 
-5．手机要能正常使用
+5．**手机要能正常使用**
 
 锁屏状态下，Android Studio向手机安装App的行为可能会被拦截，所以要保证手机处于解锁状态，才 能顺利通过电脑安装App到手机上。 有的手机还要求插入SIM卡才能调试App，还有的手机要求登录会员才能调试App，总之如果遇到无法安 装的问题，各种情况都尝试一遍才好。
 
@@ -764,7 +764,7 @@ android:text="Hello World!" />
 
 
 
-App工程分为两个层次，第一个层次是项目，依次选择菜单File→New→New Project即可创建新项目。 另一个层次是模块，模块依附于项目，每个项目至少有一个模块，也能拥有多个模块，依次选择菜单 File→New→New Module即可在当前项目创建新模块。一般所言的“编译运行App”，指的是运行某个模 块，而非运行某个项目，因为模块才对应实际的App。
+App工程分为两个层次，第一个层次是项目，依次选择菜单File→New→New Project即可创建新项目。 另一个层次是模块，模块依附于项目，每个项目至少有一个模块，也能拥有多个模块，依次选择菜单 File→New→New Module即可在当前项目创建新模块。一般所言的“编译运行App”，指的是运行某个模块，而非运行某个项目，因为模块才对应实际的App。
 
 
 
@@ -16883,5 +16883,500 @@ Android10弃用了管理分区外部储存
 
 
 
+
+
+
+
 ## 应用组件Application
+
+### Application的生命周期
+
+Application是Android的一大组件，在App运行过程中有且仅有一个Application对象贯穿应用的整个生命周期。打开AndroidManifest.xml，发现activity节点的上级正是application节点，不过该节点并未指定name属性，此时App采用默认的Application实例
+
+
+
+
+
+每个activity节点都指定了name属性，譬如常见的name属性值为.MainActivity，让人知晓该 activity的入口代码是MainActivity.java。现在尝试给application节点加上name属性：
+
+```xml
+<application
+        android:name=".application.MainApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Android_Application"
+        tools:targetApi="31">
+    <activity
+            android:name=".MainActivity"
+            android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+</application>
+```
+
+
+
+在Java代码的包名目录下创建MainApplication.java，要求该类继承Application，继承之后可供重写的方法主要有以下3个：
+
+* onCreate：在App启动时调用
+* onTerminate：在App终止时调用
+* onConfigurationChanged：在配置改变时调用，例如从竖屏变为横屏
+
+
+
+与生命周期有关的方法是onCreate和onTerminate，那么重写这两个方法，并在重写后的方法中打印日志
+
+
+
+```java
+package mao.android_application.application;
+
+import android.app.Application;
+import android.content.ContentProvider;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+/**
+ * Project name(项目名称)：android_Application
+ * Package(包名): mao.android_application.application
+ * Class(类名): MainApplication
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 12:14
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainApplication extends Application
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainApplication";
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+    }
+
+    /**
+     * This method is for use in emulated process environments.  It will
+     * never be called on a production Android device, where processes are
+     * removed by simply killing them; no user code (including this callback)
+     * is executed when doing so.
+     */
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+}
+
+```
+
+
+
+运行测试App，在logcat窗口观察应用日志。但是只在启动一开始看到MainApplication的 onCreate日志（该日志先于MainActivity的onCreate日志），却始终无法看到它的onTerminate日志， 无论是自行退出App还是强行杀掉App，日志都不会打印onTerminate
+
+
+
+Android明明提供了这个方法，同时提供了关于 该方法的解释，说明文字如下：This method is for use in emulated process environments．It will never be called on a production Android device, where processes are removed by simply killing them; no user code (including this callback) is executed when doing so。这段话的意思是：该方法供模拟环境使用，它在真机上永远不会被调用，无论是直接杀进程还是代码退出；执行该操作时，不会执行任何用户代码
+
+
+
+
+
+
+
+### 利用Application操作全局变量
+
+C/C++有全局变量的概念，因为全局变量保存在内存中，所以操作全局变量就是操作内存，显然内存的 读写速度远比读写数据库或读写文件快得多。所谓全局，指的是其他代码都可以引用该变量，因此全局变量是共享数据和消息传递的好帮手。不过Java没有全局变量的概念，与之比较接近的是类里面的静态成员变量，该变量不但能被外部直接引用，而且它在不同地方引用的值是一样的（前提是在引用期间不能改动变量值），所以借助静态成员变量也能实现类似全局变量的功能
+
+
+
+Application的生命周期覆盖了App运行的全过程。不像短暂的Activity生命周期，一旦退出该页面，Activity实例就被销毁。因此，利用Application的生命特性，能够在Application实例中保存全局变量
+
+
+
+适合在Application中保存的全局变量主要有下面3类数据：
+
+* 会频繁读取的信息，例如用户名、手机号码等
+* 不方便由意图传递的数据，例如位图对象、非字符串类型的集合对象等
+* 容易因频繁分配内存而导致内存泄漏的对象，例如Handler处理器实例等
+
+
+
+
+
+要想通过Application实现全局内存的读写，得完成以下3项工作：
+
+* 编写一个继承自Application的新类MainApplication。该类采用单例模式，内部先声明自身类的一 个静态成员对象，在创建App时把自身赋值给这个静态对象，然后提供该对象的获取方法getInstance
+
+
+
+```java
+package mao.android_application.application;
+
+import android.app.Application;
+import android.content.ContentProvider;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Project name(项目名称)：android_Application
+ * Package(包名): mao.android_application.application
+ * Class(类名): MainApplication
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 12:14
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MainApplication extends Application
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainApplication";
+
+    /**
+     * 实例，单例模式，双重检查锁，volatile防止指令重排，在写后面加写屏障
+     */
+    private static volatile MainApplication mainApplication;
+
+    public Map<String, Object> map = new HashMap<>();
+
+    public static MainApplication getInstance()
+    {
+        if (mainApplication == null)
+        {
+            synchronized (MainApplication.class)
+            {
+                if (mainApplication == null)
+                {
+                    mainApplication = new MainApplication();
+                }
+            }
+        }
+        return mainApplication;
+    }
+
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+    }
+
+    /**
+     * This method is for use in emulated process environments.  It will
+     * never be called on a production Android device, where processes are
+     * removed by simply killing them; no user code (including this callback)
+     * is executed when doing so.
+     */
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+}
+```
+
+
+
+
+
+* 在活动页面代码中调用MainApplication的getInstance方法，获得它的一个静态对象，再通过该对象访问MainApplication的公共变量和公共方法
+
+
+
+
+
+接下来演示如何读写内存中的全局变量，首先分别创建写内存页面和读内存页面，其中写内存页面把用户的注册信息保存到全局变量map集合里
+
+
+
+
+
+布局
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:id="@+id/EditText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="用户名" />
+
+    <EditText
+            android:id="@+id/EditText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberPassword"
+            android:hint="密码" />
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="保存到application域"
+            android:textAllCaps="false" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跳转"
+            android:textAllCaps="false" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/TextView_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="读取application域"
+            android:textAllCaps="false" />
+
+</LinearLayout>
+```
+
+
+
+
+
+代码
+
+
+
+```java
+package mao.android_application;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+
+import java.util.Map;
+
+import mao.android_application.application.MainApplication;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        EditText editText1 = findViewById(R.id.EditText1);
+        EditText editText2 = findViewById(R.id.EditText2);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String username = editText1.getText().toString();
+                String password = editText2.getText().toString();
+
+                Map<String, Object> map = MainApplication.getInstance().map;
+                map.put("username", username);
+                map.put("password", password);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+            }
+        });
+
+    }
+}
+```
+
+
+
+```java
+package mao.android_application;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Map;
+
+import mao.android_application.application.MainApplication;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        TextView textView = findViewById(R.id.TextView_result);
+
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v)
+            {
+                Map<String, Object> map = MainApplication.getInstance().map;
+                String username = (String) map.get("username");
+                String password = (String) map.get("password");
+
+                if (username == null)
+                {
+                    toastShow("用户名读取失败");
+                    return;
+                }
+                if (password == null)
+                {
+                    toastShow("密码读取失败");
+                    return;
+                }
+                textView.setText("用户名：" + username + "\n密码：" + password);
+
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20220928130120414](img/Android学习笔记/image-20220928130120414.png)
+
+
+
+先保存再跳转
+
+
+
+![image-20220928130145341](img/Android学习笔记/image-20220928130145341.png)
+
+
+
+读取
+
+
+
+![image-20220928130156477](img/Android学习笔记/image-20220928130156477.png)
+
+
+
+
+
+
+
+
+
+
+
+## 利用Room简化数据库操作
 
