@@ -17380,3 +17380,994 @@ public class MainActivity2 extends AppCompatActivity
 
 ## 利用Room简化数据库操作
 
+虽然Android提供了数据库帮助器，但是开发者在进行数据库编程时仍有诸多不便，比如每次增加一张新表，开发者都得手工实现以下代码逻辑：
+
+* 重写数据库帮助器的onCreate方法，添加该表的建表语句
+* 在插入记录之时，必须将数据实例的属性值逐一赋给该表的各字段
+* 在查询记录之时，必须遍历结果集游标，把各字段值逐一赋给数据实例
+* 每次读写操作之前，都要先开启数据库连接；读写操作之后，又要关闭数据库连接
+
+
+
+谷歌公司有一个数据库框架—Room，该框架同样基于SQLite，但它通过注解技术极大地简化了数据库操 作，减少了原来相当一部分编码工作量
+
+
+
+由于Room并未集成到SDK中，而是作为第三方框架提供，所以要导入依赖
+
+修改模块的build.gradle文件，往 dependencies节点添加下面两行配置，表示导入指定版本的Room库：
+
+```
+implementation 'androidx.room:room-runtime:2.3.0'
+annotationProcessor 'androidx.room:room-compiler:2.3.0'
+```
+
+
+
+示例
+
+```
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        applicationId "mao.android_room_frame"
+        minSdk 25
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.room:room-runtime:2.3.0'
+    annotationProcessor 'androidx.room:room-compiler:2.3.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+```
+
+
+
+
+
+
+
+已学生信息操作为例
+
+
+
+#### 编写实体类Student
+
+```java
+package mao.android_room_frame.entity;
+
+import androidx.annotation.NonNull;
+import androidx.room.Database;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+import java.io.Serializable;
+
+/**
+ * Project name(项目名称)：android_Room_frame
+ * Package(包名): mao.android_room_frame.entity
+ * Class(类名): Student
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 13:25
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@Entity
+public class Student implements Serializable
+{
+    /**
+     * id
+     */
+    @PrimaryKey
+    @NonNull
+    private Long id;
+
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * 性别
+     */
+    private String sex;
+
+    /**
+     * 年龄
+     */
+    private int age;
+
+    /**
+     * Instantiates a new Student.
+     */
+    public Student()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Student.
+     *
+     * @param id   the id
+     * @param name the name
+     * @param sex  the sex
+     * @param age  the age
+     */
+    @Ignore
+    public Student(Long id, String name, String sex, int age)
+    {
+        this.id = id;
+        this.name = name;
+        this.sex = sex;
+        this.age = age;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public Long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets sex.
+     *
+     * @return the sex
+     */
+    public String getSex()
+    {
+        return sex;
+    }
+
+    /**
+     * Sets sex.
+     *
+     * @param sex the sex
+     */
+    public void setSex(String sex)
+    {
+        this.sex = sex;
+    }
+
+    /**
+     * Gets age.
+     *
+     * @return the age
+     */
+    public int getAge()
+    {
+        return age;
+    }
+
+    /**
+     * Sets age.
+     *
+     * @param age the age
+     */
+    public void setAge(int age)
+    {
+        this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Student student = (Student) o;
+
+        if (getAge() != student.getAge())
+        {
+            return false;
+        }
+        if (getId() != null ? !getId().equals(student.getId()) : student.getId() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(student.getName()) : student.getName() != null)
+        {
+            return false;
+        }
+        return getSex() != null ? getSex().equals(student.getSex()) : student.getSex() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getSex() != null ? getSex().hashCode() : 0);
+        result = 31 * result + getAge();
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("sex：").append(sex).append('\n');
+        stringbuilder.append("age：").append(age).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+#### 编写持久化类
+
+该类必须添加“@Dao”注解，内部的记录查询方法必须添加“@Query”注 解，记录插入方法必须添加“@Insert”注解，记录更新方法必须添加“@Update”注解，记录删除方法必须 添加“@Delete”注解（带条件的删除方法除外）。对于记录查询方法，允许在@Query之后补充具体的查 询语句以及查询条件；对于记录插入方法与记录更新方法，需明确出现重复记录时要采取哪种处理策略
+
+
+
+```java
+package mao.android_room_frame.dao;
+
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.Query;
+import androidx.room.Update;
+
+import java.util.List;
+
+import mao.android_room_frame.entity.Student;
+
+/**
+ * Project name(项目名称)：android_Room_frame
+ * Package(包名): mao.android_room_frame.dao
+ * Interface(接口名): StudentDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 13:31
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@Dao
+public interface StudentDao
+{
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Student}>
+     */
+    @Query("select * from student")
+    List<Student> queryAll();
+
+    /**
+     * 查询
+     *
+     * @param id id
+     * @return {@link Student}
+     */
+    @Query("select * from student where id=:id")
+    Student query(Long id);
+
+    /**
+     * 插入
+     *
+     * @param student 学生
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insert(Student student);
+
+    /**
+     * 插入列表
+     *
+     * @param list 列表
+     */
+    @Insert
+    void insertList(List<Student> list);
+
+
+    /**
+     * 更新
+     *
+     * @param student 学生
+     * @return int
+     */
+    @Update
+    int update(Student student);
+
+
+    /**
+     * 删除
+     *
+     * @param student 学生
+     * @return int
+     */
+    @Delete
+    int delete(Student student);
+
+    /**
+     * 删除所有
+     */
+    @Query("delete from student where 1=1")
+    void deleteAll();
+
+}
+
+```
+
+
+
+
+
+
+
+#### 编写数据库类
+
+因为先有数据库然后才有表，所以图书信息表还得放到某个数据库里，这个默认的图书数据库要从 RoomDatabase派生而来，并添加“@Database”注解
+
+
+
+```java
+package mao.android_room_frame.database;
+
+
+import androidx.room.Database;
+
+import androidx.room.RoomDatabase;
+
+
+import mao.android_room_frame.dao.StudentDao;
+import mao.android_room_frame.entity.Student;
+
+/**
+ * Project name(项目名称)：android_Room_frame
+ * Package(包名): mao.android_room_frame.database
+ * Class(类名): StudentDatabase
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 13:43
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+/*
+entities表示该数据库有哪些表，version表示数据库的版本号
+exportSchema表示是否导出数据库信息的json串，建议设为false，若设为true还需指定json文件的保
+存路径
+ */
+@Database(entities = {Student.class}, version = 1, exportSchema = false)
+public abstract class StudentDatabase extends RoomDatabase
+{
+    /**
+     * 获取该数据库中某张表的持久化对象
+     */
+    public abstract StudentDao getStudentDao();
+}
+
+```
+
+
+
+
+
+
+
+#### 声明数据库的唯一实例
+
+为了避免重复打开数据库造成的内存泄漏问题，每个数据库在App运行过程中理应只有一个实例，此时要求开发者自定义新的Application类，在该类中声明并获取图书数据库的实例，并将自定义的 Application类设为单例模式，保证App运行之时有且仅有一个应用实例。
+
+
+
+```java
+package mao.android_room_frame.application;
+
+import android.app.Application;
+import android.content.res.Configuration;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.room.Room;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import mao.android_room_frame.database.StudentDatabase;
+
+/**
+ * Project name(项目名称)：android_Room_frame
+ * Package(包名): mao.android_room_frame.application
+ * Class(类名): MainApplication
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/28
+ * Time(创建时间)： 13:53
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class MainApplication extends Application
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainApplication";
+
+    /**
+     * 实例，单例模式
+     */
+    private static volatile MainApplication mainApplication;
+
+    public Map<String, Object> map = new HashMap<>();
+
+    private StudentDatabase studentDatabase;
+
+    /**
+     * 得到StudentDatabase
+     *
+     * @return {@link StudentDatabase}
+     */
+    public StudentDatabase getStudentDatabase()
+    {
+        return studentDatabase;
+    }
+
+    /**
+     * 获得实例
+     *
+     * @return {@link MainApplication}
+     */
+    public static MainApplication getInstance()
+    {
+        return mainApplication;
+    }
+
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+        mainApplication = this;
+
+        studentDatabase = Room.databaseBuilder(this, StudentDatabase.class, "student")
+                //允许迁移数据库（发生数据库变更时，Room默认删除原数据库再创建新数据库。
+                //如此一来原来的记录会丢失，故而要改为迁移方式以便保存原有记录）
+                .addMigrations()
+                //// 允许在主线程中操作数据库（Room默认不能在主线程中操作数据库）
+                .allowMainThreadQueries()
+                .build();
+
+
+    }
+
+    /**
+     * This method is for use in emulated process environments.  It will
+     * never be called on a production Android device, where processes are
+     * removed by simply killing them; no user code (including this callback)
+     * is executed when doing so.
+     */
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+}
+```
+
+
+
+
+
+#### 获取数据表的持久化对象
+
+```java
+StudentDao studentDao = MainApplication.getInstance().getStudentDatabase().getStudentDao();
+```
+
+
+
+
+
+
+
+
+
+#### 布局文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <EditText
+            android:id="@+id/EditText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="学号"
+            android:inputType="number"
+            android:maxLength="13" />
+
+    <EditText
+            android:id="@+id/EditText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="姓名"
+            android:maxLength="5"
+            android:inputType="text" />
+
+    <EditText
+            android:id="@+id/EditText3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="性别"
+            android:maxLength="1" />
+
+    <EditText
+            android:id="@+id/EditText4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="年龄"
+            android:maxLength="2"
+            android:inputType="number" />
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="修改" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="删除" />
+
+    <Button
+            android:id="@+id/Button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询" />
+
+    <Button
+            android:id="@+id/Button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询所有" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/TextView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+#### MainActivity代码
+
+
+
+```java
+package mao.android_room_frame;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.List;
+
+import mao.android_room_frame.application.MainApplication;
+import mao.android_room_frame.dao.StudentDao;
+import mao.android_room_frame.entity.Student;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private StudentDao studentDao;
+    private TextView textView;
+    private EditText editText1;
+    private EditText editText2;
+    private EditText editText3;
+    private EditText editText4;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        studentDao = MainApplication.getInstance().getStudentDatabase().getStudentDao();
+
+        textView = findViewById(R.id.TextView1);
+
+        editText1 = findViewById(R.id.EditText1);
+        editText2 = findViewById(R.id.EditText2);
+        editText3 = findViewById(R.id.EditText3);
+        editText4 = findViewById(R.id.EditText4);
+
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                insert();
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                update();
+            }
+        });
+
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                delete();
+            }
+        });
+
+        findViewById(R.id.Button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                query();
+            }
+        });
+
+        findViewById(R.id.Button5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                queryAll();
+            }
+        });
+
+    }
+
+    /**
+     * 插入
+     */
+    private void insert()
+    {
+        try
+        {
+            Long id = Long.valueOf(editText1.getText().toString());
+            String name = editText2.getText().toString();
+            String sex = editText3.getText().toString();
+            int age = Integer.parseInt(editText4.getText().toString());
+
+            if (!sex.equals("男") && !sex.equals("女"))
+            {
+                throw new Exception("性别只能为男或者女");
+            }
+            Student student = new Student(id, name, sex, age);
+            studentDao.insert(student);
+            toastShow("已尝试插入");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "insert: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+
+    /**
+     * 更新
+     */
+    private void update()
+    {
+        try
+        {
+            Long id = Long.valueOf(editText1.getText().toString());
+            String name = editText2.getText().toString();
+            String sex = editText3.getText().toString();
+            int age = Integer.parseInt(editText4.getText().toString());
+
+            Student student = studentDao.query(id);
+            if (student == null)
+            {
+                throw new Exception("未查询到学号为" + id + "的信息");
+            }
+            student.setName(name);
+            student.setSex(sex);
+            student.setAge(age);
+            int update = studentDao.update(student);
+            if (update <= 0)
+            {
+                throw new Exception("更新失败");
+            }
+            toastShow("更新成功");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "update: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除
+     */
+    private void delete()
+    {
+        try
+        {
+            if (editText1.getText().toString().equals(""))
+            {
+                toastShow("学号为空");
+                return;
+            }
+            long id = Long.parseLong(editText1.getText().toString());
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("删除确认")
+                    .setMessage("是否删除学号为" + id + "的信息？")
+                    .setPositiveButton("确认", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            int delete = studentDao.delete(new Student(id, null, null, 0));
+                            if (delete <= 0)
+                            {
+                                toastShow("删除失败");
+                                return;
+                            }
+                            toastShow("删除成功");
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .create()
+                    .show();
+
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "delete: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询
+     */
+    private void query()
+    {
+        try
+        {
+            if (editText1.getText().toString().equals(""))
+            {
+                toastShow("学号为空");
+                return;
+            }
+            long id = Long.parseLong(editText1.getText().toString());
+
+            Student student = studentDao.query(id);
+            if (student == null)
+            {
+                toastShow("查询不到学号为" + id + "的信息");
+                editText1.setText("");
+                editText2.setText("");
+                editText3.setText("");
+                editText4.setText("");
+                return;
+            }
+            editText1.setText(String.valueOf(id));
+            editText2.setText(student.getName());
+            editText3.setText(student.getSex());
+            editText4.setText(String.valueOf(student.getAge()));
+            toastShow("查询成功");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "query: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询所有
+     */
+    @SuppressLint("SetTextI18n")
+    private void queryAll()
+    {
+        try
+        {
+            textView.setText("");
+            List<Student> studentList = studentDao.queryAll();
+            for (Student student : studentList)
+            {
+                textView.setText(textView.getText() + "\n\n" + student.toString());
+            }
+            toastShow("查询到" + studentList.size() + "条数据");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "queryAll: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 运行
+
+添加
+
+![image-20220928203816451](img/Android学习笔记/image-20220928203816451.png)
+
+
+
+![image-20220928203825897](img/Android学习笔记/image-20220928203825897.png)
+
+
+
+查询所有
+
+
+
+![image-20220928203846638](img/Android学习笔记/image-20220928203846638.png)
+
+
+
+查询
+
+
+
+![image-20220928203906511](img/Android学习笔记/image-20220928203906511.png)
+
+
+
