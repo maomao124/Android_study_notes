@@ -8752,7 +8752,7 @@ String value = bundle.getString("key");
 
 
 
-然后打开AndroidManifest.xml，找到MainActivity所在的activity节点，在该节点内部补充如下的元数 据配置，其中name属性为android.app.shortcuts，而resource属性为@xml/shortcuts
+然后打开AndroidManifest.xml，找到MainActivity所在的activity节点，在该节点内部补充如下的元数据配置，其中name属性为android.app.shortcuts，而resource属性为@xml/shortcuts
 
 
 
@@ -18643,6 +18643,75 @@ public class MainActivity extends AppCompatActivity
 
 
 
+#### 添加一个快捷方式
+
+因为还有批量添加和清除全部这两个方法还没有测试
+
+
+
+在xml中添加shortcuts.xml文件
+
+
+
+```xml
+<?xml version ="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Add shortcuts that launch your app to a specific screen or task. -->
+    <!-- Learn more at https://developer.android.com/guide/topics/ui/shortcuts/creating-shortcuts -->
+    <!-- <shortcut android:shortcutId="SHORTCUT_ID" -->
+    <!--     android:enabled="true" -->
+    <!--     android:shortcutShortLabel="SHORTCUT_SHORT_LABEL" -->
+    <!--     android:shortcutLongLabel="SHORTCUT_LONG_LABEL" -->
+    <!--     android:shortcutDisabledMessage="SHORTCUT_DISABLED_MESSAGE"> -->
+    <!--     <intent -->
+    <!--         android:action="android.intent.action.VIEW" -->
+    <!--         android:targetClass="REPLACE_IT_WITH_FULL_QUALIFIED_CLASS" -->
+    <!--         android:targetPackage="REPLACE_IT_WITH_TARGET_PACKAGE" /> -->
+    <!-- </shortcut> -->
+
+    <!-- Integrate with Google Assistant App Actions for launching your app with various voice commands. -->
+    <!-- Learn more at: https://developers.google.com/assistant/app/overview -->
+    <!-- <capability android:name="actions.intent.OPEN_APP_FEATURE"> -->
+    <!--     Provide query fulfillment instructions for this capability, or bind it to a shortcut. -->
+    <!--     Learn more at: https://developers.google.com/assistant/app/action-schema -->
+    <!-- </capability> -->
+
+    <shortcut
+            android:shortcutId="f"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher"
+            android:shortcutShortLabel="@string/s"
+            android:shortcutLongLabel="@string/l">
+        <!-- targetClass指定了点击该项菜单后要打开哪个活动页面 -->
+        <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="mao.android_room_frame"
+                android:targetClass="mao.android_room_frame.MainActivity2">
+
+            <categories android:name="android.shortcut.conversation" />
+
+        </intent>
+
+    </shortcut>
+
+</shortcuts>
+```
+
+
+
+
+
+字符串常量
+
+```xml
+<resources>
+    <string name="app_name">android_Room_frame</string>
+
+    <string name="s">insert and clear</string>
+    <string name="l">批量添加和清空数据</string>
+
+</resources>
+```
 
 
 
@@ -18650,6 +18719,411 @@ public class MainActivity extends AppCompatActivity
 
 
 
+#### 更改清单文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_room_frame">
+
+    <application
+            android:name=".application.MainApplication"
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_Room_frame"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity2"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- 指定快捷方式。在桌面上长按应用图标，就会弹出@xml/shortcuts所描述的快捷菜单 -->
+            <meta-data
+                    android:name="android.app.shortcuts"
+                    android:resource="@xml/shortcuts" />
+
+
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+#### 添加activity
+
+![image-20220929133433211](img/Android学习笔记/image-20220929133433211.png)
+
+
+
+
+
+
+
+#### 布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:id="@+id/EditText2_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入批量添加的数量"
+            android:inputType="number"
+            android:maxLength="4" />
+
+    <EditText
+            android:id="@+id/EditText2_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入起始学号"
+            android:inputType="number"
+            android:maxLength="13" />
+
+    <Button
+            android:id="@+id/Button_2_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开始批量添加" />
+
+    <Button
+            android:id="@+id/Button_2_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="清空所有数据"
+            android:textColor="#ff0000" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+#### MainActivity2代码
+
+
+
+```java
+package mao.android_room_frame;
+
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import mao.android_room_frame.application.MainApplication;
+import mao.android_room_frame.dao.StudentDao;
+import mao.android_room_frame.entity.Student;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    private EditText editText1;
+    private EditText editText2;
+
+    private static final String TAG = "MainActivity2";
+    private StudentDao studentDao;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        studentDao = MainApplication.getInstance().getStudentDatabase().getStudentDao();
+
+        editText1 = findViewById(R.id.EditText2_1);
+        editText2 = findViewById(R.id.EditText2_2);
+
+        findViewById(R.id.Button_2_1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                insertList();
+            }
+        });
+
+        findViewById(R.id.Button_2_2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                deleteAll();
+            }
+        });
+
+
+    }
+
+
+    /**
+     * 批量插入
+     */
+    private void insertList()
+    {
+        try
+        {
+            int count = Integer.parseInt(editText1.getText().toString());
+            long startId = Long.parseLong(editText2.getText().toString());
+            if (count < 1)
+            {
+                toastShow("数量小于1");
+                return;
+            }
+            if (startId <= 0)
+            {
+                toastShow("起始学号小于0");
+                return;
+            }
+
+            List<Student> list = new ArrayList<>(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                long id = startId + i;
+                String name = UUID.randomUUID().toString().substring(0, 6);
+                String sex = getIntRandom(1, 10) > 5 ? "男" : "女";
+                int age = getIntRandom(15, 30);
+
+                Student student = new Student(id, name, sex, age);
+                list.add(student);
+            }
+            studentDao.insertList(list);
+            toastShow("已尝试批量插入");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "InsertList: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除所有
+     */
+    private void deleteAll()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("清空全部数据！")
+                .setMessage("这将会清空所有的数据，是否继续？")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        try
+                        {
+                            studentDao.deleteAll();
+                            toastShow("清空成功");
+                        }
+                        catch (Exception e)
+                        {
+                            Log.e(TAG, "onClick: ", e);
+                            toastShow("异常：" + e.getMessage());
+                        }
+                    }
+                })
+                .setNeutralButton("取消", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        toastShow("点击取消");
+                    }
+                })
+                .create()
+                .show();
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 得到int随机
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    public static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+}
+```
+
+
+
+
+
+
+
+#### 运行
+
+从快捷方式进入
+
+![image-20220929133636136](img/Android学习笔记/image-20220929133636136.png)
+
+
+
+
+
+![image-20220929133700444](img/Android学习笔记/image-20220929133700444.png)
+
+
+
+
+
+![image-20220929133723933](img/Android学习笔记/image-20220929133723933.png)
+
+
+
+批量添加
+
+
+
+![image-20220929133742189](img/Android学习笔记/image-20220929133742189.png)
+
+
+
+
+
+进入主页面
+
+
+
+点击查询所有
+
+![image-20220929133815481](img/Android学习笔记/image-20220929133815481.png)
+
+
+
+
+
+100条数据
+
+
+
+再次进入该页面
+
+
+
+![image-20220929134017850](img/Android学习笔记/image-20220929134017850.png)
+
+
+
+
+
+到1000001时因为主键唯一性插入失败
+
+![image-20220929134100932](img/Android学习笔记/image-20220929134100932.png)
+
+
+
+
+
+进入主界面
+
+
+
+![image-20220929134136301](img/Android学习笔记/image-20220929134136301.png)
+
+
+
+
+
+还是100条数据，前面的数据因为事务回滚了，没有插入
+
+
+
+
+
+测试清空
+
+
+
+![image-20220929134244930](img/Android学习笔记/image-20220929134244930.png)
+
+
+
+
+
+![image-20220929134255380](img/Android学习笔记/image-20220929134255380.png)
+
+
+
+![image-20220929134305626](img/Android学习笔记/image-20220929134305626.png)
+
+
+
+
+
+再次回到主界面
+
+
+
+点击查询所有
+
+
+
+![image-20220929134338805](img/Android学习笔记/image-20220929134338805.png)
+
+
+
+所有的数据都被清空了
 
 
 
