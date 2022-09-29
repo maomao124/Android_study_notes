@@ -17774,6 +17774,204 @@ public interface StudentDao
 
 
 
+这是一个接口，其实框架生成了对应的实现类，使用的是实现类
+
+
+
+```java
+package mao.android_room_frame.database;
+
+import androidx.room.DatabaseConfiguration;
+import androidx.room.InvalidationTracker;
+import androidx.room.RoomOpenHelper;
+import androidx.room.RoomOpenHelper.Delegate;
+import androidx.room.RoomOpenHelper.ValidationResult;
+import androidx.room.util.DBUtil;
+import androidx.room.util.TableInfo;
+import androidx.room.util.TableInfo.Column;
+import androidx.room.util.TableInfo.ForeignKey;
+import androidx.room.util.TableInfo.Index;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
+import androidx.sqlite.db.SupportSQLiteOpenHelper.Callback;
+import androidx.sqlite.db.SupportSQLiteOpenHelper.Configuration;
+
+import java.lang.Class;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import mao.android_room_frame.dao.StudentDao;
+import mao.android_room_frame.dao.StudentDao_Impl;
+
+@SuppressWarnings({"unchecked", "deprecation"})
+public final class StudentDatabase_Impl extends StudentDatabase
+{
+    private volatile StudentDao _studentDao;
+
+    @Override
+    protected SupportSQLiteOpenHelper createOpenHelper(DatabaseConfiguration configuration)
+    {
+        final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(configuration, new RoomOpenHelper.Delegate(1)
+        {
+            @Override
+            public void createAllTables(SupportSQLiteDatabase _db)
+            {
+                _db.execSQL("CREATE TABLE IF NOT EXISTS `Student` (`id` INTEGER NOT NULL, `name` TEXT, `sex` TEXT, `age` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+                _db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
+                _db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4ee27f582a4db332409758cc675862e6')");
+            }
+
+            @Override
+            public void dropAllTables(SupportSQLiteDatabase _db)
+            {
+                _db.execSQL("DROP TABLE IF EXISTS `Student`");
+                if (mCallbacks != null)
+                {
+                    for (int _i = 0, _size = mCallbacks.size(); _i < _size; _i++)
+                    {
+                        mCallbacks.get(_i).onDestructiveMigration(_db);
+                    }
+                }
+            }
+
+            @Override
+            protected void onCreate(SupportSQLiteDatabase _db)
+            {
+                if (mCallbacks != null)
+                {
+                    for (int _i = 0, _size = mCallbacks.size(); _i < _size; _i++)
+                    {
+                        mCallbacks.get(_i).onCreate(_db);
+                    }
+                }
+            }
+
+            @Override
+            public void onOpen(SupportSQLiteDatabase _db)
+            {
+                mDatabase = _db;
+                internalInitInvalidationTracker(_db);
+                if (mCallbacks != null)
+                {
+                    for (int _i = 0, _size = mCallbacks.size(); _i < _size; _i++)
+                    {
+                        mCallbacks.get(_i).onOpen(_db);
+                    }
+                }
+            }
+
+            @Override
+            public void onPreMigrate(SupportSQLiteDatabase _db)
+            {
+                DBUtil.dropFtsSyncTriggers(_db);
+            }
+
+            @Override
+            public void onPostMigrate(SupportSQLiteDatabase _db)
+            {
+            }
+
+            @Override
+            protected RoomOpenHelper.ValidationResult onValidateSchema(SupportSQLiteDatabase _db)
+            {
+                final HashMap<String, TableInfo.Column> _columnsStudent = new HashMap<String, TableInfo.Column>(4);
+                _columnsStudent.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+                _columnsStudent.put("name", new TableInfo.Column("name", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+                _columnsStudent.put("sex", new TableInfo.Column("sex", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+                _columnsStudent.put("age", new TableInfo.Column("age", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+                final HashSet<TableInfo.ForeignKey> _foreignKeysStudent = new HashSet<TableInfo.ForeignKey>(0);
+                final HashSet<TableInfo.Index> _indicesStudent = new HashSet<TableInfo.Index>(0);
+                final TableInfo _infoStudent = new TableInfo("Student", _columnsStudent, _foreignKeysStudent, _indicesStudent);
+                final TableInfo _existingStudent = TableInfo.read(_db, "Student");
+                if (!_infoStudent.equals(_existingStudent))
+                {
+                    return new RoomOpenHelper.ValidationResult(false, "Student(mao.android_room_frame.entity.Student).\n"
+                            + " Expected:\n" + _infoStudent + "\n"
+                            + " Found:\n" + _existingStudent);
+                }
+                return new RoomOpenHelper.ValidationResult(true, null);
+            }
+        }, "4ee27f582a4db332409758cc675862e6", "f5640ef8ac55f28c62199a56d3562702");
+        final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(configuration.context)
+                .name(configuration.name)
+                .callback(_openCallback)
+                .build();
+        final SupportSQLiteOpenHelper _helper = configuration.sqliteOpenHelperFactory.create(_sqliteConfig);
+        return _helper;
+    }
+
+    @Override
+    protected InvalidationTracker createInvalidationTracker()
+    {
+        final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
+        HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
+        return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "Student");
+    }
+
+    @Override
+    public void clearAllTables()
+    {
+        super.assertNotMainThread();
+        final SupportSQLiteDatabase _db = super.getOpenHelper().getWritableDatabase();
+        try
+        {
+            super.beginTransaction();
+            _db.execSQL("DELETE FROM `Student`");
+            super.setTransactionSuccessful();
+        }
+        finally
+        {
+            super.endTransaction();
+            _db.query("PRAGMA wal_checkpoint(FULL)").close();
+            if (!_db.inTransaction())
+            {
+                _db.execSQL("VACUUM");
+            }
+        }
+    }
+
+    @Override
+    protected Map<Class<?>, List<Class<?>>> getRequiredTypeConverters()
+    {
+        final HashMap<Class<?>, List<Class<?>>> _typeConvertersMap = new HashMap<Class<?>, List<Class<?>>>();
+        _typeConvertersMap.put(StudentDao.class, StudentDao_Impl.getRequiredConverters());
+        return _typeConvertersMap;
+    }
+
+    @Override
+    public StudentDao getStudentDao()
+    {
+        if (_studentDao != null)
+        {
+            return _studentDao;
+        }
+        else
+        {
+            synchronized (this)
+            {
+                if (_studentDao == null)
+                {
+                    _studentDao = new StudentDao_Impl(this);
+                }
+                return _studentDao;
+            }
+        }
+    }
+}
+```
+
+
+
+
+
+
+
 
 
 
@@ -18462,4 +18660,126 @@ public class MainActivity extends AppCompatActivity
 
 
 ## 购物车项目
+
+### 需求描述
+
+第一次进入购物车页面，购物车里面是空的，同时提示去逛手机商场。接着去商场页面选购手机，随便挑了几部手机加入购物车，再返回购物车页面，即可看到购物车的商品列表，有商品图片、名称、数量、单价、总价等等信息。当然购物车并不仅仅只是展示待购买的商品，还要支持最终购买的结算操作、支持清空购物车等功能
+
+一旦有新商品加入购物车，购物车图标上的商品数量立马加一。当然，用户也能点击购物车图标直接跳到购物车页面。商场页面除了商品列表之外，页面右上角还有一个 购物车图标，有时这个图标会在页面右下角。商品详情页面通常也有购物车图标，倘使用户在详情页面把商品加入购物车，那么图标上的数字也会加一
+
+
+
+
+
+### 界面设计
+
+Android控件：
+
+* 线性布局LinearLayout：购物车界面从上往下排列，用到了垂直方向的线性布局
+* 网格布局GridLayout：商场页面的陈列橱柜，允许分行分列展示商品
+* 相对布局RelativeLayout：页面右上角的购物车图标，图标右上角又有数字标记，按照指定方位排列控件
+* 其他常见控件尚有文本视图TextView、图像视图ImageView，按钮控件Button等
+
+存储方式：
+
+* 数据库SQLite：最直观的肯定是数据库了，购物车里的商品列表一定是放在SQLite中，增删改查都少不了它
+* 全局内存：购物车图标右上角的数字表示购物车中的商品数量，该数值建议保存在全局内存中，这样不必每次都到数据库中执行count操作
+* 存储卡文件：通常商品图片来自于电商平台的服务器，此时往往引入图片缓存机制，也就是首次访问先将网络图片保存到存储卡，下次访问时直接从存储卡获取缓存图片，从而提高图片的加载速度
+* 共享参数SharedPreferences：是否首次访问网络图片，这个标志位推荐放在共享参数中，因为它需要持久化存储，并且只有一个参数信息
+
+
+
+
+
+
+
+### 逻辑细节
+
+#### 关于页面跳转
+
+因为购物车页面允许直接跳到商场页面，并且商场页面也允许跳到购物车页面，所以如果用户在这两个页面之间来回跳转，然后再按返回键，结果发现返回的时候也是在两个页面间往返跳转。出现问题的缘由在于：每次启动活动页面都往活动栈加入一个新活动，那么返回出栈之时，也只好一个一个活动依次退出了
+
+解决该问题的办法：对于购物车的活动跳转需要指定启动标志 FLAG_ACTIVITY_CLEAR_TOP，表示活动栈有且仅有该页面的唯一实例，如此即可避免多次返回同一页面的情况。比如从购物车页面跳到商场页面
+
+
+
+
+
+#### 关于商品图片的缓存
+
+通常商品图片由后端服务器提供，App打开页面时再从服务器下载所需的商品图。可是购物车模块的多个页面都会展示商品图片，如果每次都到服务器请求图片，显然既耗时间又耗流量非常不经济。因此 App都会缓存常用的图片，一旦从服务器成功下载图片，便在手机存储卡上保存图片文件。然后下次界面需要加载商品图片时，就先从存储卡寻找该图片，如果找到就读取图片的位图信息，如果没找到就再到服务器下载图片
+
+以上的缓存逻辑是最简单的二级图片缓存，实际开发往往使用更高级的三级缓存机制
+
+
+
+步骤：
+
+* 先判断是否为首次访问网络图片
+* 如果是首次访问网络图片，就先从网络服务器下载图片
+* 把下载完的图片数据保存到手机的存储卡
+* 往数据库中写入商品记录，以及商品图片的本地存储路径
+* 更新共享参数中的首次访问标志
+
+
+
+
+
+
+
+#### 关于各页面共同的标题栏
+
+注意到购物车、手机商场、手机详情三个页面顶部都有标题栏，而且这三个标题栏风格统一，既然如 此，能否把它做成公共的标题栏呢？当然App界面支持局部的公共布局，以购物车的标题栏为例，公共布局的实现过程包括以下两个步骤：
+
+* 步骤一，首先定义标题栏专用的布局文件，包含返回箭头、文字标题、购物车图标、商品数量表等
+* 步骤二，然后在购物车页面的布局文件中添加如下一行include标签，表示引入title_shopping.xml的布局内容：
+
+```xml
+<include layout="@layout/title_shopping" />
+```
+
+
+
+
+
+
+
+#### 关于商品网格的单元布局
+
+商场页面的商品列表，呈现三行二列的表格布局，每个表格单元的界面布局雷同，都是商品名称在上、 商品图片居中、商品价格与添加按钮在下，看起来跟公共标题栏的处理有些类似。但后者为多个页面引用同一个标题栏，是多对一的关系；而前者为一个商场页面引用了多个商品网格，是一对多的关系。因此二者的实现过程不尽相同，就商场网格而言，它的单元复用分为下列3个步骤：
+
+* 步骤一，在商场页面的布局文件中添加GridLayout节点
+* 步骤二，为商场网格编写统一的商品信息布局
+* 步骤三，在商场页面的Java代码中，先利用下面代码获取布局文件item_goods.xml的根视图
+
+```java
+View view = LayoutInflater.from(this).inflate(R.layout.item_goods, null);
+```
+
+* 再从根视图中依据控件ID分别取出网格单元的各控件对象
+
+```java
+ImageView iv_thumb = view.findViewById(R.id.iv_thumb);
+TextView tv_name = view.findViewById(R.id.tv_name);
+TextView tv_price = view.findViewById(R.id.tv_price);
+Button btn_add = view.findViewById(R.id.btn_add);
+```
+
+
+
+
+
+
+
+
+
+
+
+### 实现
+
+
+
+
+
+
 
