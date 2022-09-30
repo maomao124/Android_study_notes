@@ -19193,7 +19193,181 @@ Android控件：
 * 如果是首次访问网络图片，就先从网络服务器下载图片
 * 把下载完的图片数据保存到手机的存储卡
 * 往数据库中写入商品记录，以及商品图片的本地存储路径
-* 更新共享参数中的首次访问标志
+* 更新共享参数中的首次访问标志(是否为首次访问也可以判断PicPath字段是否为空来实现)
+
+
+
+
+
+```java
+
+    /**
+     * 把位图数据保存到指定路径的图片文件
+     *
+     * @param path   路径
+     * @param bitmap Bitmap对象
+     */
+    public static boolean saveImage(String path, Bitmap bitmap)
+    {
+        // 根据指定的文件路径构建文件输出流对象
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path))
+        {
+            // 把位图数据压缩到文件输出流中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param path 路径
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(String path)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(path))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param file File对象
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(File file)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 得到图像位图
+     *
+     * @param goodsInfo GoodsInfo对象
+     * @return {@link Bitmap}
+     */
+    public Bitmap getImageBitmap(GoodsInfo goodsInfo)
+    {
+        if (goodsInfo.getPicPath() != null && !"".equals(goodsInfo.getPicPath()))
+        {
+            Log.d(TAG, "getImageBitmap: 加载图片");
+            Bitmap bitmap = openImage(goodsInfo.getPicPath());
+            if (bitmap != null)
+            {
+                //GoodsInfo里有缓存的图片路径，并且加载到了图片的路径，直接返回
+                return bitmap;
+            }
+            Log.d(TAG, "getImageBitmap: 本地图片缓存不存在，需要重新加载：" + goodsInfo.getId());
+            //GoodsInfo里有缓存的图片路径，但是没有加载到图片的路径
+            //图片不存在，路径失效，需要再次从网络加载
+            Log.d(TAG, "getImageBitmap: 从网络上加载图片");
+            Result result = getImageBitmapByHTTP(goodsInfo);
+            bitmap = result.getBitmap();
+            if (!result.isResult())
+            {
+                //从网络上加载失败失败，直接使用
+                return bitmap;
+            }
+            //保存
+            String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+            Log.d(TAG, "getImageBitmap: 保存图片，位置：" + path);
+            boolean b = saveImageBitmap(goodsInfo, bitmap, path);
+            if (!b)
+            {
+                //保存失败，直接使用
+                return bitmap;
+            }
+            //保存成功
+            //更新数据库
+            goodsInfo.setPicPath(path);
+            goodsDao.update(goodsInfo);
+            Log.d(TAG, "getImageBitmap: 更新数据库");
+            return bitmap;
+        }
+        Log.d(TAG, "getImageBitmap: 第一次加载图片");
+        //不存在，第一次加载
+        Result result = getImageBitmapByHTTP(goodsInfo);
+        Bitmap bitmap = result.getBitmap();
+        if (!result.isResult())
+        {
+            //从网络上加载失败失败，直接使用
+            return bitmap;
+        }
+        //保存
+        String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+        boolean b = saveImageBitmap(goodsInfo, bitmap, path);
+        if (!b)
+        {
+            //保存失败，直接使用
+            return bitmap;
+        }
+        //保存成功
+        //更新数据库
+        goodsInfo.setPicPath(path);
+        goodsDao.update(goodsInfo);
+        Log.d(TAG, "getImageBitmap: 更新数据库");
+        return bitmap;
+    }
+
+    /**
+     * 保存图像位图
+     *
+     * @param goodsInfo 货物信息
+     */
+    public boolean saveImageBitmap(GoodsInfo goodsInfo, Bitmap bitmap, String path)
+    {
+        return saveImage(path, bitmap);
+    }
+
+
+    /**
+     * 模拟从网络上获取图片
+     *
+     * @return {@link Bitmap}
+     */
+    public Result getImageBitmapByHTTP(GoodsInfo goodsInfo)
+    {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), goodsInfo.getPic());
+        if (bitmap == null)
+        {
+            //为空，加载默认的图片
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test);
+            return new Result().setResult(false).setBitmap(bitmap);
+        }
+        return new Result().setResult(true).setBitmap(bitmap);
+    }
+```
+
+
 
 
 
@@ -19206,6 +19380,66 @@ Android控件：
 注意到购物车、手机商场、手机详情三个页面顶部都有标题栏，而且这三个标题栏风格统一，既然如 此，能否把它做成公共的标题栏呢？当然App界面支持局部的公共布局，以购物车的标题栏为例，公共布局的实现过程包括以下两个步骤：
 
 * 步骤一，首先定义标题栏专用的布局文件，包含返回箭头、文字标题、购物车图标、商品数量表等
+
+
+
+```xml
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#aaaaff">
+
+    <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="返回" />
+
+    <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
+    <ImageView
+            android:id="@+id/iv_cart"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher" />
+
+    <TextView
+            android:id="@+id/tv_count"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/iv_cart"
+            android:layout_marginLeft="-20dp"
+            android:gravity="center"
+            android:background="@drawable/shape_oval_red"
+            android:text="0"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+
+</RelativeLayout>
+```
+
+
+
+因为没有图片资源，所以使用安卓的图标代替
+
+
+
+
+
 * 步骤二，然后在购物车页面的布局文件中添加如下一行include标签，表示引入title_shopping.xml的布局内容：
 
 ```xml
@@ -19250,6 +19484,39 @@ Button btn_add = view.findViewById(R.id.btn_add);
 
 
 ### 实现
+
+#### 表设计
+
+##### 商品表
+
+```java
+String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " name VARCHAR NOT NULL," +
+                " description VARCHAR NOT NULL," +
+                " price FLOAT NOT NULL," +
+                " picPath VARCHAR," +
+                " pic INTEGER NOT NULL)";
+```
+
+
+
+##### 购物车表
+
+```java
+String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " goodsId INTEGER NOT NULL," +
+                " count INTEGER NOT NULL);";
+```
+
+
+
+
+
+
+
+#### 实体类
 
 
 
