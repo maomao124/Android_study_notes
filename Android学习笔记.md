@@ -19518,7 +19518,1499 @@ String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
 
 #### 实体类
 
+##### GoodsInfo
 
+```java
+package mao.android_shopping.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_shopping.R;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.entity
+ * Class(类名): GoodsInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 19:48
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class GoodsInfo
+{
+    /**
+     * id
+     */
+    private int id;
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 描述
+     */
+    private String description;
+    /**
+     * 价格
+     */
+    private float price;
+    /**
+     * 大图的保存路径
+     */
+    private String picPath;
+    /**
+     * 大图的资源编号
+     */
+    private int pic;
+
+
+    /**
+     * Instantiates a new Goods info.
+     */
+    public GoodsInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Goods info.
+     *
+     * @param id          the id
+     * @param name        the name
+     * @param description the description
+     * @param price       the price
+     * @param picPath     the pic path
+     * @param pic         the pic
+     */
+    public GoodsInfo(int id, String name, String description, float price, String picPath, int pic)
+    {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.picPath = picPath;
+        this.pic = pic;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public int getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public GoodsInfo setId(int id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public GoodsInfo setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets description.
+     *
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * Sets description.
+     *
+     * @param description the description
+     * @return the description
+     */
+    public GoodsInfo setDescription(String description)
+    {
+        this.description = description;
+        return this;
+    }
+
+    /**
+     * Gets price.
+     *
+     * @return the price
+     */
+    public float getPrice()
+    {
+        return price;
+    }
+
+    /**
+     * Sets price.
+     *
+     * @param price the price
+     * @return the price
+     */
+    public GoodsInfo setPrice(float price)
+    {
+        this.price = price;
+        return this;
+    }
+
+    /**
+     * Gets pic path.
+     *
+     * @return the pic path
+     */
+    public String getPicPath()
+    {
+        return picPath;
+    }
+
+    /**
+     * Sets pic path.
+     *
+     * @param picPath the pic path
+     * @return the pic path
+     */
+    public GoodsInfo setPicPath(String picPath)
+    {
+        this.picPath = picPath;
+        return this;
+    }
+
+    /**
+     * Gets pic.
+     *
+     * @return the pic
+     */
+    public int getPic()
+    {
+        return pic;
+    }
+
+    /**
+     * Sets pic.
+     *
+     * @param pic the pic
+     * @return the pic
+     */
+    public GoodsInfo setPic(int pic)
+    {
+        this.pic = pic;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("description：").append(description).append('\n');
+        stringbuilder.append("price：").append(price).append('\n');
+        stringbuilder.append("picPath：").append(picPath).append('\n');
+        stringbuilder.append("pic：").append(pic).append('\n');
+        return stringbuilder.toString();
+    }
+
+    /**
+     * 手机商品的名称数组
+     */
+    private static final String[] mNameArray =
+            {
+                    "iPhone11", "Mate30", "小米10", "OPPO Reno3", "vivo X30", "荣耀30S"
+            };
+    /**
+     * 手机商品的描述数组
+     */
+    private static final String[] mDescArray =
+            {
+                    "Apple iPhone11 256GB 绿色 4G全网通手机",
+                    "华为 HUAWEI Mate30 8GB+256GB 丹霞橙 5G全网通 全面屏手机",
+                    "小米 MI10 8GB+128GB 钛银黑 5G手机 游戏拍照手机",
+                    "OPPO Reno3 8GB+128GB 蓝色星夜 双模5G 拍照游戏智能手机",
+                    "vivo X30 8GB+128GB 绯云 5G全网通 美颜拍照手机",
+                    "荣耀30S 8GB+128GB 蝶羽红 5G芯片 自拍全面屏手机"
+            };
+
+
+    /**
+     * 手机商品的价格数组
+     */
+    private static final float[] mPriceArray = {6299, 4999, 3999, 2999, 2998, 2399};
+    /**
+     * 手机商品的大图数组
+     */
+    private static final int[] mPicArray =
+            {
+                    R.drawable.test,
+                    R.drawable.test,
+                    R.drawable.test,
+                    R.drawable.test,
+                    R.drawable.test,
+                    R.drawable.test
+            };
+
+    /**
+     * 获取默认的列表
+     *
+     * @return {@link List}<{@link GoodsInfo}>
+     */
+    public static List<GoodsInfo> getDefaultList()
+    {
+        List<GoodsInfo> goodsList = new ArrayList<>();
+        for (int i = 0; i < mNameArray.length; i++)
+        {
+            GoodsInfo info = new GoodsInfo();
+            info.id = i;
+            info.name = mNameArray[i];
+            info.description = mDescArray[i];
+            info.price = mPriceArray[i];
+            info.pic = mPicArray[i];
+            goodsList.add(info);
+        }
+
+        for (int i = 0; i < mNameArray.length; i++)
+        {
+            GoodsInfo info = new GoodsInfo();
+            info.id = i + mNameArray.length;
+            info.name = mNameArray[i];
+            info.description = mDescArray[i];
+            info.price = mPriceArray[i];
+            info.pic = mPicArray[i];
+            goodsList.add(info);
+        }
+        for (int i = 0; i < mNameArray.length; i++)
+        {
+            GoodsInfo info = new GoodsInfo();
+            info.id = i + mNameArray.length * 2;
+            info.name = mNameArray[i];
+            info.description = mDescArray[i];
+            info.price = mPriceArray[i];
+            info.pic = mPicArray[i];
+            goodsList.add(info);
+        }
+        for (int i = 0; i < mNameArray.length; i++)
+        {
+            GoodsInfo info = new GoodsInfo();
+            info.id = i + mNameArray.length * 3;
+            info.name = mNameArray[i];
+            info.description = mDescArray[i];
+            info.price = mPriceArray[i];
+            info.pic = mPicArray[i];
+            goodsList.add(info);
+        }
+
+
+        return goodsList;
+    }
+
+}
+```
+
+
+
+
+
+##### CartInfo
+
+```java
+package mao.android_shopping.entity;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.entity
+ * Class(类名): CartInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 19:46
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class CartInfo
+{
+    /**
+     * id
+     */
+    private Integer id;
+
+    /**
+     * 商品编号
+     */
+    private int goodsId;
+    /**
+     * 商品数量
+     */
+    private int count;
+
+    /**
+     * Instantiates a new Cart info.
+     */
+    public CartInfo()
+    {
+    }
+
+    /**
+     * Instantiates a new Cart info.
+     *
+     * @param id      the id
+     * @param goodsId the goods id
+     * @param count   the count
+     */
+    public CartInfo(Integer id, int goodsId, int count)
+    {
+        this.id = id;
+        this.goodsId = goodsId;
+        this.count = count;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public Integer getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public CartInfo setId(Integer id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets goods id.
+     *
+     * @return the goods id
+     */
+    public int getGoodsId()
+    {
+        return goodsId;
+    }
+
+    /**
+     * Sets goods id.
+     *
+     * @param goodsId the goods id
+     * @return the goods id
+     */
+    public CartInfo setGoodsId(int goodsId)
+    {
+        this.goodsId = goodsId;
+        return this;
+    }
+
+    /**
+     * Gets count.
+     *
+     * @return the count
+     */
+    public int getCount()
+    {
+        return count;
+    }
+
+    /**
+     * Sets count.
+     *
+     * @param count the count
+     * @return the count
+     */
+    public CartInfo setCount(int count)
+    {
+        this.count = count;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("goodsId：").append(goodsId).append('\n');
+        stringbuilder.append("count：").append(count).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+##### Result
+
+```java
+package mao.android_shopping.entity;
+
+import android.graphics.Bitmap;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.entity
+ * Class(类名): Result
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/30
+ * Time(创建时间)： 13:46
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Result
+{
+    /**
+     * 结果
+     */
+    boolean result;
+
+    /**
+     * 位图
+     */
+    Bitmap bitmap;
+
+    /**
+     * Instantiates a new Result.
+     */
+    public Result()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Result.
+     *
+     * @param result the result
+     * @param bitmap the bitmap
+     */
+    public Result(boolean result, Bitmap bitmap)
+    {
+        this.result = result;
+        this.bitmap = bitmap;
+    }
+
+    /**
+     * Is result boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isResult()
+    {
+        return result;
+    }
+
+    /**
+     * Sets result.
+     *
+     * @param result the result
+     * @return the result
+     */
+    public Result setResult(boolean result)
+    {
+        this.result = result;
+        return this;
+    }
+
+    /**
+     * Gets bitmap.
+     *
+     * @return the bitmap
+     */
+    public Bitmap getBitmap()
+    {
+        return bitmap;
+    }
+
+    /**
+     * Sets bitmap.
+     *
+     * @param bitmap the bitmap
+     * @return the bitmap
+     */
+    public Result setBitmap(Bitmap bitmap)
+    {
+        this.bitmap = bitmap;
+        return this;
+    }
+}
+```
+
+
+
+
+
+
+
+#### 数据持久化层
+
+##### GoodsDao
+
+```java
+package mao.android_shopping.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_shopping.entity.GoodsInfo;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.dao
+ * Class(类名): GoodsDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 20:10
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class GoodsDao extends SQLiteOpenHelper
+{
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "goods.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "goods";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile GoodsDao goodsDao = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "GoodsDao";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public GoodsDao(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link GoodsDao}
+     */
+    public static GoodsDao getInstance(Context context)
+    {
+        if (goodsDao == null)
+        {
+            synchronized (GoodsDao.class)
+            {
+                if (goodsDao == null)
+                {
+                    goodsDao = new GoodsDao(context);
+                }
+            }
+        }
+        return goodsDao;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = goodsDao.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = goodsDao.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " name VARCHAR NOT NULL," +
+                " description VARCHAR NOT NULL," +
+                " price FLOAT NOT NULL," +
+                " picPath VARCHAR," +
+                " pic INTEGER NOT NULL)";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link GoodsInfo}>
+     */
+    public List<GoodsInfo> queryAll()
+    {
+        List<GoodsInfo> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            GoodsInfo goodsInfo = new GoodsInfo();
+            setGoodsInfo(cursor, goodsInfo);
+            list.add(goodsInfo);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+
+    /**
+     * 通过id(主键)查询
+     *
+     * @param id id(主键)
+     * @return {@link GoodsInfo}
+     */
+    public GoodsInfo queryById(Serializable id)
+    {
+        GoodsInfo goodsInfo = null;
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor.moveToNext())
+        {
+            goodsInfo = new GoodsInfo();
+            setGoodsInfo(cursor, goodsInfo);
+        }
+        cursor.close();
+        return goodsInfo;
+    }
+
+
+    /**
+     * 插入一条数据
+     *
+     * @param goodsInfo GoodsInfo对象
+     * @return boolean
+     */
+    public boolean insert(GoodsInfo goodsInfo)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(goodsInfo, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<GoodsInfo> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (GoodsInfo goodsInfo : list)
+            {
+                Log.d(TAG, "insert: \n" + goodsInfo);
+                boolean insert = this.insert(goodsInfo);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param goodsInfo GoodsInfo对象
+     * @return boolean
+     */
+    public boolean update(GoodsInfo goodsInfo)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(goodsInfo, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{String.valueOf(goodsInfo.getId())});
+        return update > 0;
+    }
+
+    /**
+     * 插入或更新，先尝试插入，如果插入失败，更新
+     *
+     * @param goodsInfo GoodsInfo对象
+     * @return boolean
+     */
+    public boolean insertOrUpdate(GoodsInfo goodsInfo)
+    {
+        boolean insert = insert(goodsInfo);
+        if (insert)
+        {
+            return true;
+        }
+        return update(goodsInfo);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(Serializable id)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id=?", new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+
+    /**
+     * 得到总数
+     *
+     * @return int
+     */
+    public long getCount()
+    {
+        Cursor cursor = writeDatabase.query(TABLE_NAME, new String[]{"count(*)"}, "1=1", null, null, null, null);
+        cursor.moveToNext();
+        long count = cursor.getLong(0);
+        cursor.close();
+        return count;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param goodsInfo     GoodsInfo
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(GoodsInfo goodsInfo, ContentValues contentValues)
+    {
+        contentValues.put("id", goodsInfo.getId());
+        contentValues.put("name", goodsInfo.getName());
+        contentValues.put("description", goodsInfo.getDescription());
+        contentValues.put("price", goodsInfo.getPrice());
+        contentValues.put("picPath", goodsInfo.getPicPath());
+        contentValues.put("pic", goodsInfo.getPic());
+    }
+
+    /**
+     * 填充GoodsInfo
+     *
+     * @param cursor    游标
+     * @param goodsInfo GoodsInfo对象
+     */
+    private GoodsInfo setGoodsInfo(Cursor cursor, GoodsInfo goodsInfo)
+    {
+
+        goodsInfo.setId(cursor.getInt(0))
+                .setName(cursor.getString(1))
+                .setDescription(cursor.getString(2))
+                .setPrice(cursor.getFloat(3))
+                .setPicPath(cursor.getString(4))
+                .setPic(cursor.getInt(5));
+
+        return goodsInfo;
+    }
+
+
+}
+```
+
+
+
+
+
+
+
+##### CartDao
+
+```java
+package mao.android_shopping.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_shopping.entity.CartInfo;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.dao
+ * Class(类名): CartDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 20:19
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartDao extends SQLiteOpenHelper
+{
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "cart.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "cart";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile CartDao cartDao = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "CartDao";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public CartDao(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link CartDao}
+     */
+    public static CartDao getInstance(Context context)
+    {
+        if (cartDao == null)
+        {
+            synchronized (CartDao.class)
+            {
+                if (cartDao == null)
+                {
+                    cartDao = new CartDao(context);
+                }
+            }
+        }
+        return cartDao;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = cartDao.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = cartDao.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " goodsId INTEGER NOT NULL," +
+                " count INTEGER NOT NULL);";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link CartInfo}>
+     */
+    public List<CartInfo> queryAll()
+    {
+        List<CartInfo> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            CartInfo cartInfo = new CartInfo();
+            setCartInfo(cursor, cartInfo);
+            list.add(cartInfo);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+
+    /**
+     * 通过id(主键)查询
+     *
+     * @param id id(主键)
+     * @return {@link CartInfo}
+     */
+    public CartInfo queryById(Serializable id)
+    {
+        CartInfo cartInfo = null;
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor.moveToNext())
+        {
+            cartInfo = new CartInfo();
+            setCartInfo(cursor, cartInfo);
+        }
+        cursor.close();
+        return cartInfo;
+    }
+
+
+    /**
+     * 插入一条数据
+     *
+     * @param cartInfo CartInfo对象
+     * @return boolean
+     */
+    public boolean insert(CartInfo cartInfo)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartInfo, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<CartInfo> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (CartInfo cartInfo : list)
+            {
+                boolean insert = this.insert(cartInfo);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param cartInfo CartInfo对象
+     * @return boolean
+     */
+    public boolean update(CartInfo cartInfo)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartInfo, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{String.valueOf(cartInfo.getId())});
+        return update > 0;
+    }
+
+    /**
+     * 插入或更新，先尝试插入，如果插入失败，更新
+     *
+     * @param cartInfo CartInfo对象
+     * @return boolean
+     */
+    public boolean insertOrUpdate(CartInfo cartInfo)
+    {
+        boolean insert = insert(cartInfo);
+        if (insert)
+        {
+            return true;
+        }
+        return update(cartInfo);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(Serializable id)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id=?", new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+    /**
+     * 删除所有
+     *
+     * @return boolean
+     */
+    public boolean deleteAll()
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "1=1", null);
+        return delete > 0;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param cartInfo      CartInfo
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(CartInfo cartInfo, ContentValues contentValues)
+    {
+        contentValues.put("id", cartInfo.getId());
+        contentValues.put("goodsId", cartInfo.getGoodsId());
+        contentValues.put("count", cartInfo.getCount());
+    }
+
+    /**
+     * 填充CartInfo
+     *
+     * @param cursor   游标
+     * @param cartInfo CartInfo对象
+     */
+    private CartInfo setCartInfo(Cursor cursor, CartInfo cartInfo)
+    {
+        cartInfo.setId(cursor.getInt(0))
+                .setGoodsId(cursor.getInt(1))
+                .setCount(cursor.getInt(2));
+
+        return cartInfo;
+    }
+
+    /**
+     * 根据商品信息ID查询购物车信息
+     *
+     * @param goodsId 商品id
+     * @return {@link CartInfo}
+     */
+    private CartInfo queryCartInfoByGoodsId(int goodsId)
+    {
+        Log.d(TAG, "queryCartInfoByGoodsId: goodsId:" + goodsId);
+        Cursor cursor = readDatabase.query(TABLE_NAME, new String[]{"*"}, "goodsId=?", new String[]{String.valueOf(goodsId)}, null, null, null);
+        CartInfo info = null;
+        if (cursor.moveToNext())
+        {
+            info = setCartInfo(cursor, new CartInfo());
+        }
+        return info;
+    }
+
+    /**
+     * 插入购物车信息
+     *
+     * @param goodsId 商品id
+     */
+    public void insertCartInfo(int goodsId)
+    {
+        // 如果购物车中不存在该商品，添加一条信息
+        CartInfo cartInfo = queryCartInfoByGoodsId(goodsId);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("goodsId", goodsId);
+        if (cartInfo == null)
+        {
+            contentValues.put("count", 1);
+            writeDatabase.insert(TABLE_NAME, null, contentValues);
+        }
+        else
+        {
+            // 如果购物车中已经存在该商品，更新商品数量
+            contentValues.put("id", cartInfo.getId());
+            contentValues.put("count", cartInfo.getCount() + 1);
+
+            writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{String.valueOf(cartInfo.getId())});
+        }
+    }
+
+    /**
+     * 按商品id删除
+     *
+     * @param goodsId 商品id
+     * @return boolean
+     */
+    public boolean deleteByGoodsId(int goodsId)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "goodsId=?", new String[]{String.valueOf(goodsId)});
+        return delete > 0;
+    }
+}
+```
+
+
+
+
+
+
+
+#### MainApplication
+
+```java
+package mao.android_shopping.application;
+
+import android.app.Application;
+import android.content.res.Configuration;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping.application
+ * Class(类名): MainApplication
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 20:32
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class MainApplication extends Application
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainApplication";
+
+    /**
+     * 实例，单例模式
+     */
+    private static volatile MainApplication mainApplication;
+
+    public Map<String, Object> data = new HashMap<>();
+
+    public int count;
+
+    public static MainApplication getInstance()
+    {
+        return mainApplication;
+    }
+
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+        mainApplication = this;
+    }
+
+    /**
+     * This method is for use in emulated process environments.  It will
+     * never be called on a production Android device, where processes are
+     * removed by simply killing them; no user code (including this callback)
+     * is executed when doing so.
+     */
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+}
+```
+
+
+
+
+
+
+
+#### 清单文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_shopping">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+            android:name=".application.MainApplication"
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_shopping"
+            tools:targetApi="31">
+
+        <activity android:name=".ShoppingCartActivity" />
+        <activity android:name=".ShoppingDetailActivity" />
+
+        <activity
+                android:name=".ShoppingChannelActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+#### drawble文件
+
+##### shape_oval_red.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="oval">
+    <solid android:color="#ff6666" />
+</shape>
+```
+
+
+
+
+
+
+
+#### 布局文件
 
 
 
