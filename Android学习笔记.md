@@ -22462,3 +22462,787 @@ public class ShoppingDetailActivity extends AppCompatActivity implements View.On
 
 ## 在应用之间共享数据
 
+### 通过ContentProvider封装数据
+
+Android号称提供了4大组件，分别是活动Activity、广播Broadcast、服务Service和内容提供器 ContentProvider。其中内容提供器涵盖与内部数据存取有关的一系列组件，完整的内容组件由内容提供器ContentProvider、内容解析器ContentResolver、内容观察器ContentObserver三部分组成
+
+
+
+ContentProvider给App存取内部数据提供了统一的外部接口，让不同的应用之间得以互相共享数据
+
+ContentProvider可操作当前设备其他应用的内部数据，它是一种中间层次的数据存储形式
+
+
+
+在实际编码中，ContentProvider只是服务端App存取数据的抽象类，开发者需要在其基础上实现一个完 整的内容提供器，并重写下列数据库管理方法
+
+* onCreate：创建数据库并获得数据库连接
+* insert：插入数据
+* delete：删除数据
+* update：更新数据
+* query：查询数据，并返回结果集的游标
+* getType：获取内容提供器支持的数据类型
+
+
+
+
+
+ContentProvider作为中间接口，本身并不直接保存数据， 而是通过SQLiteOpenHelper与SQLiteDatabase间接操作底层的数据库。所以要想使用 ContentProvider，首先得实现SQLite的数据库帮助器，然后由ContentProvider封装对外的接口。以之前的学生信息为例，具体步骤主要分成以下3步
+
+
+
+
+
+#### 1. 编写数据库帮助器
+
+这个数据库帮助器就是常规的SQLite操作代码
+
+
+
+```java
+package mao.android_contentprovider.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_contentprovider.entity.Student;
+
+/**
+ * Project name(项目名称)：android_ContentProvider
+ * Package(包名): mao.android_contentprovider.dao
+ * Class(类名): StudentDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/30
+ * Time(创建时间)： 15:18
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class StudentDao extends SQLiteOpenHelper
+{
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "student.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "student";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile StudentDao studentDao = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "StudentDao";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public StudentDao(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link StudentDao}
+     */
+    public static StudentDao getInstance(Context context)
+    {
+        if (studentDao == null)
+        {
+            synchronized (StudentDao.class)
+            {
+                if (studentDao == null)
+                {
+                    studentDao = new StudentDao(context);
+                }
+            }
+        }
+        return studentDao;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = studentDao.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = studentDao.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " name VARCHAR NOT NULL," +
+                " age INTEGER NOT NULL," +
+                " weight FLOAT NOT NULL)";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Student}>
+     */
+    public List<Student> queryAll()
+    {
+        List<Student> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            Student student = new Student();
+            setStudent(cursor, student);
+            list.add(student);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+
+    /**
+     * 通过id(主键)查询
+     *
+     * @param id id(主键)
+     * @return {@link Student}
+     */
+    public Student queryById(Serializable id)
+    {
+        Student student = null;
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor.moveToNext())
+        {
+            student = new Student();
+            setStudent(cursor, student);
+        }
+        cursor.close();
+        return student;
+    }
+
+
+    /**
+     * 插入一条数据
+     *
+     * @param student Student对象
+     * @return boolean
+     */
+    public boolean insert(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<Student> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (Student student : list)
+            {
+                boolean insert = this.insert(student);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param student Student对象
+     * @return boolean
+     */
+    public boolean update(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{student.getId().toString()});
+        return update > 0;
+    }
+
+    /**
+     * 插入或更新，先尝试插入，如果插入失败，更新
+     *
+     * @param student Student对象
+     * @return boolean
+     */
+    public boolean insertOrUpdate(Student student)
+    {
+        boolean insert = insert(student);
+        if (insert)
+        {
+            return true;
+        }
+        return update(student);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(Serializable id)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id=?", new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param student       Student
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(Student student, ContentValues contentValues)
+    {
+        contentValues.put("id", student.getId());
+        contentValues.put("name", student.getName());
+        contentValues.put("age", student.getAge());
+        contentValues.put("weight", student.getWeight());
+    }
+
+    /**
+     * 填充Student
+     *
+     * @param cursor  游标
+     * @param student Student对象
+     */
+    private Student setStudent(Cursor cursor, Student student)
+    {
+        student.setId(cursor.getLong(0));
+        student.setName(cursor.getString(1));
+        student.setAge(cursor.getInt(2));
+        student.setWeight(cursor.getFloat(3));
+
+        return student;
+    }
+
+
+}
+```
+
+
+
+
+
+
+
+#### 2. 编写内容提供器的基础字段类
+
+
+
+该类需要实现接口BaseColumns，同时加入几个常量定义
+
+
+
+```java
+package mao.android_contentprovider.dao;
+
+import android.net.Uri;
+import android.provider.BaseColumns;
+
+/**
+ * Project name(项目名称)：android_ContentProvider
+ * Package(包名): mao.android_contentprovider.dao
+ * Class(类名): StudentContent
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/30
+ * Time(创建时间)： 15:24
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class StudentContent implements BaseColumns
+{
+    /**
+     * 这里的名称必须与AndroidManifest.xml里的android:authorities保持一致
+     */
+    public static final String AUTHORITIES = "mao.android_ContentProvider.provider.studentProvider";
+
+    /**
+     * 内容提供器的外部表名
+     */
+    public static final String TABLE_NAME = StudentDao.TABLE_NAME;
+
+    /**
+     * 访问内容提供器的URI
+     */
+    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITIES + "/student");
+
+
+
+    //下面是该表的各个字段名称
+
+    /**
+     * 学生学号
+     */
+    public static final String STUDENT_ID = "id";
+    /**
+     * 学生名字
+     */
+    public static final String STUDENT_NAME = "name";
+    /**
+     * 学生年龄
+     */
+    public static final String STUDENT_AGE = "age";
+    /**
+     * 学生体重
+     */
+    public static final String STUDENT_WEIGHT = "weight";
+
+}
+```
+
+
+
+
+
+#### 3. 通过右键菜单创建内容提供器
+
+
+
+右击App模块的包名目录，在弹出的右键菜单中依次选择New→Other→Content Provider
+
+
+
+
+
+![image-20220930153344567](img/Android学习笔记/image-20220930153344567.png)
+
+
+
+
+
+![image-20220930153844188](img/Android学习笔记/image-20220930153844188.png)
+
+
+
+
+
+创建完成后的类
+
+```java
+package mao.android_contentprovider.provider;
+
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
+
+public class StudentProvider extends ContentProvider
+{
+    public StudentProvider()
+    {
+    }
+
+    @Override
+    public int delete(Uri uri, String selection, String[] selectionArgs)
+    {
+        // Implement this to handle requests to delete one or more rows.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public String getType(Uri uri)
+    {
+        // TODO: Implement this to handle requests for the MIME type of the data
+        // at the given URI.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values)
+    {
+        // TODO: Implement this to handle requests to insert a new row.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public boolean onCreate()
+    {
+        // TODO: Implement this to initialize your content provider on startup.
+        return false;
+    }
+
+    @Override
+    public Cursor query(Uri uri, String[] projection, String selection,
+                        String[] selectionArgs, String sortOrder)
+    {
+        // TODO: Implement this to handle query requests from clients.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues values, String selection,
+                      String[] selectionArgs)
+    {
+        // TODO: Implement this to handle requests to update one or more rows.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+}
+```
+
+
+
+
+
+会在清单文件里加入一段代码
+
+
+
+```xml
+<provider
+        android:name=".StudentProvider"
+        android:authorities="mao.android_ContentProvider.provider.StudentProvider"
+        android:enabled="true"
+        android:exported="true" />
+```
+
+
+
+
+
+
+
+编写代码
+
+
+
+```java
+package mao.android_contentprovider.provider;
+
+import android.content.ContentProvider;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+
+import mao.android_contentprovider.dao.StudentContent;
+import mao.android_contentprovider.dao.StudentDao;
+
+public class StudentProvider extends ContentProvider
+{
+    /*
+       需要继承ContentProvider
+     */
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "StudentProvider";
+
+
+    private StudentDao studentDao;
+
+    /**
+     * Uri匹配时的代号
+     */
+    public static final int STUDENT_INFO = 1;
+
+    /**
+     * uri匹配器
+     */
+    public static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+
+    static
+    {
+        //往Uri匹配器中添加指定的数据路径
+        uriMatcher.addURI(StudentContent.AUTHORITIES, StudentContent.path, STUDENT_INFO);
+    }
+
+
+    public StudentProvider()
+    {
+    }
+
+    @Override
+    public int delete(Uri uri, String selection, String[] selectionArgs)
+    {
+        int count = 0;
+        if (uriMatcher.match(uri) == STUDENT_INFO)
+        {
+            //匹配到了学生信息表
+            //获取SQLite数据库的写连接
+            SQLiteDatabase writableDatabase = studentDao.getWritableDatabase();
+            //执行SQLite的删除操作，并返回删除记录的数目
+            count = writableDatabase.delete(StudentContent.TABLE_NAME, selection, selectionArgs);
+            // 关闭SQLite数据库连接
+            //writableDatabase.close();
+        }
+        return count;
+
+    }
+
+    @Override
+    public String getType(Uri uri)
+    {
+        // TODO: Implement this to handle requests for the MIME type of the data
+        // at the given URI.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values)
+    {
+        if (uriMatcher.match(uri) == STUDENT_INFO)
+        {
+            // 匹配到了学生信息表
+            // 获取SQLite数据库的写连接
+            SQLiteDatabase writableDatabase = studentDao.getWritableDatabase();
+            // 向指定的表插入数据，返回记录的行号
+            long rowId = writableDatabase.insert(StudentContent.TABLE_NAME, null, values);
+            // 判断插入是否执行成功
+            if (rowId > 0)
+            {
+                // 如果添加成功，就利用新记录的行号生成新的地址
+                Uri newUri = ContentUris.withAppendedId(StudentContent.CONTENT_URI, rowId);
+                //通知监听器，数据已经改变
+                getContext().getContentResolver().notifyChange(newUri, null);
+            }
+            // 关闭SQLite数据库连接
+            //writableDatabase.close();
+        }
+        return uri;
+    }
+
+    @Override
+    public boolean onCreate()
+    {
+        studentDao = StudentDao.getInstance(getContext());
+        studentDao.openWriteConnection();
+        studentDao.openWriteConnection();
+        return true;
+    }
+
+    @Override
+    public Cursor query(Uri uri, String[] projection, String selection,
+                        String[] selectionArgs, String sortOrder)
+    {
+        Cursor cursor = null;
+        if (uriMatcher.match(uri) == STUDENT_INFO)
+        {
+            //匹配到了学生信息表
+            //获取SQLite数据库的读连接
+            SQLiteDatabase readableDatabase = studentDao.getReadableDatabase();
+            //执行SQLite的查询操作
+            cursor = readableDatabase.query(StudentContent.TABLE_NAME, projection,
+                    selection, selectionArgs, null, null,
+                    sortOrder);
+            //设置内容解析器的监听
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
+        //返回查询结果集的游标
+        return cursor;
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues values, String selection,
+                      String[] selectionArgs)
+    {
+        int count = 0;
+        if (uriMatcher.match(uri) == STUDENT_INFO)
+        {
+            // 匹配到了学生信息表
+            // 获取SQLite数据库的写连接
+            SQLiteDatabase writableDatabase = studentDao.getWritableDatabase();
+            // 向指定的表插入数据，返回记录的行号
+            count = writableDatabase.update(StudentContent.TABLE_NAME, values, selection, selectionArgs);
+            // 关闭SQLite数据库连接
+            //writableDatabase.close();
+        }
+        return count;
+    }
+}
+```
+
+
+
+
+
+经过以上3个步骤之后，便完成了服务端App的接口封装工作，接下来再由其他App去访问服务端App的数据
+
+
+
+
+
+为了方便查看，可以在MainActivity中添加以下代码
+
+```java
+package mao.android_contentprovider;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+
+import mao.android_contentprovider.dao.StudentDao;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private StudentDao studentDao;
+
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        studentDao = StudentDao.getInstance(this);
+        studentDao.openReadConnection();
+        studentDao.openWriteConnection();
+        Log.d(TAG, "onCreate: ");
+
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        Log.d(TAG, "onStart: query:\n" + studentDao.queryAll() + "\n");
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        studentDao.closeConnection();
+
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+### 通过ContentResolver访问数据
+
