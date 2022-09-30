@@ -23246,3 +23246,591 @@ public class MainActivity extends AppCompatActivity
 
 ### 通过ContentResolver访问数据
 
+如果客户端App想访问对方的内部数据， 就要借助内容解析器ContentResolver。内容解析器是客户端App操作服务端数据的工具，与之对应的内容提供器则是服务端的数据接口。在活动代码中调用getContentResolver方法，即可获取内容解析器的实例
+
+ContentResolver提供的方法与ContentProvider一一对应，比如insert、delete、query、update、 getType等，甚至连方法的参数类型都雷同
+
+
+
+
+
+查询操作稍微复杂一些，调用query方法会返回游标对象，这个游标正是SQLite的游标Cursor，query方法的输入参数有好几个，具体说明如下：
+
+* uri：Uri类型，指定本次操作的数据表路径
+* projection：字符串数组类型，指定将要查询的字段名称列表
+* selection：字符串类型，指定查询条件
+* selectionArgs：字符串数组类型，指定查询条件中的参数取值列表
+* sortOrder：字符串类型，指定排序条件
+
+
+
+通过ContentResolver访问数据大致流程如下：
+
+
+
+#### 1. 拷贝Provider的实体类和xxxContent
+
+
+
+![image-20220930215807157](img/Android学习笔记/image-20220930215807157.png)
+
+
+
+如果访问的系统的Provider，可以不需要实体类和Content，但是需要知道访问内容提供器的URI
+
+
+
+
+
+
+
+#### 2. 编写xxxResolver
+
+
+
+```java
+package mao.android_contentresolver.resolver;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_contentresolver.dao.StudentContent;
+import mao.android_contentresolver.entity.Student;
+
+/**
+ * Project name(项目名称)：android_ContentResolver
+ * Package(包名): mao.android_contentresolver.resolver
+ * Class(类名): StudentResolver
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/30
+ * Time(创建时间)： 21:20
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class StudentResolver
+{
+    /**
+     * 上下文
+     */
+    private Context context;
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public StudentResolver(Context context)
+    {
+        this.context = context;
+    }
+
+    /**
+     * 插入
+     *
+     * @param student Student对象
+     */
+    public void insert(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        context.getContentResolver().insert(StudentContent.CONTENT_URI, contentValues);
+    }
+
+    /**
+     * 更新
+     *
+     * @param student Student对象
+     * @return boolean
+     */
+    public boolean update(Student student)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(student, contentValues);
+        int update = context.getContentResolver().update(StudentContent.CONTENT_URI,
+                contentValues, "id=?", new String[]{String.valueOf(student.getId())});
+        return update > 0;
+    }
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(Serializable id)
+    {
+        int delete = context.getContentResolver()
+                .delete(StudentContent.CONTENT_URI, "id=?",
+                        new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Student}>
+     */
+    public List<Student> queryAll()
+    {
+
+        Cursor cursor = context.getContentResolver().query(StudentContent.CONTENT_URI,
+                null, "1=1", null, null);
+        List<Student> list = new ArrayList<>();
+        while (cursor.moveToNext())
+        {
+            Student student = setStudent(cursor, new Student());
+            list.add(student);
+        }
+        return list;
+    }
+
+    /**
+     * 查询
+     *
+     * @param id id
+     * @return {@link Student}
+     */
+    public Student query(Serializable id)
+    {
+        Cursor cursor = context.getContentResolver().query(StudentContent.CONTENT_URI,
+                null, "id=?", new String[]{String.valueOf(id)}, null);
+        if (cursor.moveToNext())
+        {
+            return setStudent(cursor, new Student());
+        }
+        return null;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param student       Student
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(Student student, ContentValues contentValues)
+    {
+        contentValues.put("id", student.getId());
+        contentValues.put("name", student.getName());
+        contentValues.put("age", student.getAge());
+        contentValues.put("weight", student.getWeight());
+    }
+
+    /**
+     * 填充Student
+     *
+     * @param cursor  游标
+     * @param student Student对象
+     */
+    private Student setStudent(Cursor cursor, Student student)
+    {
+        student.setId(cursor.getLong(0));
+        student.setName(cursor.getString(1));
+        student.setAge(cursor.getInt(2));
+        student.setWeight(cursor.getFloat(3));
+
+        return student;
+    }
+}
+```
+
+
+
+
+
+
+
+#### 3. 编写其它代码调用xxxResolver的方法
+
+
+
+布局文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <EditText
+            android:id="@+id/EditText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="学号"
+            android:inputType="number"
+            android:maxLength="13" />
+
+    <EditText
+            android:id="@+id/EditText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="姓名"
+            android:maxLength="5"
+            android:inputType="text" />
+
+    <EditText
+            android:id="@+id/EditText3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="年龄"
+            android:maxLength="2" />
+
+    <EditText
+            android:id="@+id/EditText4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="体重"
+            android:inputType="numberDecimal" />
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="修改" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="删除" />
+
+    <Button
+            android:id="@+id/Button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询" />
+
+    <Button
+            android:id="@+id/Button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询所有" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/TextView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+MainActivity
+
+```java
+package mao.android_contentresolver;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.List;
+
+import mao.android_contentresolver.entity.Student;
+import mao.android_contentresolver.resolver.StudentResolver;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private StudentResolver studentResolver;
+    private TextView textView;
+    private EditText editText1;
+    private EditText editText2;
+    private EditText editText3;
+    private EditText editText4;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        studentResolver = new StudentResolver(this);
+
+        textView = findViewById(R.id.TextView1);
+
+        editText1 = findViewById(R.id.EditText1);
+        editText2 = findViewById(R.id.EditText2);
+        editText3 = findViewById(R.id.EditText3);
+        editText4 = findViewById(R.id.EditText4);
+
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                insert();
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                update();
+            }
+        });
+
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                delete();
+            }
+        });
+
+        findViewById(R.id.Button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                query();
+            }
+        });
+
+        findViewById(R.id.Button5).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                queryAll();
+            }
+        });
+
+    }
+
+    /**
+     * 插入
+     */
+    private void insert()
+    {
+        try
+        {
+            Long id = Long.valueOf(editText1.getText().toString());
+            String name = editText2.getText().toString();
+            int age = Integer.parseInt(editText3.getText().toString());
+            float weight = Float.parseFloat(editText4.getText().toString());
+
+            Student student = new Student(id, name, age, weight);
+            studentResolver.insert(student);
+            toastShow("已尝试插入");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "insert: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+
+    /**
+     * 更新
+     */
+    private void update()
+    {
+        try
+        {
+            Long id = Long.valueOf(editText1.getText().toString());
+            String name = editText2.getText().toString();
+            int age = Integer.parseInt(editText3.getText().toString());
+            float weight = Float.parseFloat(editText4.getText().toString());
+
+            Student student = studentResolver.query(id);
+            if (student == null)
+            {
+                throw new Exception("未查询到学号为" + id + "的信息");
+            }
+            student.setName(name);
+            student.setAge(age);
+            student.setWeight(weight);
+            boolean update = studentResolver.update(student);
+            if (!update)
+            {
+                throw new Exception("更新失败");
+            }
+            toastShow("更新成功");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "update: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除
+     */
+    private void delete()
+    {
+        try
+        {
+            if (editText1.getText().toString().equals(""))
+            {
+                toastShow("学号为空");
+                return;
+            }
+            long id = Long.parseLong(editText1.getText().toString());
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("删除确认")
+                    .setMessage("是否删除学号为" + id + "的信息？")
+                    .setPositiveButton("确认", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            boolean delete = studentResolver.delete(id);
+                            if (!delete)
+                            {
+                                toastShow("删除失败");
+                                return;
+                            }
+                            toastShow("删除成功");
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .create()
+                    .show();
+
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "delete: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询
+     */
+    private void query()
+    {
+        try
+        {
+            if (editText1.getText().toString().equals(""))
+            {
+                toastShow("学号为空");
+                return;
+            }
+            long id = Long.parseLong(editText1.getText().toString());
+
+            Student student = studentResolver.query(id);
+            if (student == null)
+            {
+                toastShow("查询不到学号为" + id + "的信息");
+                editText1.setText("");
+                editText2.setText("");
+                editText3.setText("");
+                editText4.setText("");
+                return;
+            }
+            editText1.setText(String.valueOf(id));
+            editText2.setText(student.getName());
+            editText3.setText(String.valueOf(student.getAge()));
+            editText4.setText(String.valueOf(student.getWeight()));
+            toastShow("查询成功");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "query: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询所有
+     */
+    @SuppressLint("SetTextI18n")
+    private void queryAll()
+    {
+        try
+        {
+            textView.setText("");
+            List<Student> studentList = studentResolver.queryAll();
+            for (Student student : studentList)
+            {
+                textView.setText(textView.getText() + "\n\n" + student.toString());
+            }
+            toastShow("查询到" + studentList.size() + "条数据");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "queryAll: ", e);
+            toastShow("异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+### 测试访问
+
+
+
+
+
