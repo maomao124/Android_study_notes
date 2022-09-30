@@ -21485,3 +21485,886 @@ public class MainApplication extends Application
 
 #### Activity类
 
+##### ShoppingChannelActivity
+
+```java
+package mao.android_shopping;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.List;
+
+import mao.android_shopping.application.MainApplication;
+import mao.android_shopping.dao.CartDao;
+import mao.android_shopping.dao.GoodsDao;
+import mao.android_shopping.entity.GoodsInfo;
+import mao.android_shopping.entity.Result;
+
+
+/**
+ * Class(类名): ShoppingChannelActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Version(版本): 1.0
+ * Description(描述)： 商品列表页
+ */
+
+public class ShoppingChannelActivity extends AppCompatActivity implements View.OnClickListener
+{
+
+    private TextView tv_count;
+    private GridLayout gl_channel;
+    private GoodsDao goodsDao;
+    private CartDao cartDao;
+
+    private static final String TAG = "ShoppingChannelActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+        setContentView(R.layout.activity_shopping_channel);
+        TextView tv_title = findViewById(R.id.tv_title);
+        tv_title.setText("手机商场");
+
+        tv_count = findViewById(R.id.tv_count);
+        gl_channel = findViewById(R.id.gl_channel);
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.iv_cart).setOnClickListener(this);
+
+        goodsDao = GoodsDao.getInstance(this);
+        goodsDao.openReadConnection();
+        goodsDao.openWriteConnection();
+
+        cartDao = CartDao.getInstance(this);
+        cartDao.openReadConnection();
+        cartDao.openWriteConnection();
+
+        long count = goodsDao.getCount();
+        Log.d(TAG, "onCreate: count:" + count);
+
+        if (count == 0)
+        {
+            List<GoodsInfo> list = GoodsInfo.getDefaultList();
+            Log.d(TAG, "onCreate: \n" + list);
+
+            //list.forEach(goodsDao::insert);
+
+//            for (GoodsInfo goodsInfo : list)
+//            {
+//                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), goodsInfo.getPic());
+//                String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+//                saveImage(path, bitmap);
+//                goodsInfo.setPicPath(path);
+//                boolean insert = goodsDao.insert(goodsInfo);
+//                if (insert)
+//                {
+//                    //toastShow("已初始化数据");
+//                }
+//                else
+//                {
+//                    toastShow("初始化数据失败");
+//                }
+//            }
+
+            toastShow("正在初始化数据");
+            for (GoodsInfo goodsInfo : list)
+            {
+                //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), goodsInfo.getPic());
+                //String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+                //saveImage(path, bitmap);
+                //goodsInfo.setPicPath(path);
+                boolean insert = goodsDao.insert(goodsInfo);
+                if (insert)
+                {
+                    //toastShow("已初始化数据");
+                }
+                else
+                {
+                    //toastShow("初始化数据失败");
+                }
+            }
+
+
+//            boolean insert = goodsDao.insert(list);
+//            if (insert)
+//            {
+//                toastShow("已初始化数据");
+//            }
+//            else
+//            {
+//                toastShow("初始化数据失败");
+//            }
+        }
+
+        // 从数据库查询出商品信息，并展示
+        showGoods();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        // 查询购物车商品总数，并展示
+        showCartInfoTotal();
+    }
+
+    // 查询购物车商品总数，并展示
+    private void showCartInfoTotal()
+    {
+        int count = cartDao.queryAll().size();
+        MainApplication.getInstance().count = count;
+        tv_count.setText(String.valueOf(count));
+    }
+
+    /**
+     * 展示商品
+     */
+    private void showGoods()
+    {
+        // 商品条目是一个线性布局，设置布局的宽度为屏幕的一半
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWidth / 2, LinearLayout.LayoutParams.WRAP_CONTENT);
+        // 查询商品数据库中的所有商品记录
+        List<GoodsInfo> list = goodsDao.queryAll();
+
+        // 移除下面的所有子视图
+        gl_channel.removeAllViews();
+
+        for (GoodsInfo goodsInfo : list)
+        {
+            Log.d(TAG, "showGoods: \n" + goodsInfo);
+            // 获取布局文件item_goods.xml的根视图
+            View view = LayoutInflater.from(this).inflate(R.layout.item_goods, null);
+            ImageView iv_thumb = view.findViewById(R.id.iv_thumb);
+            TextView tv_name = view.findViewById(R.id.tv_name);
+            TextView tv_price = view.findViewById(R.id.tv_price);
+            Button btn_add = view.findViewById(R.id.btn_add);
+
+            //给控件设置值
+            //iv_thumb.setImageURI(Uri.parse(goodsInfo.getPicPath()));
+            iv_thumb.setImageBitmap(getImageBitmap(goodsInfo));
+            tv_name.setText(goodsInfo.getName());
+            tv_price.setText(String.valueOf((int) goodsInfo.getPrice()));
+
+            // 添加到购物车
+            btn_add.setOnClickListener(v ->
+            {
+                addToCart(goodsInfo.getId(), goodsInfo.getName());
+            });
+
+            // 点击商品图片，跳转到商品详情页面
+            iv_thumb.setOnClickListener(v ->
+            {
+                Intent intent = new Intent(ShoppingChannelActivity.this, ShoppingDetailActivity.class);
+                intent.putExtra("goods_id", goodsInfo.getId());
+                startActivity(intent);
+            });
+
+            // 把商品视图添加到网格布局
+            gl_channel.addView(view, params);
+        }
+    }
+
+    // 把指定编号的商品添加到购物车
+    private void addToCart(int goodsId, String goodsName)
+    {
+        // 购物车商品数量+1
+        int count = ++MainApplication.getInstance().count;
+        tv_count.setText(String.valueOf(count));
+
+        cartDao.insertCartInfo(goodsId);
+
+        toastShow("已添加一部" + goodsName + "到购物车");
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        goodsDao.closeConnection();
+        cartDao.closeConnection();
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.iv_back:
+                // 点击了返回图标，关闭当前页面
+                finish();
+                break;
+
+            case R.id.iv_cart:
+                // 点击了购物车图标
+                // 从商场页面跳到购物车页面
+                Intent intent = new Intent(this, ShoppingCartActivity.class);
+                // 设置启动标志，避免多次返回同一页面的
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                break;
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 把位图数据保存到指定路径的图片文件
+     *
+     * @param path   路径
+     * @param bitmap Bitmap对象
+     */
+    public static boolean saveImage(String path, Bitmap bitmap)
+    {
+        // 根据指定的文件路径构建文件输出流对象
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path))
+        {
+            // 把位图数据压缩到文件输出流中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param path 路径
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(String path)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(path))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param file File对象
+     * @return {@link Bitmap}
+     */
+    public static Bitmap openImage(File file)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 得到图像位图
+     *
+     * @param goodsInfo GoodsInfo对象
+     * @return {@link Bitmap}
+     */
+    public Bitmap getImageBitmap(GoodsInfo goodsInfo)
+    {
+        if (goodsInfo.getPicPath() != null && !"".equals(goodsInfo.getPicPath()))
+        {
+            Log.d(TAG, "getImageBitmap: 加载图片");
+            Bitmap bitmap = openImage(goodsInfo.getPicPath());
+            if (bitmap != null)
+            {
+                //GoodsInfo里有缓存的图片路径，并且加载到了图片的路径，直接返回
+                return bitmap;
+            }
+            Log.d(TAG, "getImageBitmap: 本地图片缓存不存在，需要重新加载：" + goodsInfo.getId());
+            //GoodsInfo里有缓存的图片路径，但是没有加载到图片的路径
+            //图片不存在，路径失效，需要再次从网络加载
+            Log.d(TAG, "getImageBitmap: 从网络上加载图片");
+            Result result = getImageBitmapByHTTP(goodsInfo);
+            bitmap = result.getBitmap();
+            if (!result.isResult())
+            {
+                //从网络上加载失败失败，直接使用
+                return bitmap;
+            }
+            //保存
+            String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+            Log.d(TAG, "getImageBitmap: 保存图片，位置：" + path);
+            boolean b = saveImageBitmap(goodsInfo, bitmap, path);
+            if (!b)
+            {
+                //保存失败，直接使用
+                return bitmap;
+            }
+            //保存成功
+            //更新数据库
+            goodsInfo.setPicPath(path);
+            goodsDao.update(goodsInfo);
+            Log.d(TAG, "getImageBitmap: 更新数据库");
+            return bitmap;
+        }
+        Log.d(TAG, "getImageBitmap: 第一次加载图片");
+        //不存在，第一次加载
+        Result result = getImageBitmapByHTTP(goodsInfo);
+        Bitmap bitmap = result.getBitmap();
+        if (!result.isResult())
+        {
+            //从网络上加载失败失败，直接使用
+            return bitmap;
+        }
+        //保存
+        String path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + goodsInfo.getId() + ".jpg";
+        boolean b = saveImageBitmap(goodsInfo, bitmap, path);
+        if (!b)
+        {
+            //保存失败，直接使用
+            return bitmap;
+        }
+        //保存成功
+        //更新数据库
+        goodsInfo.setPicPath(path);
+        goodsDao.update(goodsInfo);
+        Log.d(TAG, "getImageBitmap: 更新数据库");
+        return bitmap;
+    }
+
+    /**
+     * 保存图像位图
+     *
+     * @param goodsInfo 货物信息
+     */
+    public boolean saveImageBitmap(GoodsInfo goodsInfo, Bitmap bitmap, String path)
+    {
+        return saveImage(path, bitmap);
+    }
+
+
+    /**
+     * 模拟从网络上获取图片
+     *
+     * @return {@link Bitmap}
+     */
+    public Result getImageBitmapByHTTP(GoodsInfo goodsInfo)
+    {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), goodsInfo.getPic());
+        if (bitmap == null)
+        {
+            //为空，加载默认的图片
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test);
+            return new Result().setResult(false).setBitmap(bitmap);
+        }
+        return new Result().setResult(true).setBitmap(bitmap);
+    }
+
+}
+```
+
+
+
+
+
+
+
+##### ShoppingCartActivity
+
+```java
+package mao.android_shopping;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import mao.android_shopping.application.MainApplication;
+import mao.android_shopping.dao.CartDao;
+import mao.android_shopping.dao.GoodsDao;
+import mao.android_shopping.entity.CartInfo;
+import mao.android_shopping.entity.GoodsInfo;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping
+ * Class(类名): ShoppingCartActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 20:58
+ * Version(版本): 1.0
+ * Description(描述)： 购物车页
+ */
+
+public class ShoppingCartActivity extends AppCompatActivity implements View.OnClickListener
+{
+    private TextView tv_count;
+    private LinearLayout ll_cart;
+
+    // 声明一个购物车中的商品信息列表
+    private List<CartInfo> mCartList;
+    // 声明一个根据商品编号查找商品信息的映射，把商品信息缓存起来，这样不用每一次都去查询数据库
+    private final Map<Integer, GoodsInfo> mGoodsMap = new HashMap<>();
+    private TextView tv_total_price;
+    private LinearLayout ll_empty;
+    private LinearLayout ll_content;
+    private CartDao cartDao;
+    private GoodsDao goodsDao;
+
+    private static final String TAG = "ShoppingCartActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+        setContentView(R.layout.activity_shopping_cart);
+        TextView tv_title = findViewById(R.id.tv_title);
+        tv_title.setText("购物车");
+        ll_cart = findViewById(R.id.ll_cart);
+        tv_total_price = findViewById(R.id.tv_total_price);
+
+        tv_count = findViewById(R.id.tv_count);
+        tv_count.setText(String.valueOf(MainApplication.getInstance().count));
+
+        cartDao = CartDao.getInstance(this);
+        cartDao.openReadConnection();
+        cartDao.openWriteConnection();
+
+        goodsDao = GoodsDao.getInstance(this);
+        goodsDao.openReadConnection();
+        goodsDao.openWriteConnection();
+
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.btn_shopping_channel).setOnClickListener(this);
+        findViewById(R.id.btn_clear).setOnClickListener(this);
+        findViewById(R.id.btn_settle).setOnClickListener(this);
+        ll_empty = findViewById(R.id.ll_empty);
+        ll_content = findViewById(R.id.ll_content);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        //cartDao.closeConnection();
+        //goodsDao.closeConnection();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        showCart();
+    }
+
+    /**
+     * 展示购物车中的商品列表
+     */
+    private void showCart()
+    {
+        // 移除下面的所有子视图
+        ll_cart.removeAllViews();
+        // 查询购物车数据库中所有的商品记录
+        mCartList = cartDao.queryAll();
+        if (mCartList.size() == 0)
+        {
+            Log.d(TAG, "showCart: 购物车为空");
+            ll_empty.setVisibility(View.VISIBLE);
+            ll_content.setVisibility(View.GONE);
+            return;
+        }
+
+        for (CartInfo cartInfo : mCartList)
+        {
+            // 根据商品编号查询商品数据库中的商品记录
+            GoodsInfo goods = goodsDao.queryById(cartInfo.getGoodsId());
+            mGoodsMap.put(cartInfo.getGoodsId(), goods);
+
+            // 获取布局文件item_cart.xml的根视图
+            View view = LayoutInflater.from(this).inflate(R.layout.item_cart, null);
+            ImageView iv_thumb = view.findViewById(R.id.iv_thumb);
+            TextView tv_name = view.findViewById(R.id.tv_name);
+            TextView tv_desc = view.findViewById(R.id.tv_desc);
+            TextView tv_count = view.findViewById(R.id.tv_count);
+            TextView tv_price = view.findViewById(R.id.tv_price);
+            TextView tv_sum = view.findViewById(R.id.tv_sum);
+
+            iv_thumb.setImageURI(Uri.parse(goods.getPicPath()));
+            tv_name.setText(goods.getName());
+            tv_desc.setText(goods.getDescription());
+            tv_count.setText(String.valueOf(cartInfo.getCount()));
+            tv_price.setText(String.valueOf((int) goods.getPrice()));
+            // 设置商品总价
+            tv_sum.setText(String.valueOf((int) (cartInfo.getCount() * goods.getPrice())));
+
+            // 给商品行添加长按事件。长按商品行就删除该商品
+            view.setOnLongClickListener(v ->
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ShoppingCartActivity.this);
+                builder.setMessage("是否从购物车删除" + goods.getName() + "？");
+                builder.setPositiveButton("是", (dialog, which) ->
+                {
+                    // 移除当前视图
+                    ll_cart.removeView(v);
+                    // 删除该商品
+                    deleteGoods(cartInfo);
+                });
+                builder.setNegativeButton("否", null);
+                builder.create().show();
+                return true;
+            });
+
+            // 给商品行添加点击事件。点击商品行跳到商品的详情页
+            view.setOnClickListener(v ->
+            {
+                Intent intent = new Intent(ShoppingCartActivity.this, ShoppingDetailActivity.class);
+                intent.putExtra("goods_id", goods.getId());
+                startActivity(intent);
+            });
+
+            // 往购物车列表添加该商品行
+            ll_cart.addView(view);
+        }
+
+        // 重新计算购物车中的商品总金额
+        refreshTotalPrice();
+    }
+
+    /**
+     * 删除商品
+     *
+     * @param info 信息
+     */
+    private void deleteGoods(CartInfo info)
+    {
+        MainApplication.getInstance().count -= info.getCount();
+        // 从购物车的数据库中删除商品
+        cartDao.deleteByGoodsId(info.getGoodsId());
+        // 从购物车的列表中删除商品
+        CartInfo removed = null;
+        for (CartInfo cartInfo : mCartList)
+        {
+            if (cartInfo.getGoodsId() == info.getGoodsId())
+            {
+                removed = cartInfo;
+                break;
+            }
+        }
+        mCartList.remove(removed);
+        // 显示最新的商品数量
+        showCount();
+        toastShow("已从购物车删除" + mGoodsMap.get(info.getGoodsId()).getName());
+        mGoodsMap.remove(info.getGoodsId());
+        // 刷新购物车中所有商品的总金额
+        refreshTotalPrice();
+    }
+
+    // 显示购物车图标中的商品数量
+    private void showCount()
+    {
+        tv_count.setText(String.valueOf(MainApplication.getInstance().count));
+        // 购物车中没有商品，显示“空空如也”
+        if (MainApplication.getInstance().count == 0)
+        {
+            ll_empty.setVisibility(View.VISIBLE);
+            ll_content.setVisibility(View.GONE);
+            ll_cart.removeAllViews();
+        }
+        else
+        {
+            ll_content.setVisibility(View.VISIBLE);
+            ll_empty.setVisibility(View.GONE);
+        }
+    }
+
+    // 重新计算购物车中的商品总金额
+    private void refreshTotalPrice()
+    {
+        int totalPrice = 0;
+        for (CartInfo cartInfo : mCartList)
+        {
+            GoodsInfo goods = mGoodsMap.get(cartInfo.getGoodsId());
+            totalPrice += goods.getPrice() * cartInfo.getCount();
+        }
+        tv_total_price.setText(String.valueOf(totalPrice));
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.iv_back:
+                // 点击了返回图标
+                // 关闭当前页面
+                finish();
+                break;
+
+            case R.id.btn_shopping_channel:
+                // 从购物车页面跳到商场页面
+                Intent intent = new Intent(this, ShoppingChannelActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                break;
+
+            case R.id.btn_clear:
+                // 清空购物车数据库
+                cartDao.deleteAll();
+                MainApplication.getInstance().count = 0;
+                // 显示最新的商品数量
+                showCount();
+                toastShow("购物车已清空");
+                break;
+
+            case R.id.btn_settle:
+                // 点击了“结算”按钮
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("结算商品");
+                builder.setMessage("请求发送失败");
+                builder.setPositiveButton("我知道了", null);
+                builder.create().show();
+                break;
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+##### ShoppingDetailActivity
+
+```java
+package mao.android_shopping;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import mao.android_shopping.application.MainApplication;
+import mao.android_shopping.dao.CartDao;
+import mao.android_shopping.dao.GoodsDao;
+import mao.android_shopping.entity.GoodsInfo;
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping
+ * Class(类名): ShoppingDetailActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 21:25
+ * Version(版本): 1.0
+ * Description(描述)： 商品详情页
+ */
+
+public class ShoppingDetailActivity extends AppCompatActivity implements View.OnClickListener
+{
+    private TextView tv_title;
+    private TextView tv_count;
+    private TextView tv_goods_price;
+    private TextView tv_goods_desc;
+    private ImageView iv_goods_pic;
+    private int mGoodsId;
+    private GoodsDao goodsDao;
+    private CartDao cartDao;
+
+    private static final String TAG = "ShoppingDetailActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+        setContentView(R.layout.activity_shopping_detail);
+        tv_title = findViewById(R.id.tv_title);
+        tv_count = findViewById(R.id.tv_count);
+        tv_goods_price = findViewById(R.id.tv_goods_price);
+        tv_goods_desc = findViewById(R.id.tv_goods_desc);
+        iv_goods_pic = findViewById(R.id.iv_goods_pic);
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.iv_cart).setOnClickListener(this);
+        findViewById(R.id.btn_add_cart).setOnClickListener(this);
+
+        tv_count.setText(String.valueOf(MainApplication.getInstance().count));
+
+        goodsDao = GoodsDao.getInstance(this);
+        goodsDao.openReadConnection();
+        goodsDao.openWriteConnection();
+
+        cartDao = CartDao.getInstance(this);
+        cartDao.openReadConnection();
+        cartDao.openWriteConnection();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        showDetail();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        //goodsDao.closeConnection();
+        //cartDao.closeConnection();
+    }
+
+    private void showDetail()
+    {
+        // 获取上一个页面传来的商品编号
+        mGoodsId = getIntent().getIntExtra("goods_id", 0);
+        if (mGoodsId >= 0)
+        {
+            // 根据商品编号查询商品数据库中的商品记录
+            GoodsInfo goodsInfo = goodsDao.queryById(mGoodsId);
+            tv_title.setText(goodsInfo.getName());
+            tv_goods_desc.setText(goodsInfo.getDescription());
+            tv_goods_price.setText(String.valueOf((int) goodsInfo.getPrice()));
+            iv_goods_pic.setImageURI(Uri.parse(goodsInfo.getPicPath()));
+        }
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.iv_back:
+                finish();
+                break;
+
+            case R.id.iv_cart:
+                Intent intent = new Intent(this, ShoppingCartActivity.class);
+                startActivity(intent);
+                break;
+
+            case R.id.btn_add_cart:
+                addToCart(mGoodsId);
+                break;
+        }
+    }
+
+    private void addToCart(int goodsId)
+    {
+        // 购物车商品数量+1
+        int count = ++MainApplication.getInstance().count;
+        tv_count.setText(String.valueOf(count));
+        cartDao.insertCartInfo(goodsId);
+        toastShow("成功添加至购物车");
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+### 运行
+
