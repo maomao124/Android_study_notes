@@ -21014,5 +21014,474 @@ public class MainApplication extends Application
 
 
 
+##### item_cart
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <ImageView
+            android:id="@+id/iv_thumb"
+            android:layout_width="85dp"
+            android:layout_height="85dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="图片" />
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="left|center"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                tools:text="小米手机" />
+
+        <TextView
+                android:id="@+id/tv_desc"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:gravity="left|center"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                tools:text="小米 MI10 8GB+128GB 钛银黑 5G手机 游戏拍照手机" />
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/tv_count"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="17sp"
+            tools:text="2" />
+
+    <TextView
+            android:id="@+id/tv_price"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right|center"
+            android:textColor="@color/black"
+            android:textSize="15sp"
+            tools:text="1000" />
+
+    <TextView
+            android:id="@+id/tv_sum"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
+            android:gravity="right|center"
+            android:textColor="#ff0000"
+            android:textSize="17sp"
+            tools:text="2000" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_goods
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/LinearLayout_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="17sp"
+            tools:text="小米手机" />
+
+    <ImageView
+            android:id="@+id/iv_thumb"
+            android:layout_width="180dp"
+            android:layout_height="150dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="图片" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:orientation="horizontal">
+
+        <TextView
+                android:id="@+id/tv_price"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:textColor="#ff0000"
+                android:textSize="15sp"
+                tools:text="20" />
+
+        <Button
+                android:id="@+id/btn_add"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:gravity="center"
+                android:text="加入购物车"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+##### title_shopping
+
+```xml
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#aaaaff">
+
+    <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="返回" />
+
+    <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
+    <ImageView
+            android:id="@+id/iv_cart"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher" />
+
+    <TextView
+            android:id="@+id/tv_count"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/iv_cart"
+            android:layout_marginLeft="-20dp"
+            android:gravity="center"
+            android:background="@drawable/shape_oval_red"
+            android:text="0"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+
+</RelativeLayout>
+```
+
+
+
+
+
+
+
+##### activity_shopping_channel
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffbb99"
+        android:orientation="vertical">
+
+    <include layout="@layout/title_shopping" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <GridLayout
+                android:id="@+id/gl_channel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2" />
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+##### activity_shopping_cart
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffaa"
+        android:orientation="vertical">
+
+    <include layout="@layout/title_shopping" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <LinearLayout
+                    android:id="@+id/ll_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="85dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="图片"
+                            android:textColor="@color/black"
+                            android:textSize="15sp" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="3"
+                            android:gravity="center"
+                            android:text="名称"
+                            android:textColor="@color/black"
+                            android:textSize="15sp" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="数量"
+                            android:textColor="@color/black"
+                            android:textSize="15sp" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="单价"
+                            android:textColor="@color/black"
+                            android:textSize="15sp" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="总价"
+                            android:textColor="@color/black"
+                            android:textSize="15sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                        android:id="@+id/ll_cart"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                    <Button
+                            android:id="@+id/btn_clear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="清空"
+                            android:textColor="@color/black"
+                            android:textSize="17sp" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center|right"
+                            android:text="总金额："
+                            android:textColor="@color/black"
+                            android:textSize="17sp" />
+
+                    <TextView
+                            android:id="@+id/tv_total_price"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10dp"
+                            android:gravity="center|left"
+                            android:textColor="#ff0000"
+                            android:textSize="25sp" />
+
+                    <Button
+                            android:id="@+id/btn_settle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="结算"
+                            android:textColor="@color/black"
+                            android:textSize="17sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/ll_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="100dp"
+                        android:layout_marginBottom="100dp"
+                        android:gravity="center"
+                        android:text="哎呀，购物车空空如也，快去选购商品吧"
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+
+                <Button
+                        android:id="@+id/btn_shopping_channel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="逛逛手机商场"
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+##### activity_shopping_detail
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#aaccff"
+        android:orientation="vertical">
+
+    <include layout="@layout/title_shopping" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <ImageView
+                    android:id="@+id/iv_goods_pic"
+                    android:layout_width="match_parent"
+                    android:layout_height="350dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="图片" />
+
+            <TextView
+                    android:id="@+id/tv_goods_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="5dp"
+                    android:textColor="#ff0000"
+                    android:textSize="22sp"
+                    tools:text="1990" />
+
+            <TextView
+                    android:id="@+id/tv_goods_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="5dp"
+                    android:textColor="@color/black"
+                    android:textSize="15sp"
+                    tools:text="小米 MI10 8GB+128GB 钛银黑 5G手机 游戏拍照手机" />
+
+            <Button
+                    android:id="@+id/btn_add_cart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="加入购物车"
+                    android:textColor="@color/black"
+                    android:textSize="17sp" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+
+
+#### Activity类
 
