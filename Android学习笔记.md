@@ -23990,3 +23990,445 @@ public class MainActivity extends AppCompatActivity
 
 ## 运行时动态申请权限
 
+从Android 7.0开始，系统仍然默认禁止App访问公共空间，必须到设置界面手动开启应用的存储卡权限才行。尽管此举是为用户隐私着想，可是用户咋知道要手工开权限呢？就算用户知道，去设置界面找到权限开关也颇费周折。为此Android支持在Java代码中处理权限，处理过程分为3个步骤：
+
+
+
+
+
+### 检查App是否开启了指定权限
+
+权限检查需要调用ContextCompat的checkSelfPermission方法，该方法的第一个参数为活动实例，第 二个参数为待检查的权限名称，例如存储卡的写权限名为 Manifest.permission.WRITE_EXTERNAL_STORAGE。注意checkSelfPermission方法的返回值，当它为PackageManager.PERMISSION_GRANTED时表示已经授权，否则就是未获授权
+
+
+
+
+
+### 请求系统弹窗，以便用户选择是否开启权限
+
+一旦发现某个权限尚未开启，就得弹窗提示用户手工开启，这个弹窗不是开发者自己写的提醒对话框， 而是系统专门用于权限申请的对话框。调用ActivityCompat的requestPermissions方法，即可命令系统自动弹出权限申请窗口，该方法的第一个参数为活动实例，第二个参数为待申请的权限名称数组，第三个参数为本次操作的请求代码
+
+
+
+
+
+###  判断用户的权限选择结果
+
+然而上面第二步的requestPermissions方法没有返回值，那怎么判断用户到底选了开启权限还是拒绝权 限呢？其实活动页面提供了权限选择的回调方法onRequestPermissionsResult，如果当前页面请求弹出权限申请窗口，那么该页面的Java代码必须重写onRequestPermissionsResult方法，并在该方法内部处理用户的权限选择结果
+
+
+
+具体到编码实现上，前两步的权限校验和请求弹窗可以合并到一块，先调用checkSelfPermission方法检查某个权限是否已经开启，如果没有开启再调用requestPermissions方法请求系统弹窗。
+
+
+
+```java
+/**
+ * 检查某个权限
+ *
+ * @param act         Activity对象
+ * @param permission  许可
+ * @param requestCode 请求代码
+ * @return boolean 返回true表示已启用该权限，返回false表示未启用该权限
+ */
+public static boolean checkPermission(Activity act, String permission, int requestCode)
+{
+    return checkPermission(act, new String[]{permission}, requestCode);
+}
+
+
+/**
+ * 检查多个权限
+ *
+ * @param act         Activity对象
+ * @param permissions 权限
+ * @param requestCode 请求代码
+ * @return boolean 返回true表示已完全启用权限，返回false表示未完全启用权限
+ */
+@SuppressWarnings("all")
+public static boolean checkPermission(Activity act, String[] permissions, int requestCode)
+{
+    boolean result = true;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+    {
+        int check = PackageManager.PERMISSION_GRANTED;
+        //通过权限数组检查是否都开启了这些权限
+        for (String permission : permissions)
+        {
+            check = ContextCompat.checkSelfPermission(act, permission);
+            if (check != PackageManager.PERMISSION_GRANTED)
+            {
+                //有个权限没有开启，就跳出循环
+                break;
+            }
+        }
+        if (check != PackageManager.PERMISSION_GRANTED)
+        {
+            //未开启该权限，则请求系统弹窗，好让用户选择是否立即开启权限
+            ActivityCompat.requestPermissions(act, permissions, requestCode);
+            result = false;
+        }
+    }
+    return result;
+}
+```
+
+
+
+
+
+注意到上面代码有判断安卓版本号，只有系统版本大于Android 6.0（版本代号为M），才执行后续的权 限校验操作。这是因为从Android 6.0开始引入了运行时权限机制，在Android 6.0之前，只要App在 AndroidManifest.xml中添加了权限配置，则系统会自动给App开启相关权限；但在Android 6.0之后， 即便事先添加了权限配置，系统也不会自动开启权限，而要开发者在App运行时判断权限的开关情况， 再据此动态申请未获授权的权限
+
+
+
+回到活动页面代码，一方面增加权限校验入口，比如点击某个按钮后触发权限检查操作，其中 Manifest.permission.WRITE_EXTERNAL_STORAGE表示存储卡权限
+
+
+
+```java
+findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+{
+    @Override
+    public void onClick(View v)
+    {
+        if (checkPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                R.id.Button1 % 65536))
+        {
+            startActivity(new Intent(MainActivity.this, MainActivity2.class));
+        }
+    }
+});
+```
+
+
+
+
+
+另一方面还要重写活动的onRequestPermissionsResult方法，在方法内部校验用户的选择结果，若用户同意授权，就执行后续业务；若用户拒绝授权，只能提示用户无法开展后续业务了
+
+
+
+全部代码
+
+```java
+package mao.android_dynamic_application_permission;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save(R.id.Button1);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                camera(R.id.Button2);
+            }
+        });
+    }
+
+    /**
+     * 保存
+     *
+     * @param requestCode 请求代码 ,可以是组件的id
+     */
+    public void save(int requestCode)
+    {
+        if (checkPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                requestCode % 65536))
+        {
+            //成功获取到权限
+            startActivity(new Intent(MainActivity.this, MainActivity2.class));
+        }
+    }
+
+    /**
+     * 相机
+     *
+     * @param requestCode 请求代码
+     */
+    public void camera(int requestCode)
+    {
+        if (checkPermission(MainActivity.this, Manifest.permission.CAMERA,
+                requestCode % 65536))
+        {
+            //成功获取到权限
+            startActivity(new Intent(MainActivity.this, MainActivity3.class));
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // requestCode不能为负数，也不能大于2的16次方即65536
+        if (requestCode == R.id.Button1 % 65536)
+        {
+            if (checkGrant(grantResults))
+            {
+                //用户选择了同意授权
+                startActivity(new Intent(this, MainActivity2.class));
+            }
+            else
+            {
+                toastShow("没有权限");
+            }
+        }
+        else if (requestCode == R.id.Button2 % 65536)
+        {
+            if (checkGrant(grantResults))
+            {
+                //用户选择了同意授权
+                startActivity(new Intent(this, MainActivity3.class));
+            }
+            else
+            {
+                toastShow("没有权限");
+            }
+        }
+    }
+
+
+    /**
+     * 检查权限结果数组，
+     *
+     * @param grantResults 授予相应权限的结果是PackageManager.PERMISSION_GRANTED
+     *                     或PackageManager.PERMISSION_DENIED
+     *                     从不为空
+     * @return boolean 返回true表示都已经获得授权 返回false表示至少有一个未获得授权
+     */
+    public static boolean checkGrant(int[] grantResults)
+    {
+        boolean result = true;
+        if (grantResults != null)
+        {
+            for (int grant : grantResults)
+            {
+                //遍历权限结果数组中的每条选择结果
+                if (grant != PackageManager.PERMISSION_GRANTED)
+                {
+                    //未获得授权，返回false
+                    result = false;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            result = false;
+        }
+        return result;
+    }
+
+
+    /**
+     * 检查某个权限
+     *
+     * @param act         Activity对象
+     * @param permission  许可
+     * @param requestCode 请求代码
+     * @return boolean 返回true表示已启用该权限，返回false表示未启用该权限
+     */
+    public static boolean checkPermission(Activity act, String permission, int requestCode)
+    {
+        return checkPermission(act, new String[]{permission}, requestCode);
+    }
+
+
+    /**
+     * 检查多个权限
+     *
+     * @param act         Activity对象
+     * @param permissions 权限
+     * @param requestCode 请求代码
+     * @return boolean 返回true表示已完全启用权限，返回false表示未完全启用权限
+     */
+    @SuppressWarnings("all")
+    public static boolean checkPermission(Activity act, String[] permissions, int requestCode)
+    {
+        boolean result = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            int check = PackageManager.PERMISSION_GRANTED;
+            //通过权限数组检查是否都开启了这些权限
+            for (String permission : permissions)
+            {
+                check = ContextCompat.checkSelfPermission(act, permission);
+                if (check != PackageManager.PERMISSION_GRANTED)
+                {
+                    //有个权限没有开启，就跳出循环
+                    break;
+                }
+            }
+            if (check != PackageManager.PERMISSION_GRANTED)
+            {
+                //未开启该权限，则请求系统弹窗，好让用户选择是否立即开启权限
+                ActivityCompat.requestPermissions(act, permissions, requestCode);
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+}
+```
+
+
+
+
+
+![image-20221001134618609](img/Android学习笔记/image-20221001134618609.png)
+
+
+
+
+
+![image-20221001134629197](img/Android学习笔记/image-20221001134629197.png)
+
+
+
+![image-20221001134643709](img/Android学习笔记/image-20221001134643709.png)
+
+
+
+![image-20221001134654039](img/Android学习笔记/image-20221001134654039.png)
+
+
+
+![image-20221001134701807](img/Android学习笔记/image-20221001134701807.png)
+
+
+
+![image-20221001134711472](img/Android学习笔记/image-20221001134711472.png)
+
+
+
+
+
+在Android 10系统中，即使授权通过，App仍然无法访问公共空间，这是因为Android10默认开启沙箱模 式，不允许直接使用公共空间的文件路径，此时要修改AndroidManifest.xml，给application节点添加如下的requestLegacyExternalStorage属性：
+
+```xml
+android:requestLegacyExternalStorage="true"
+```
+
+
+
+从Android 11开始，为了让应用升级时也能正常访问公共空间，还得修改AndroidManifest.xml，给 application节点添加如下的preserveLegacyExternalStorage属性，表示暂时关闭沙箱模式：
+
+```xml
+android:preserveLegacyExternalStorage="true"
+```
+
+
+
+
+
+除了存储卡的读写权限，还有部分权限也要求运行时动态申请
+
+
+
+![image-20221001134935252](img/Android学习笔记/image-20221001134935252.png)
+
+
+
+
+
+
+
+主清单文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_dynamic_application_permission">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAG" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:requestLegacyExternalStorage="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_dynamic_application_permission"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity3"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity2"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+
+
+
+
+## 使用内容组件获取信息
+
+### 利用ContentResolver读写联系人
+
