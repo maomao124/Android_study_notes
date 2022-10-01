@@ -24432,3 +24432,384 @@ android:preserveLegacyExternalStorage="true"
 
 ### 利用ContentResolver读写联系人
 
+在实际开发中，普通App很少会开放数据接口给其他应用访问，作为服务端接口的ContentProvider基本 用不到。内容组件能够派上用场的情况，往往是App想要访问系统应用的通讯数据，比如查看联系人、 短信、通话记录，以及对这些通讯数据进行增、删、改、查
+
+
+
+访问系统的通讯数据之前，得先在AndroidManifest.xml添加相应的权限配置，常见的通讯权限配置主要有下面几个：
+
+```xml
+<!-- 联系人/通讯录。包括读联系人、写联系人 -->
+<uses-permission android:name="android.permission.READ_CONTACTS" />
+<uses-permission android:name="android.permission.WRITE_CONTACTS" />
+<!-- 短信。包括发送短信、接收短信、读短信-->
+<uses-permission android:name="android.permission.SEND_SMS" />
+<uses-permission android:name="android.permission.RECEIVE_SMS" />
+<uses-permission android:name="android.permission.READ_SMS" />
+<!-- 通话记录。包括读通话记录、写通话记录 -->
+<uses-permission android:name="android.permission.READ_CALL_LOG" />
+<uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+```
+
+
+
+
+
+从Android 6.0开始，上述的通讯权限默认是关闭的，必须在运行App的时候动态申请相关权限
+
+尽管系统允许App通过内容解析器修改联系人列表，但操作过程比较烦琐，因为一个联系人可能有多个 电话号码，还可能有多个邮箱，所以系统通讯录将其设计为3张表，分别是联系人基本信息表、联系号码 表、联系邮箱表，于是每添加一位联系人，就要调用至少三次insert方法。
+
+
+
+
+
+raw_contacts 表：
+
+![image-20221001143955923](img/Android学习笔记/image-20221001143955923.png)
+
+
+
+
+
+data表：
+
+记录了用户的通讯录所有数据，包括手机号，显示名称等，但是里面的mimetype_id表示不同的数据类 型，这与表mimetypes表中的id相对应，raw_contact_id 与下面的 raw_contacts表中的 id 相对应
+
+![image-20221001144017899](img/Android学习笔记/image-20221001144017899.png)
+
+
+
+
+
+mimetypes表：
+
+![image-20221001144034299](img/Android学习笔记/image-20221001144034299.png)
+
+
+
+
+
+部分代码
+
+```java
+/**
+ * 往通讯录里插入数据
+ *
+ * @param requestCode 请求代码
+ */
+public void insert(int requestCode)
+{
+    if (checkPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS,
+            requestCode % 65536))
+    {
+        //成功获取到权限
+        insert();
+    }
+}
+
+/**
+ * 插入联系人
+ */
+private void insert()
+{
+    try
+    {
+        String name = editText1.getText().toString();
+        String phone = editText2.getText().toString();
+        String email = editText3.getText().toString();
+
+        if (name.equals(""))
+        {
+            toastShow("请输入联系人姓名");
+            return;
+        }
+        if (phone.equals(""))
+        {
+            toastShow("请输入联系人手机号码");
+            return;
+        }
+        //电子邮箱可以为空
+        /*
+        if (email.equals(""))
+        {
+            toastShow("请输入联系人电子邮箱");
+            return;
+        }*/
+
+        Contact contact = new Contact(name, phone, email);
+        //addContacts(getContentResolver(), contact);
+        addFullContacts(getContentResolver(), contact);
+        toastShow("已尝试插入");
+    }
+    catch (Exception e)
+    {
+        Log.e(TAG, "insert: ", e);
+        toastShow("异常：" + e.getMessage());
+    }
+}
+
+/**
+ * 往手机通讯录一次性添加一个联系人信息（包括主记录、姓名、电话号码、电子邮箱）
+ * 有事务，推荐。要么全部成功，要么全部失败
+ *
+ * @param resolver 解析器
+ * @param contact  联系
+ */
+private void addFullContacts(ContentResolver resolver, Contact contact)
+{
+    //创建一个插入联系人主记录的内容操作器
+    ContentProviderOperation op_main = ContentProviderOperation
+            .newInsert(ContactsContract.RawContacts.CONTENT_URI)
+            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+            .build();
+
+    // 创建一个插入联系人姓名记录的内容操作器
+    ContentProviderOperation op_name = ContentProviderOperation
+            .newInsert(ContactsContract.Data.CONTENT_URI)
+            // 将第0个操作的id，即 raw_contacts 的 id 作为 data 表中的 raw_contact_id
+            .withValueBackReference(ContactsContract.Contacts.Data.RAW_CONTACT_ID, 0)
+            .withValue(ContactsContract.Contacts.Data.MIMETYPE,
+                    ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+            .withValue(ContactsContract.Contacts.Data.DATA2, contact.getName())
+            .build();
+
+    // 创建一个插入联系人电话号码记录的内容操作器
+    ContentProviderOperation op_phone = ContentProviderOperation
+            .newInsert(ContactsContract.Data.CONTENT_URI)
+            // 将第0个操作的id，即 raw_contacts 的 id 作为 data 表中的 raw_contact_id
+            .withValueBackReference(ContactsContract.Contacts.Data.RAW_CONTACT_ID, 0)
+            .withValue(ContactsContract.Contacts.Data.MIMETYPE,
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+            .withValue(ContactsContract.Contacts.Data.DATA1, contact.getPhone())
+            .withValue(ContactsContract.Contacts.Data.DATA2,
+                    ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+            .build();
+
+    // 创建一个插入联系人电子邮箱记录的内容操作器
+    ContentProviderOperation op_email = ContentProviderOperation
+            .newInsert(ContactsContract.Data.CONTENT_URI)
+            // 将第0个操作的id，即 raw_contacts 的 id 作为 data 表中的 raw_contact_id
+            .withValueBackReference(ContactsContract.Contacts.Data.RAW_CONTACT_ID, 0)
+            .withValue(ContactsContract.Contacts.Data.MIMETYPE,
+                    ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+            .withValue(ContactsContract.Contacts.Data.DATA1, contact.getEmail())
+            .withValue(ContactsContract.Contacts.Data.DATA2,
+                    ContactsContract.CommonDataKinds.Email.TYPE_WORK)
+            .build();
+
+    // 声明一个内容操作器的列表，并将上面四个操作器添加到该列表中
+    ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+    operations.add(op_main);
+    operations.add(op_name);
+    operations.add(op_phone);
+    operations.add(op_email);
+
+    try
+    {
+        // 批量提交四个操作
+        resolver.applyBatch(ContactsContract.AUTHORITY, operations);
+    }
+    catch (OperationApplicationException | RemoteException e)
+    {
+        Log.e(TAG, "addFullContacts: ", e);
+    }
+}
+
+
+/**
+ * 往手机通讯录添加一个联系人信息（包括姓名、电话号码、电子邮箱）
+ *
+ * @param resolver 解析器
+ * @param contact  Contact对象
+ */
+public static void addContacts(ContentResolver resolver, Contact contact)
+{
+    // 构建一个指向系统联系人提供器的Uri对象
+    Uri raw_uri = Uri.parse("content://com.android.contacts/raw_contacts");
+    // 创建新的配对
+    ContentValues values = new ContentValues();
+    // 往 raw_contacts 添加联系人记录，并获取添加后的联系人编号
+    long contactId = ContentUris.parseId(resolver.insert(raw_uri, values));
+    // 构建一个指向系统联系人数据的Uri对象
+    Uri uri = Uri.parse("content://com.android.contacts/data");
+    // 创建新的配对
+    ContentValues name = new ContentValues();
+    // 往配对添加联系人编号
+    name.put("raw_contact_id", contactId);
+    // 往配对添加“姓名”的数据类型
+    name.put("mimetype", "vnd.android.cursor.item/name");
+    // 往配对添加联系人的姓名
+    name.put("data2", contact.getName());
+    // 往提供器添加联系人的姓名记录
+    resolver.insert(uri, name);
+    // 创建新的配对
+    ContentValues phone = new ContentValues();
+    // 往配对添加联系人编号
+    phone.put("raw_contact_id", contactId);
+    // 往配对添加“电话号码”的数据类型
+    phone.put("mimetype", "vnd.android.cursor.item/phone_v2");
+    // 往配对添加联系人的电话号码
+    phone.put("data1", contact.getPhone());
+    // 联系类型。1表示家庭，2表示工作
+    phone.put("data2", "2");
+    // 往提供器添加联系人的号码记录
+    resolver.insert(uri, phone);
+    // 创建新的配对
+    ContentValues email = new ContentValues();
+    // 往配对添加联系人编号
+    email.put("raw_contact_id", contactId);
+    // 往配对添加“电子邮箱”的数据类型
+    email.put("mimetype", "vnd.android.cursor.item/email_v2");
+    // 往配对添加联系人的电子邮箱
+    email.put("data1", contact.getEmail());
+    // 联系类型。1表示家庭，2表示工作
+    email.put("data2", "2");
+    // 往提供器添加联系人的邮箱记录
+    resolver.insert(uri, email);
+}
+```
+
+
+
+
+
+同理，联系人读取代码也分成3个步骤，先查出联系人的基本信息，再依次查询联系人号码和联系人邮箱
+
+
+
+部分源码
+
+```java
+/**
+ * 读取手机联系人
+ *
+ * @param resolver 解析器
+ * @return {@link List}<{@link Contact}>
+ */
+@SuppressLint("Range")
+private List<Contact> readPhoneContacts(ContentResolver resolver)
+{
+    List<Contact> list = new ArrayList<>();
+    // 先查询 raw_contacts 表，在根据 raw_contacts_id 去查询 data 表
+    Cursor cursor = resolver.query(ContactsContract.RawContacts.CONTENT_URI,
+            new String[]{ContactsContract.RawContacts._ID},
+            null, null, null, null);
+    while (cursor.moveToNext())
+    {
+        int rawContactId = cursor.getInt(0);
+        Uri uri = Uri.parse("content://com.android.contacts/contacts/" + rawContactId + "/data");
+        Cursor dataCursor = resolver.query(uri,
+                new String[]{ContactsContract.Contacts.Data.MIMETYPE,
+                        ContactsContract.Contacts.Data.DATA1,
+                        ContactsContract.Contacts.Data.DATA2},
+                null, null, null);
+        Contact contact = new Contact();
+        while (dataCursor.moveToNext())
+        {
+            String data1 = dataCursor.getString(dataCursor.getColumnIndex(ContactsContract.Contacts.Data.DATA1));
+            String mimeType = dataCursor.getString(dataCursor.getColumnIndex(ContactsContract.Contacts.Data.MIMETYPE));
+            switch (mimeType)
+            {
+                //是姓名
+                case ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE:
+                    contact.setName(data1);
+                    break;
+
+                //邮箱
+                case ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE:
+                    contact.setEmail(data1);
+                    break;
+
+                //手机
+                case ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE:
+                    contact.setPhone(data1);
+                    break;
+            }
+        }
+
+        dataCursor.close();
+
+        // RawContacts 表中出现的 _id，不一定在 Data 表中都会有对应记录
+        if (contact.getName() != null)
+        {
+            Log.d(TAG, "readPhoneContacts: \n" + contact + "\n");
+            list.add(contact);
+        }
+    }
+    cursor.close();
+    return list;
+}
+```
+
+
+
+
+
+
+
+
+
+布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <EditText
+            android:id="@+id/EditText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="联系人姓名" />
+
+    <EditText
+            android:id="@+id/EditText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="11"
+            android:hint="联系人号码" />
+
+    <EditText
+            android:id="@+id/EditText3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
+            android:hint="联系人邮箱" />
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加联系人" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询所有联系人" />
+
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
