@@ -27425,5 +27425,352 @@ spinner.setAdapter(arrayAdapter);
 
 ### 简单适配器SimpleAdapter
 
+ArrayAdapter只能显示文本列表，显然不够美观，有时还想给列表加上图标。这时简单适配器SimpleAdapter就能派上用场了，它允许在列表项中同时展示文本与图片
+
+
+
+SimpleAdapter的实现过程略微复杂，因为它的原料需要更多信息。例如，原料不但有糖果，还有贺卡，这样就得把一大袋糖果和一大袋贺卡送进流水线，适配器每次拿一颗糖果和一张贺卡，把糖果与贺卡按规定塞进包装盒。对于SimpleAdapter的构造方法来说，第2个参数Map容器放的是原料糖果与贺卡，第3个参数放的是包装盒，第4个参数放的是糖果袋与贺卡袋的名称，第5个参数放的是包装盒里塞糖果的位置与塞贺卡的位置
+
+
+
+
+
+布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+
+    <Spinner
+            android:id="@+id/Spinner3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown" />
+
+</LinearLayout>
+```
+
+
+
+
+
+item_simple.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+    <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1" />
+
+    <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:gravity="center"
+            android:textColor="#ff0000"
+            android:textSize="17sp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+MainActivity4
+
+```java
+package mao.android_spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.SimpleAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity4 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main4);
+
+        Spinner spinner = findViewById(R.id.Spinner3);
+
+        int[] iconArray = new int[]
+                {
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                };
+
+        String[] nameArray = new String[]
+                {
+                        "选项1",
+                        "选项2",
+                        "选项3",
+                        "选项4",
+                        "选项5",
+                        "选项6",
+                };
+
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (int i = 0; i < nameArray.length; i++)
+        {
+            Map<String, Object> map = new HashMap<>(2);
+            map.put("icon", iconArray[i]);
+            map.put("name", nameArray[i]);
+            list.add(map);
+        }
+
+        SimpleAdapter simpleAdapter = new SimpleAdapter(this, list,
+                R.layout.item_simple,
+                new String[]{"icon", "name"},
+                new int[]{R.id.iv_icon, R.id.tv_name}
+        );
+
+        spinner.setAdapter(simpleAdapter);
+        spinner.setSelection(2);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("当前选择的是第" + (position + 1) + "个");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+                toastShow("取消选择");
+            }
+        });
+
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221002223344626](img/Android学习笔记/image-20221002223344626.png)
+
+
+
+![image-20221002223355491](img/Android学习笔记/image-20221002223355491.png)
+
+
+
+![image-20221002223406294](img/Android学习笔记/image-20221002223406294.png)
+
+
+
+
+
+
+
+对话框模式
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+
+    <Spinner
+            android:id="@+id/Spinner4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.SimpleAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity5 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main5);
+        Spinner spinner = findViewById(R.id.Spinner4);
+
+        int[] iconArray = new int[]
+                {
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                        R.drawable.ic_launcher_foreground,
+                };
+
+        String[] nameArray = new String[]
+                {
+                        "选项1",
+                        "选项2",
+                        "选项3",
+                        "选项4",
+                        "选项5",
+                        "选项6",
+                };
+
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (int i = 0; i < nameArray.length; i++)
+        {
+            Map<String, Object> map = new HashMap<>(2);
+            map.put("icon", iconArray[i]);
+            map.put("name", nameArray[i]);
+            list.add(map);
+        }
+
+        SimpleAdapter simpleAdapter = new SimpleAdapter(this, list,
+                R.layout.item_simple,
+                new String[]{"icon", "name"},
+                new int[]{R.id.iv_icon, R.id.tv_name}
+        );
+
+
+        spinner.setPrompt("请选择");
+        spinner.setAdapter(simpleAdapter);
+        spinner.setSelection(2);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("当前选择的是第" + (position + 1) + "个");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+                toastShow("取消选择");
+            }
+        });
+
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221002223731913](img/Android学习笔记/image-20221002223731913.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 列表类视图
+
+### 基本适配器BaseAdapter
+
 
 
