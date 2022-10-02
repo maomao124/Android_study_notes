@@ -27349,3 +27349,81 @@ public class MainActivity3 extends AppCompatActivity
 
 ### 数组适配器ArrayAdapter
 
+这个适配器好比一组数据的加工流水线，你丢给它一大把糖果，适配器先按顺序排列糖果，然后拿来制作好的包装盒（对应每个列表项的布局文件item_select.xml），把糖果往里面一塞，出来的便是一个个精美的糖果盒（界面上排布整齐的列表框）。这个流水线可以做得很复杂，也可以做得简单一些，最简单的流水线就是之前演示用到的数组适配器ArrayAdapter
+
+
+
+ArrayAdapter主要用于每行列表只展示文本的情况
+
+
+
+实现过程分成下列3个步骤：
+
+步骤一，编写列表项的XML文件，内部布局只有一个TextView标签
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:textColor="#ff0000"
+        android:textSize="17sp" />
+```
+
+
+
+
+
+步骤二，调用ArrayAdapter的构造方法，填入待展现的字符串数组，以及列表项的包装盒，即XML文件 R.layout.item_select。
+
+
+
+```java
+ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.item_select,
+        new String[]
+                {
+                        "选项1",
+                        "选项2",
+                        "选项3",
+                        "选项4",
+                        "选项5",
+                        "选项6",
+                        "选项7"
+                }
+);
+```
+
+
+
+也可以使用系统自带的
+
+```java
+ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, new String[]{"1", "2"});
+```
+
+
+
+
+
+步骤三，调用下拉框控件的setAdapter方法，传入第二步得到的适配器实例
+
+
+
+```java
+spinner.setAdapter(arrayAdapter);
+```
+
+
+
+
+
+
+
+### 简单适配器SimpleAdapter
+
+
+
