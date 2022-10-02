@@ -26284,5 +26284,805 @@ public class MainActivity extends AppCompatActivity
 
 
 
-## 　借助FileProvider发送彩信
+## 借助FileProvider发送彩信
+
+通过系统相册固然可以获得照片的路径对象，却无法知晓更多的详细信息，例如照片名称、文件大小、 文件路径等信息，也就无法进行个性化的定制开发。为了把更多的文件信息开放出来，Android设计了专门的媒体共享库，允许开发者通过内容组件从中获取更详细的媒体信息
+
+图片所在的相册媒体库路径为MediaStore.Images.Media.EXTERNAL_CONTENT_URI，通过内容解析器 即可从媒体库依次遍历得到图片列表详情。为便于代码管理，首先要声明如下的对象变量：
+
+```java
+/**
+     * 图像列表
+     */
+    private final List<ImageInfo> imageList = new ArrayList<>();
+
+    /**
+     * 图像uri
+     */
+    private final Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+
+    /**
+     * 媒体库的字段名称数组
+     */
+    private final String[] imageColumn = new String[]
+            {
+                    // 编号
+                    MediaStore.Images.Media._ID,
+                    // 标题
+                    MediaStore.Images.Media.TITLE,
+                    // 文件大小
+                    MediaStore.Images.Media.SIZE,
+                    // 文件路径
+                    MediaStore.Images.Media.DATA
+            };
+
+```
+
+
+
+
+
+然后使用内容解析器查询媒体库的图片信息，简单起见只挑选文件大小最小的前6张图片
+
+
+
+```java
+/**
+     * 加载图像列表
+     */
+    private void loadImageList()
+    {
+        // 清空图片列表
+        imageList.clear();
+        // 查询相册媒体库，并返回结果集的游标。“_size asc”表示按照文件大小升序排列
+        Cursor cursor = getContentResolver().query(imageUri, imageColumn, null,
+                null, "_size asc");
+        if (cursor != null)
+        {
+            //遍历结果集，并逐个添加到图片列表。简单起见只挑选前六张图片
+            for (int i = 0; i < 6 && cursor.moveToNext(); i++)
+            {
+                // 创建一个图片信息对象
+                ImageInfo image = new ImageInfo();
+                // 设置图片编号
+                image.setId(cursor.getLong(0));
+                // 设置图片名称
+                image.setName(cursor.getString(1));
+                // 设置图片的文件大小
+                image.setSize(cursor.getLong(2));
+                // 设置图片的文件路经
+                image.setPath(cursor.getString(3));
+
+                Log.d(TAG, image.getName() + " " + image.getSize() + " " +
+                        image.getPath());
+
+
+
+                // 添加至图片列表
+                imageList.add(image);
+            }
+            //关闭数据库游标
+            cursor.close();
+        }
+    }
+```
+
+
+
+
+
+以上代码获得了字符串格式的文件路径，而彩信发送应用却要求Uri类型的路径对象，原本可以通 过代码“Uri.parse(path)”将字符串转换为Uri对象，但是从Android 7.0开始，系统不允许其他应用直接访 问老格式的路径，必须使用文件提供器FileProvider才能获取合法的Uri路径，相当于A应用申明了共享某 个文件，然后B应用方可访问该文件。为此需要重头配置FileProvider，详细的配置步骤说明如下
+
+
+
+首先在res目录新建xml文件夹，并在该文件夹中创建file_paths.xml，再往XML文件填入以下内容，表示 定义几个外部文件目录：
+
+
+
+![image-20221002141529460](img/Android学习笔记/image-20221002141529460.png)
+
+
+
+```xml
+<paths>
+    <external-path path="Android/data/mao.android_send_mms_with_fileprovider/" name="files_root" />
+    <external-path path="." name="external_storage_root" />
+</paths>
+```
+
+
+
+
+
+接着打开AndroidManifest.xml，在application节点内部添加下面的provider标签，表示声明当前应用的内容提供器组件
+
+
+
+```xml
+<!-- 兼容Android7.0，把访问文件的Uri方式改为FileProvider -->
+<provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="@string/file_provider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+    <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/file_paths" />
+</provider>
+```
+
+
+
+
+
+上面的provider有两处地方允许修改，一处是authorities属性，它规定了授权字符串，这是每个提供器 的唯一标识；另一处是元数据的resource属性，它指明了文件提供器的路径资源，也就是刚才定义的 file_paths.xml
+
+
+
+回到活动页面的源码，在发送彩信之前添加下述代码，目的是根据字符串路径构建Uri对象
+
+
+
+```java
+// 根据指定路径创建一个Uri对象
+Uri uri = Uri.parse(imageInfo.getPath());
+
+// 通过FileProvider获得文件的Uri访问方式
+uri = FileProvider.getUriForFile(this,
+        "mao.android_send_mms_with_fileprovider", new
+                File(imageInfo.getPath()));
+```
+
+
+
+
+
+
+
+
+
+布局文件
+
+
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="对方号码："
+                android:textColor="@color/black"
+                android:textSize="17sp" />
+
+        <EditText
+                android:id="@+id/et_phone"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:text="10086"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="彩信标题："
+                android:textColor="@color/black"
+                android:textSize="17sp" />
+
+        <EditText
+                android:id="@+id/et_title"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:text="Hallo"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="彩信内容："
+                android:textColor="@color/black"
+                android:textSize="17sp" />
+
+        <EditText
+                android:id="@+id/et_message"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:gravity="left|top"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:text="test"/>
+
+    </LinearLayout>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="点击下方图片开始发送彩信"
+            android:textColor="@color/black"
+            android:textSize="17sp" />
+
+    <GridLayout
+            android:id="@+id/gl_appendix"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3" />
+
+</LinearLayout>
+```
+
+
+
+
+
+实体类
+
+
+
+```java
+package mao.android_send_mms_with_fileprovider.entiey;
+
+/**
+ * Project name(项目名称)：android_send_MMS_with_FileProvider
+ * Package(包名): mao.android_send_mms_with_fileprovider.entiey
+ * Class(类名): ImageInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/2
+ * Time(创建时间)： 14:09
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ImageInfo
+{
+    /**
+     * id
+     */
+    private long id;
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 大小
+     */
+    private long size;
+    /**
+     * 路径
+     */
+    private String path;
+
+    /**
+     * Instantiates a new Image info.
+     */
+    public ImageInfo()
+    {
+    }
+
+    /**
+     * Instantiates a new Image info.
+     *
+     * @param id   the id
+     * @param name the name
+     * @param size the size
+     * @param path the path
+     */
+    public ImageInfo(long id, String name, long size, String path)
+    {
+        this.id = id;
+        this.name = name;
+        this.size = size;
+        this.path = path;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public ImageInfo setId(long id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public ImageInfo setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets size.
+     *
+     * @return the size
+     */
+    public long getSize()
+    {
+        return size;
+    }
+
+    /**
+     * Sets size.
+     *
+     * @param size the size
+     * @return the size
+     */
+    public ImageInfo setSize(long size)
+    {
+        this.size = size;
+        return this;
+    }
+
+    /**
+     * Gets path.
+     *
+     * @return the path
+     */
+    public String getPath()
+    {
+        return path;
+    }
+
+    /**
+     * Sets path.
+     *
+     * @param path the path
+     * @return the path
+     */
+    public ImageInfo setPath(String path)
+    {
+        this.path = path;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("size：").append(size).append('\n');
+        stringbuilder.append("path：").append(path).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+MainActivity
+
+
+
+```java
+package mao.android_send_mms_with_fileprovider;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_send_mms_with_fileprovider.entiey.ImageInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private static final String[] PERMISSIONS = new String[]
+            {
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            };
+
+    private static final int PERMISSION_REQUEST_CODE = 1;
+
+    private final List<ImageInfo> imageList = new ArrayList<>();
+
+    private GridLayout gl_appendix;
+    private EditText et_phone;
+    private EditText et_title;
+    private EditText et_message;
+
+    private static final String TAG = "MainActivity";
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        et_phone = findViewById(R.id.et_phone);
+        et_title = findViewById(R.id.et_title);
+        et_message = findViewById(R.id.et_message);
+        gl_appendix = findViewById(R.id.gl_appendix);
+
+        //手动让MediaStore扫描入库
+        MediaScannerConnection.scanFile(this,
+                new String[]{Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()},
+                null, null);
+
+        if (checkPermission(this, PERMISSIONS, PERMISSION_REQUEST_CODE))
+        {
+            // 加载图片列表
+            loadImageList();
+
+            if (imageList.size() <= 6)
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("图片不够")
+                        .setMessage("图片数量不足6张,当前为" + imageList.size() + "张")
+                        .setPositiveButton("确定", null)
+                        .create()
+                        .show();
+            }
+
+            // 显示图像网格
+            showImageGrid();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE &&
+                checkGrant(grantResults))
+        {
+            // 加载图片列表
+            loadImageList();
+
+            if (imageList.size() <= 6)
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("图片不够")
+                        .setMessage("图片数量不足6张")
+                        .setPositiveButton("确定", null)
+                        .create()
+                        .show();
+            }
+
+
+            // 显示图像网格
+            showImageGrid();
+        }
+        else
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("没有权限")
+                    .setMessage("没有相关权限")
+                    .setPositiveButton("确定", null)
+                    .create()
+                    .show();
+        }
+    }
+
+    // 显示图像网格
+    private void showImageGrid()
+    {
+        gl_appendix.removeAllViews();
+        for (ImageInfo image : imageList)
+        {
+            // image -> ImageView
+            ImageView iv_appendix = new ImageView(this);
+            Bitmap bitmap = BitmapFactory.decodeFile(image.getPath());
+            iv_appendix.setImageBitmap(bitmap);
+            // 设置图像视图的缩放类型
+            iv_appendix.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            // 设置图像视图的布局参数
+            int px = 400;
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(px, px);
+            iv_appendix.setLayoutParams(params);
+            // 设置图像视图的内部间距
+            int padding = 30;
+            iv_appendix.setPadding(padding, padding, padding, padding);
+            iv_appendix.setOnClickListener(v ->
+            {
+                sendMms(et_phone.getText().toString(),
+                        et_title.getText().toString(),
+                        et_message.getText().toString(),
+                        image.getPath());
+            });
+            // 把图像视图添加至网格布局
+            gl_appendix.addView(iv_appendix);
+        }
+    }
+
+    // 加载图片列表
+    @SuppressLint("Range")
+    private void loadImageList()
+    {
+        //MediaStore
+        String[] columns = new String[]
+                {
+                        MediaStore.Images.Media._ID, // 编号
+                        MediaStore.Images.Media.TITLE, // 标题
+                        MediaStore.Images.Media.SIZE,// 文件大小
+                        MediaStore.Images.Media.DATA,// 文件路径
+                };
+        // 图片大小在300KB以内
+        @SuppressLint("Recycle") Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                columns,
+                "_size < 307200",
+                null,
+                "_size DESC"
+        );
+        int count = 0;
+        if (cursor != null)
+        {
+            while (cursor.moveToNext() && count < 6)
+            {
+                ImageInfo image = new ImageInfo();
+                image.setId(cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID)));
+                image.setName(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.TITLE)));
+                image.setSize(cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.SIZE)));
+                image.setPath(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+                count++;
+                imageList.add(image);
+                Log.d(TAG, "loadImageList: " + image);
+            }
+        }
+
+    }
+
+    // 发送带图片的彩信
+    private void sendMms(String phone, String title, String message, String path)
+    {
+        // 根据指定路径创建一个Uri对象
+        Uri uri = Uri.parse(path);
+        // 兼容Android7.0，把访问文件的Uri方式改为FileProvider
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            // 通过FileProvider获得文件的Uri访问方式
+            uri = FileProvider.getUriForFile(this, getString(R.string.file_provider), new File(path));
+        }
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Intent 的接受者将被准许读取Intent 携带的URI数据
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        // 彩信发送的目标号码
+        intent.putExtra("address", phone);
+        // 彩信的标题
+        intent.putExtra("subject", title);
+        // 彩信的内容
+        intent.putExtra("sms_body", message);
+        // 彩信的图片附件
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        // 彩信的附件为图片
+        intent.setType("image/*");
+        // 因为未指定要打开哪个页面，所以系统会在底部弹出选择窗口
+        startActivity(intent);
+        toastShow("请在弹窗中选择短信或者信息应用");
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+
+    /**
+     * 检查权限结果数组，
+     *
+     * @param grantResults 授予相应权限的结果是PackageManager.PERMISSION_GRANTED
+     *                     或PackageManager.PERMISSION_DENIED
+     *                     从不为空
+     * @return boolean 返回true表示都已经获得授权 返回false表示至少有一个未获得授权
+     */
+    public static boolean checkGrant(int[] grantResults)
+    {
+        boolean result = true;
+        if (grantResults != null)
+        {
+            for (int grant : grantResults)
+            {
+                //遍历权限结果数组中的每条选择结果
+                if (grant != PackageManager.PERMISSION_GRANTED)
+                {
+                    //未获得授权，返回false
+                    result = false;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            result = false;
+        }
+        return result;
+    }
+
+
+    /**
+     * 检查某个权限
+     *
+     * @param act         Activity对象
+     * @param permission  许可
+     * @param requestCode 请求代码
+     * @return boolean 返回true表示已启用该权限，返回false表示未启用该权限
+     */
+    public static boolean checkPermission(Activity act, String permission, int requestCode)
+    {
+        return checkPermission(act, new String[]{permission}, requestCode);
+    }
+
+
+    /**
+     * 检查多个权限
+     *
+     * @param act         Activity对象
+     * @param permissions 权限
+     * @param requestCode 请求代码
+     * @return boolean 返回true表示已完全启用权限，返回false表示未完全启用权限
+     */
+    @SuppressWarnings("all")
+    public static boolean checkPermission(Activity act, String[] permissions, int requestCode)
+    {
+        boolean result = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            int check = PackageManager.PERMISSION_GRANTED;
+            //通过权限数组检查是否都开启了这些权限
+            for (String permission : permissions)
+            {
+                check = ContextCompat.checkSelfPermission(act, permission);
+                if (check != PackageManager.PERMISSION_GRANTED)
+                {
+                    //有个权限没有开启，就跳出循环
+                    break;
+                }
+            }
+            if (check != PackageManager.PERMISSION_GRANTED)
+            {
+                //未开启该权限，则请求系统弹窗，好让用户选择是否立即开启权限
+                ActivityCompat.requestPermissions(act, permissions, requestCode);
+                result = false;
+            }
+        }
+        return result;
+    }
+}
+```
+
+
+
+
+
+![image-20221002151052140](img/Android学习笔记/image-20221002151052140.png)
+
+
+
+图片不够，没法测试
+
+![image-20221002151107586](img/Android学习笔记/image-20221002151107586.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 高级控件
+
+## 下拉列表
+
+### 下拉框Spinner
 
