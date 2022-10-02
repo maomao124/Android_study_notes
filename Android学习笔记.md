@@ -26284,7 +26284,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-## 借助FileProvider发送彩信
+### 借助FileProvider发送彩信
 
 通过系统相册固然可以获得照片的路径对象，却无法知晓更多的详细信息，例如照片名称、文件大小、 文件路径等信息，也就无法进行个性化的定制开发。为了把更多的文件信息开放出来，Android设计了专门的媒体共享库，允许开发者通过内容组件从中获取更详细的媒体信息
 
@@ -27085,4 +27085,267 @@ public class MainActivity extends AppCompatActivity
 ## 下拉列表
 
 ### 下拉框Spinner
+
+Spinner是下拉框控件，它用于从一串列表中选择某项，其功能类似于单选按钮的组合。下拉列表的展示 方式有两种，一种是在当前下拉框的正下方弹出列表框，此时要把spinnerMode属性设置为 dropdown，另一种是在页面中部弹出列表对话框，此时要把spinnerMode属性设置为dialog
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Spinner
+            android:id="@+id/Spinner1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <Spinner
+            android:id="@+id/Spinner1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog" />
+
+</LinearLayout>
+```
+
+
+
+
+
+此外，在Java代码中，Spinner还可以调用下列4个方法：
+
+* setPrompt：设置标题文字。注意对话框模式才显示标题，下拉模式不显示标题。
+* setAdapter：设置列表项的数据适配器
+* setSelection：设置当前选中哪项。注意该方法要在setAdapter方法后调用
+* setOnItemSelectedListener：设置下拉列表的选择监听器，该监听器要实现接口OnItemSelectedListener
+
+
+
+
+
+
+
+下拉框模式
+
+```java
+package mao.android_spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        Spinner spinner = findViewById(R.id.Spinner1);
+
+        //ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, new String[]{"1", "2"});
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.item_select,
+                new String[]
+                        {
+                                "选项1",
+                                "选项2",
+                                "选项3",
+                                "选项4",
+                                "选项5",
+                                "选项6",
+                                "选项7"
+                        }
+        );
+        spinner.setAdapter(arrayAdapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("当前选择的是第" + (position + 1) + "个");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+                toastShow("取消选择");
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+对话框模式
+
+
+
+```java
+package mao.android_spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+public class MainActivity3 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        Spinner spinner = findViewById(R.id.Spinner1);
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.item_select,
+                new String[]
+                        {
+                                "选项1",
+                                "选项2",
+                                "选项3",
+                                "选项4",
+                                "选项5",
+                                "选项6",
+                                "选项7"
+                        }
+        );
+        spinner.setPrompt("请选择");
+        spinner.setAdapter(arrayAdapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("当前选择的是第" + (position + 1) + "个");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+                toastShow("取消选择");
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221002220119797](img/Android学习笔记/image-20221002220119797.png)
+
+
+
+
+
+![image-20221002220129412](img/Android学习笔记/image-20221002220129412.png)
+
+
+
+![image-20221002220138166](img/Android学习笔记/image-20221002220138166.png)
+
+
+
+
+
+对话框模式
+
+
+
+![image-20221002220153685](img/Android学习笔记/image-20221002220153685.png)
+
+
+
+![image-20221002220211372](img/Android学习笔记/image-20221002220211372.png)
+
+
+
+![image-20221002220220799](img/Android学习笔记/image-20221002220220799.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 数组适配器ArrayAdapter
 
