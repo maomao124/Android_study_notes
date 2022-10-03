@@ -28228,3 +28228,27 @@ public class MainActivity extends AppCompatActivity
 
 运行
 
+
+
+![image-20221003143104812](img/Android学习笔记/image-20221003143104812.png)
+
+
+
+![image-20221003143115985](img/Android学习笔记/image-20221003143115985.png)
+
+
+
+![image-20221003143127016](img/Android学习笔记/image-20221003143127016.png)
+
+
+
+
+
+
+
+
+
+
+
+### 列表视图ListView
+
