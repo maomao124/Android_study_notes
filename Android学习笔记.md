@@ -28774,3 +28774,212 @@ listView.setDividerHeight(20);
 
 #### 修改列表项的按压背景
 
+若想取消按压列表项之时默认的水波背景，可在布局文件中设置也可在代码中设置，两种方式的注意点说明如下：
+
+* 在布局文件中取消按压背景的话，直接将listSelector属性设置为@null并不合适，因为尽管设为 @null，按压列表项时仍出现橙色背景。只有把listSelector属性设置为透明色才算真正取消背景
+* 在代码中取消按压背景的话，调用setSelector方法不能设置null值，因为null值会在运行时报空指 针异常。正确的做法是先从资源文件获得透明色的图形对象，再调用setSelector方法设置列表项的按压状态图形
+
+
+
+
+
+图形shape1
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="@color/purple_200" />
+
+    <corners android:radius="10dp" />
+
+    <stroke
+            android:color="@color/design_default_color_primary"
+            android:width="4dp"
+            android:dashWidth="3dp"
+            android:dashGap="2dp" />
+
+</shape>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:listSelector="@drawable/shape1" />
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221003154151273](img/Android学习笔记/image-20221003154151273.png)
+
+
+
+
+
+
+
+
+
+#### 列表视图的高度问题
+
+在XML文件中，如果ListView后面还有其他平级的控件，就要将ListView的高度设为0dp，同时权重设为1，确保列表视图扩展到剩余的页面区域
+
+
+
+
+
+button在后
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:listSelector="@drawable/shape1" />
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮" />
+
+</LinearLayout>
+```
+
+
+
+![image-20221003154638481](img/Android学习笔记/image-20221003154638481.png)
+
+
+
+![image-20221003154646919](img/Android学习笔记/image-20221003154646919.png)
+
+
+
+按钮不显示
+
+
+
+button在前
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮" />
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:listSelector="@drawable/shape1" />
+    
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221003154756249](img/Android学习笔记/image-20221003154756249.png)
+
+
+
+
+
+![image-20221003154808781](img/Android学习笔记/image-20221003154808781.png)
+
+
+
+按钮被固定在了上面
+
+
+
+
+
+解决方案
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:listSelector="@drawable/shape1" />
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮" />
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221003155031850](img/Android学习笔记/image-20221003155031850.png)
+
+
+
+![image-20221003155043535](img/Android学习笔记/image-20221003155043535.png)
+
+
+
+
+
+
+
+
+
+#### 列表项的点击问题
+
