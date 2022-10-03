@@ -28252,3 +28252,446 @@ public class MainActivity extends AppCompatActivity
 
 ### 列表视图ListView
 
+若想在页面上直接显示全部列表信息，就要引入新的列表视图ListView。列表视图允许在页 面上分行展示相似的数据列表，例如新闻列表、商品列表、图书列表等，方便用户浏览与操作
+
+ListView同样通过setAdapter方法设置列表项的数据适配器，但操作列表项的时候，它不使用 setOnItemSelectedListener方法，而是调用setOnItemClickListener方法设置列表项的点击监听器 OnItemClickListener，有时也调用setOnItemLongClickListener方法设置列表项的长按监听器 OnItemLongClickListener。在点击列表项或者长按列表项之时，即可触发监听器对应的事件处理方法。除此之外，列表视图还新增了几个属性与方法
+
+
+
+![image-20221003143549696](img/Android学习笔记/image-20221003143549696.png)
+
+
+
+
+
+
+
+在XML文件中添加ListView很简单，只要以下几行就声明了一个列表视图：
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+</LinearLayout>
+```
+
+
+
+
+
+往列表视图填充数据也很容易，先利用基本适配器实现列表适配器，再调用setAdapter方法设置适配器对象
+
+
+
+
+
+实体类
+
+```java
+package mao.android_listview.entity;
+
+/**
+ * Project name(项目名称)：android_ListView
+ * Package(包名): mao.android_listview.entity
+ * Class(类名): ListViewInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 14:45
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class ListViewInfo
+{
+    /**
+     * 图标
+     */
+    private int icon;
+    /**
+     * 标题
+     */
+    private String title;
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * Instantiates a new List view info.
+     */
+    public ListViewInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new List view info.
+     *
+     * @param icon    the icon
+     * @param title   the title
+     * @param content the content
+     */
+    public ListViewInfo(int icon, String title, String content)
+    {
+        this.icon = icon;
+        this.title = title;
+        this.content = content;
+    }
+
+    /**
+     * Gets icon.
+     *
+     * @return the icon
+     */
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    /**
+     * Sets icon.
+     *
+     * @param icon the icon
+     * @return the icon
+     */
+    public ListViewInfo setIcon(int icon)
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     * @return the title
+     */
+    public ListViewInfo setTitle(String title)
+    {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     * @return the content
+     */
+    public ListViewInfo setContent(String content)
+    {
+        this.content = content;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("icon：").append(icon).append('\n');
+        stringbuilder.append("title：").append(title).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+适配器类
+
+```java
+package mao.android_listview.adapter;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.android_listview.R;
+import mao.android_listview.entity.ListViewInfo;
+
+/**
+ * Project name(项目名称)：android_ListView
+ * Package(包名): mao.android_listview.adapter
+ * Class(类名): ListViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 14:46
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ListViewAdapter extends BaseAdapter
+{
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<ListViewInfo> list;
+
+    public ListViewAdapter(Context context, List<ListViewInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+    }
+
+    /**
+     * 得到集合的总数
+     *
+     * @return int
+     */
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    /**
+     * 获取某个位置的ListViewInfo对象
+     *
+     * @param position 位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getItem(int position)
+    {
+        return list.get(position);
+    }
+
+    /**
+     * 获取id
+     *
+     * @param position 位置
+     * @return long
+     */
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        ListViewHolder listViewHolder;
+
+        if (convertView == null)
+        {
+            listViewHolder = new ListViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_baseadaper, null);
+            listViewHolder.icon = convertView.findViewById(R.id.icon);
+            listViewHolder.title = convertView.findViewById(R.id.title);
+            listViewHolder.content = convertView.findViewById(R.id.content);
+            convertView.setTag(listViewHolder);
+        }
+        else
+        {
+            listViewHolder = (ListViewHolder) convertView.getTag();
+        }
+        ListViewInfo listViewInfo = list.get(position);
+        listViewHolder.icon.setImageResource(listViewInfo.getIcon());
+        listViewHolder.title.setText(listViewInfo.getTitle());
+        listViewHolder.content.setText(listViewInfo.getContent());
+        return convertView;
+    }
+
+
+    private static class ListViewHolder
+    {
+        /**
+         * 图标
+         */
+        public ImageView icon;
+        /**
+         * 标题
+         */
+        public TextView title;
+        /**
+         * 内容
+         */
+        public TextView content;
+    }
+}
+```
+
+
+
+
+
+MainActivity
+
+```java
+package mao.android_listview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_listview.adapter.ListViewAdapter;
+import mao.android_listview.entity.ListViewInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ListView listView = findViewById(R.id.ListView);
+
+        List<ListViewInfo> list = new ArrayList<>(30);
+
+        for (int i = 1; i <= 100; i++)
+        {
+            ListViewInfo listViewInfo = new ListViewInfo()
+                    .setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题" + i)
+                    .setContent("内容" + i + ".........");
+            list.add(listViewInfo);
+        }
+
+        ListViewAdapter listViewAdapter = new ListViewAdapter(this, list);
+
+        listView.setAdapter(listViewAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("第" + (position + 1) + "个被点击");
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("第" + (position + 1) + "个被长按了");
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("删除提示")
+                        .setMessage("是否删除？")
+                        .setPositiveButton("确认", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                list.remove(position);
+                                listViewAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .setNeutralButton("取消", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221003152049024](img/Android学习笔记/image-20221003152049024.png)
+
+
+
+![image-20221003152101143](img/Android学习笔记/image-20221003152101143.png)
+
+
+
+![image-20221003152112037](img/Android学习笔记/image-20221003152112037.png)
+
+
+
+![image-20221003152124290](img/Android学习笔记/image-20221003152124290.png)
+
+
+
+
+
+
+
+
+
+#### 修改列表视图的分隔线样式
+
