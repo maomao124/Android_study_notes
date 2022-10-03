@@ -29315,5 +29315,499 @@ public class MainActivity extends AppCompatActivity
 
 
 
+#### 实现再次上拉刷新
+
+
+
+```java
+package mao.android_listview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_listview.adapter.ListViewAdapter;
+import mao.android_listview.entity.ListViewInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ListView listView = findViewById(R.id.ListView);
+
+        List<ListViewInfo> list = new ArrayList<>(30);
+
+        for (int i = 1; i <= 100; i++)
+        {
+            ListViewInfo listViewInfo = new ListViewInfo()
+                    .setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题" + i)
+                    .setContent("内容" + i + ".........");
+            list.add(listViewInfo);
+        }
+        final int[] count = {100};
+
+        ListViewAdapter listViewAdapter = new ListViewAdapter(this, list);
+
+        listView.setAdapter(listViewAdapter);
+        //listView.setDivider(getResources().getDrawable(R.color.purple_200));
+        //listView.setDividerHeight(20);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("第" + (position + 1) + "个被点击");
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("第" + (position + 1) + "个被长按了");
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("删除提示")
+                        .setMessage("是否删除？")
+                        .setPositiveButton("确认", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                list.remove(position);
+                                listViewAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .setNeutralButton("取消", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        final boolean[] canRefresh = {false};
+        final long[] firstRefreshTime = {System.currentTimeMillis()};
+
+        listView.setOnScrollListener(new AbsListView.OnScrollListener()
+        {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState)
+            {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+            {
+                if (firstVisibleItem == 0)
+                {
+                    View first_view = listView.getChildAt(0);
+                    if (first_view != null && first_view.getTop() == 0)
+                    {
+                        if (canRefresh[0])
+                        {
+
+                            if (System.currentTimeMillis() - firstRefreshTime[0] > 3000)
+                            {
+                                toastShow("再次上划进行刷新页面");
+                                firstRefreshTime[0] = System.currentTimeMillis();
+                                return;
+                            }
+                            toastShow("正在刷新...");
+                            list.clear();
+                            for (int i = 1; i <= 100; i++)
+                            {
+                                ListViewInfo listViewInfo = new ListViewInfo()
+                                        .setIcon(R.drawable.ic_launcher_foreground)
+                                        .setTitle("新的标题" + i)
+                                        .setContent("新的内容" + i + ".........");
+                                list.add(listViewInfo);
+                            }
+                            count[0] = 100;
+                            listViewAdapter.notifyDataSetChanged();
+                            canRefresh[0] = false;
+                        }
+                    }
+                    return;
+                }
+                if (firstVisibleItem > 0)
+                {
+                    canRefresh[0] = true;
+                }
+                if (firstVisibleItem + visibleItemCount == totalItemCount)
+                {
+                    View last_view = listView.getChildAt(listView.getChildCount() - 1);
+                    if (last_view != null && last_view.getBottom() == listView.getHeight())
+                    {
+                        toastShow("滑动到底部了，正在加载新内容");
+                        for (int i = count[0] + 1; i <= count[0] + 100; i++)
+                        {
+                            ListViewInfo listViewInfo = new ListViewInfo()
+                                    .setIcon(R.drawable.ic_launcher_foreground)
+                                    .setTitle("标题" + i)
+                                    .setContent("内容" + i + ".........");
+                            list.add(listViewInfo);
+                        }
+                        count[0] = count[0] + 100;
+                        listViewAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
 #### 列表项的点击问题
+
+通常只要调用setOnItemClickListener方法设置点击监听器，点击列表项即可触发列表项的点击事件， 但是如果列表项中存在编辑框或按钮（含Button、ImageButton、Checkbox等），点击列表项就无法触发点击事件了。缘由在于编辑框和按钮这类控件会抢占焦点，因为它们要么等待用户输入、要么等待用户点击，按道理用户点击按钮确实应该触发按钮的点击事件，而非触发列表项的点击事件，可问题是用户点击列表项的其余区域，也由于焦点被抢占的缘故导致触发不了列表项的点击事件
+
+为了规避焦点抢占的问题，列表视图允许开发者自行设置内部视图的焦点抢占方式，该方式在XML文件 中由descendantFocusability属性指定，在代码中由setDescendantFocusability方法设置
+
+注意焦点抢占方式不是由ListView设置，而是由列表项的根布局设置
+
+
+
+![image-20221003201846698](img/Android学习笔记/image-20221003201846698.png)
+
+
+
+
+
+
+
+
+
+演示
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter" />
+
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="4"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="#00ff00" />
+
+        <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#00aaff" />
+
+
+    </LinearLayout>
+
+    <Button
+            android:id="@+id/Button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="按钮" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```java
+package mao.android_listview.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.android_listview.R;
+import mao.android_listview.entity.ListViewInfo;
+
+/**
+ * Project name(项目名称)：android_ListView
+ * Package(包名): mao.android_listview.adapter
+ * Class(类名): ListViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 14:46
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ListViewAdapter extends BaseAdapter
+{
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<ListViewInfo> list;
+
+    public ListViewAdapter(Context context, List<ListViewInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+    }
+
+    /**
+     * 得到集合的总数
+     *
+     * @return int
+     */
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    /**
+     * 获取某个位置的ListViewInfo对象
+     *
+     * @param position 位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getItem(int position)
+    {
+        return list.get(position);
+    }
+
+    /**
+     * 获取id
+     *
+     * @param position 位置
+     * @return long
+     */
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        ListViewHolder listViewHolder;
+
+        if (convertView == null)
+        {
+            listViewHolder = new ListViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_baseadaper, null);
+            listViewHolder.icon = convertView.findViewById(R.id.icon);
+            listViewHolder.title = convertView.findViewById(R.id.title);
+            listViewHolder.content = convertView.findViewById(R.id.content);
+            listViewHolder.button = convertView.findViewById(R.id.Button);
+            listViewHolder.button.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    new AlertDialog.Builder(context)
+                            .setTitle("提示")
+                            .setMessage("按钮被点击了,位于第" + (position + 1) + "个")
+                            .setPositiveButton("确定", null)
+                            .create()
+                            .show();
+
+                }
+            });
+            convertView.setTag(listViewHolder);
+        }
+        else
+        {
+            listViewHolder = (ListViewHolder) convertView.getTag();
+        }
+        ListViewInfo listViewInfo = list.get(position);
+        listViewHolder.icon.setImageResource(listViewInfo.getIcon());
+        listViewHolder.title.setText(listViewInfo.getTitle());
+        listViewHolder.content.setText(listViewInfo.getContent());
+        return convertView;
+    }
+
+
+    private static class ListViewHolder
+    {
+        /**
+         * 图标
+         */
+        public ImageView icon;
+        /**
+         * 标题
+         */
+        public TextView title;
+        /**
+         * 内容
+         */
+        public TextView content;
+        /**
+         * 按钮
+         */
+        public Button button;
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221003202822798](img/Android学习笔记/image-20221003202822798.png)
+
+
+
+点击按钮有效，点击按钮外边的文字内容无效
+
+
+
+
+
+更改为blocksDescendants
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:descendantFocusability="blocksDescendants"
+        android:gravity="center">
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter" />
+
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="4"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="#00ff00" />
+
+        <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#00aaff" />
+
+
+    </LinearLayout>
+
+    <Button
+            android:id="@+id/Button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="按钮" />
+
+</LinearLayout>
+```
+
+
+
+
+
+列表项监听器可以触发
+
+
+
+![image-20221003203414970](img/Android学习笔记/image-20221003203414970.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 购物车项目ListView实现
+
+
 
