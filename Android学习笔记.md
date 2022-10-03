@@ -27772,5 +27772,459 @@ public class MainActivity5 extends AppCompatActivity
 
 ### 基本适配器BaseAdapter
 
+数组适配器适用于纯文本的列表数据，简单适配器适用于带图标的列表数据。然 而实际应用常常有更复杂的列表，比如每个列表项存在3个以上的控件，这种情况即便是简单适配器也很吃力，而且不易扩展。为此Android提供了一种适应性更强的基本适配器BaseAdapter，该适配器允许开发者在别的代码文件中编写操作代码，大大提高了代码的可读性和可维护性
 
+
+
+从BaseAdapter派生的数据适配器主要实现下面5种方法：
+
+* 构造方法：指定适配器需要处理的数据集合
+* getCount：获取列表项的个数
+* getItem：获取列表项的数据
+* getItemId：获取列表项的编号
+* getView：获取每项的展示视图，并对每项的内部控件进行业务处理
+
+
+
+
+
+具体的编码过程分为3步：
+
+
+
+步骤一，编写列表项的布局文件
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter" />
+
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="4"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="#00ff00" />
+
+        <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#00aaff" />
+
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+步骤二，写个新的适配器继承BaseAdapter，实现对列表项的管理操作
+
+
+
+```java
+package mao.android_baseadapter.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+
+import java.util.List;
+
+import mao.android_baseadapter.R;
+import mao.android_baseadapter.entity.SpinnerInfo;
+
+/**
+ * Project name(项目名称)：android_BaseAdapter
+ * Package(包名): mao.android_baseadapter.adapter
+ * Class(类名): SpinnerAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 13:55
+ * Version(版本): 1.0
+ * Description(描述)： SpinnerAdapter
+ */
+
+public class SpinnerAdapter extends BaseAdapter
+{
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<SpinnerInfo> list;
+
+    public SpinnerAdapter(Context context, List<SpinnerInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+    }
+
+
+    /**
+     * 获取列表项的个数
+     *
+     * @return int
+     */
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    /**
+     * 获取列表项的数据
+     *
+     * @param position 位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getItem(int position)
+    {
+        return list.get(position);
+    }
+
+    /**
+     * 获取列表项的编号
+     *
+     * @param position 位置
+     * @return long
+     */
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    /**
+     * 获取指定位置的列表项视图
+     *
+     * @param position    位置
+     * @param convertView 转换视图
+     * @param parent      ViewGroup对象
+     * @return {@link View}
+     */
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        ViewHolder viewHolder;
+        if (convertView == null)
+        {
+            viewHolder = new ViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_baseadaper, null);
+            viewHolder.icon = convertView.findViewById(R.id.icon);
+            viewHolder.title = convertView.findViewById(R.id.title);
+            viewHolder.content = convertView.findViewById(R.id.content);
+            convertView.setTag(viewHolder);
+        }
+        else
+        {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
+        SpinnerInfo spinnerInfo = list.get(position);
+        viewHolder.icon.setImageResource(spinnerInfo.getIcon());
+        viewHolder.title.setText(spinnerInfo.getTitle());
+        viewHolder.content.setText(spinnerInfo.getContent());
+        return convertView;
+    }
+
+
+    private static final class ViewHolder
+    {
+        public ImageView icon;
+        public TextView title;
+        public TextView content;
+    }
+}
+```
+
+
+
+实体类
+
+```java
+package mao.android_baseadapter.entity;
+
+/**
+ * Project name(项目名称)：android_BaseAdapter
+ * Package(包名): mao.android_baseadapter.entity
+ * Class(类名): SpinnerInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 13:57
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class SpinnerInfo
+{
+    /**
+     * 图标
+     */
+    private int icon;
+    /**
+     * 标题
+     */
+    private String title;
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * Instantiates a new Spinner info.
+     */
+    public SpinnerInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Spinner info.
+     *
+     * @param icon    the icon
+     * @param title   the title
+     * @param content the content
+     */
+    public SpinnerInfo(int icon, String title, String content)
+    {
+        this.icon = icon;
+        this.title = title;
+        this.content = content;
+    }
+
+    /**
+     * Gets icon.
+     *
+     * @return the icon
+     */
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    /**
+     * Sets icon.
+     *
+     * @param icon the icon
+     * @return the icon
+     */
+    public SpinnerInfo setIcon(int icon)
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     * @return the title
+     */
+    public SpinnerInfo setTitle(String title)
+    {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     * @return the content
+     */
+    public SpinnerInfo setContent(String content)
+    {
+        this.content = content;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("icon：").append(icon).append('\n');
+        stringbuilder.append("title：").append(title).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+步骤三，在页面代码中创建该适配器实例，并交给下拉框设置
+
+
+
+```java
+package mao.android_baseadapter;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_baseadapter.adapter.SpinnerAdapter;
+import mao.android_baseadapter.entity.SpinnerInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Spinner spinner = findViewById(R.id.Spinner);
+
+        List<SpinnerInfo> list = new ArrayList<>(6);
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题1")
+                    .setContent("这是内容1....");
+            list.add(spinnerInfo);
+        }
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题2")
+                    .setContent("这是内容2....");
+            list.add(spinnerInfo);
+        }
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题3")
+                    .setContent("这是内容3....");
+            list.add(spinnerInfo);
+        }
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题4")
+                    .setContent("这是内容4....");
+            list.add(spinnerInfo);
+        }
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题5")
+                    .setContent("这是内容5....");
+            list.add(spinnerInfo);
+        }
+        {
+            SpinnerInfo spinnerInfo = new SpinnerInfo();
+            spinnerInfo.setIcon(R.drawable.ic_launcher_foreground)
+                    .setTitle("标题6")
+                    .setContent("这是内容6....");
+            list.add(spinnerInfo);
+        }
+
+        SpinnerAdapter spinnerAdapter = new SpinnerAdapter(this, list);
+
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setSelection(3);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("当前选中的是第" + (position + 1) + "项");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+运行
 
