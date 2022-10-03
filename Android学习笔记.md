@@ -29811,3 +29811,1050 @@ public class ListViewAdapter extends BaseAdapter
 
 
 
+只列出更改或者添加的部分
+
+
+
+#### 布局文件
+
+##### activity_shopping_cart
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffaa"
+        android:orientation="vertical">
+
+    <include layout="@layout/title_shopping" />
+
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:id="@+id/ll_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <TextView
+                        android:layout_width="85dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="图片"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+                <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:gravity="center"
+                        android:text="名称"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+                <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="数量"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+                <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="单价"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+                <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="总价"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <!--                <LinearLayout-->
+            <!--                        android:id="@+id/ll_cart"-->
+            <!--                        android:layout_width="match_parent"-->
+            <!--                        android:layout_height="wrap_content"-->
+            <!--                        android:orientation="vertical" />-->
+
+            <ListView
+                    android:id="@+id/ListView_cart"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="0dp">
+
+                <Button
+                        android:id="@+id/btn_clear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="清空"
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+
+                <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center|right"
+                        android:text="总金额："
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+
+                <TextView
+                        android:id="@+id/tv_total_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center|left"
+                        android:textColor="#ff0000"
+                        android:textSize="25sp" />
+
+                <Button
+                        android:id="@+id/btn_settle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="结算"
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/ll_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="100dp"
+                    android:layout_marginBottom="100dp"
+                    android:gravity="center"
+                    android:text="哎呀，购物车空空如也，快去选购商品吧"
+                    android:textColor="@color/black"
+                    android:textSize="17sp" />
+
+            <Button
+                    android:id="@+id/btn_shopping_channel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="逛逛手机商场"
+                    android:textColor="@color/black"
+                    android:textSize="17sp" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+#### 实体类
+
+##### CartListViewInfo
+
+```java
+package mao.android_shopping_cart_listview.entity;
+
+
+/**
+ * Project name(项目名称)：android_shopping_cart_ListView
+ * Package(包名): mao.android_shopping_cart_listview.entity
+ * Class(类名): CartListViewInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 21:01
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class CartListViewInfo
+{
+    /**
+     * 商品id
+     */
+    private int goodsId;
+
+    /**
+     * 图片路径
+     */
+    private String picPath;
+
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * desc
+     */
+    private String desc;
+
+    /**
+     * 数量
+     */
+    private int count;
+
+    /**
+     * 价格
+     */
+    private float price;
+
+    /**
+     * 总和
+     */
+    private int sum;
+
+    /**
+     * Instantiates a new Cart list view info.
+     */
+    public CartListViewInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Cart list view info.
+     *
+     * @param goodsId the goods id
+     * @param picPath the pic path
+     * @param name    the name
+     * @param desc    the desc
+     * @param count   the count
+     * @param price   the price
+     * @param sum     the sum
+     */
+    public CartListViewInfo(int goodsId, String picPath, String name, String desc, int count, float price, int sum)
+    {
+        this.goodsId = goodsId;
+        this.picPath = picPath;
+        this.name = name;
+        this.desc = desc;
+        this.count = count;
+        this.price = price;
+        this.sum = sum;
+    }
+
+    /**
+     * Gets goods id.
+     *
+     * @return the goods id
+     */
+    public int getGoodsId()
+    {
+        return goodsId;
+    }
+
+    /**
+     * Sets goods id.
+     *
+     * @param goodsId the goods id
+     * @return the goods id
+     */
+    public CartListViewInfo setGoodsId(int goodsId)
+    {
+        this.goodsId = goodsId;
+        return this;
+    }
+
+    /**
+     * Gets pic path.
+     *
+     * @return the pic path
+     */
+    public String getPicPath()
+    {
+        return picPath;
+    }
+
+    /**
+     * Sets pic path.
+     *
+     * @param picPath the pic path
+     * @return the pic path
+     */
+    public CartListViewInfo setPicPath(String picPath)
+    {
+        this.picPath = picPath;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public CartListViewInfo setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets desc.
+     *
+     * @return the desc
+     */
+    public String getDesc()
+    {
+        return desc;
+    }
+
+    /**
+     * Sets desc.
+     *
+     * @param desc the desc
+     * @return the desc
+     */
+    public CartListViewInfo setDesc(String desc)
+    {
+        this.desc = desc;
+        return this;
+    }
+
+    /**
+     * Gets count.
+     *
+     * @return the count
+     */
+    public int getCount()
+    {
+        return count;
+    }
+
+    /**
+     * Sets count.
+     *
+     * @param count the count
+     * @return the count
+     */
+    public CartListViewInfo setCount(int count)
+    {
+        this.count = count;
+        return this;
+    }
+
+    /**
+     * Gets price.
+     *
+     * @return the price
+     */
+    public float getPrice()
+    {
+        return price;
+    }
+
+    /**
+     * Sets price.
+     *
+     * @param price the price
+     * @return the price
+     */
+    public CartListViewInfo setPrice(float price)
+    {
+        this.price = price;
+        return this;
+    }
+
+    /**
+     * Gets sum.
+     *
+     * @return the sum
+     */
+    public int getSum()
+    {
+        return sum;
+    }
+
+    /**
+     * Sets sum.
+     *
+     * @param sum the sum
+     * @return the sum
+     */
+    public CartListViewInfo setSum(int sum)
+    {
+        this.sum = sum;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CartListViewInfo that = (CartListViewInfo) o;
+
+        if (getGoodsId() != that.getGoodsId()) return false;
+        if (getCount() != that.getCount()) return false;
+        if (Float.compare(that.getPrice(), getPrice()) != 0) return false;
+        if (getSum() != that.getSum()) return false;
+        if (getPicPath() != null ? !getPicPath().equals(that.getPicPath()) : that.getPicPath() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
+        {
+            return false;
+        }
+        return getDesc() != null ? getDesc().equals(that.getDesc()) : that.getDesc() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getGoodsId();
+        result = 31 * result + (getPicPath() != null ? getPicPath().hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getDesc() != null ? getDesc().hashCode() : 0);
+        result = 31 * result + getCount();
+        result = 31 * result + (getPrice() != +0.0f ? Float.floatToIntBits(getPrice()) : 0);
+        result = 31 * result + getSum();
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("goodsId：").append(goodsId).append('\n');
+        stringbuilder.append("picPath：").append(picPath).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("desc：").append(desc).append('\n');
+        stringbuilder.append("count：").append(count).append('\n');
+        stringbuilder.append("price：").append(price).append('\n');
+        stringbuilder.append("sum：").append(sum).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+#### 基本适配器类
+
+##### CartListViewAdapter
+
+```java
+package mao.android_shopping_cart_listview.adapter;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.net.Uri;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.android_shopping_cart_listview.R;
+import mao.android_shopping_cart_listview.entity.CartListViewInfo;
+
+/**
+ * Project name(项目名称)：android_shopping_cart_ListView
+ * Package(包名): mao.android_shopping_cart_listview.adapter
+ * Class(类名): CartListViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/3
+ * Time(创建时间)： 21:09
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartListViewAdapter extends BaseAdapter
+{
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<CartListViewInfo> list;
+
+    /**
+     * 购物车列表视图适配器
+     *
+     * @param context 上下文
+     * @param list    列表
+     */
+    public CartListViewAdapter(Context context, List<CartListViewInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+    }
+
+    /**
+     * 得到总数
+     *
+     * @return int
+     */
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    /**
+     * 获取CartListViewInfo
+     *
+     * @param position 位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getItem(int position)
+    {
+        return list.get(position);
+    }
+
+    /**
+     * 获取CartListViewInfo的id
+     *
+     * @param position 位置
+     * @return long
+     */
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    /**
+     * 得到视图
+     *
+     * @param position    位置
+     * @param convertView 将视图
+     * @param parent      ViewGroup
+     * @return {@link View}
+     */
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        CartListViewHolder cartListViewHolder;
+        if (convertView == null)
+        {
+            cartListViewHolder = new CartListViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_cart, null);
+            cartListViewHolder.iv_thumb = convertView.findViewById(R.id.iv_thumb);
+            cartListViewHolder.tv_name = convertView.findViewById(R.id.tv_name);
+            cartListViewHolder.tv_desc = convertView.findViewById(R.id.tv_desc);
+            cartListViewHolder.tv_count = convertView.findViewById(R.id.tv_count);
+            cartListViewHolder.tv_price = convertView.findViewById(R.id.tv_price);
+            cartListViewHolder.tv_sum = convertView.findViewById(R.id.tv_sum);
+            convertView.setTag(cartListViewHolder);
+        }
+        else
+        {
+            cartListViewHolder = (CartListViewHolder) convertView.getTag();
+        }
+        CartListViewInfo cartListViewInfo = list.get(position);
+        cartListViewHolder.iv_thumb.setImageURI(Uri.parse(cartListViewInfo.getPicPath()));
+        cartListViewHolder.tv_name.setText(cartListViewInfo.getName());
+        cartListViewHolder.tv_desc.setText(cartListViewInfo.getDesc());
+        cartListViewHolder.tv_count.setText(String.valueOf(cartListViewInfo.getCount()));
+        cartListViewHolder.tv_price.setText(String.valueOf((int) cartListViewInfo.getPrice()));
+        // 设置商品总价
+        cartListViewHolder.tv_sum.setText(String.valueOf((int) (cartListViewInfo.getCount() * cartListViewInfo.getPrice())));
+        return convertView;
+    }
+
+
+    /**
+     * 购物车列表视图持有人
+     *
+     * @author mao
+     * @date 2022/10/03
+     */
+    private static class CartListViewHolder
+    {
+        public ImageView iv_thumb;
+        public TextView tv_name;
+        public TextView tv_desc;
+        public TextView tv_count;
+        public TextView tv_price;
+        public TextView tv_sum;
+    }
+}
+```
+
+
+
+
+
+
+
+#### activity
+
+##### ShoppingCartActivity
+
+```java
+package mao.android_shopping_cart_listview;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import mao.android_shopping_cart_listview.adapter.CartListViewAdapter;
+import mao.android_shopping_cart_listview.application.MainApplication;
+import mao.android_shopping_cart_listview.dao.CartDao;
+import mao.android_shopping_cart_listview.dao.GoodsDao;
+import mao.android_shopping_cart_listview.entity.CartInfo;
+import mao.android_shopping_cart_listview.entity.CartListViewInfo;
+import mao.android_shopping_cart_listview.entity.GoodsInfo;
+
+
+/**
+ * Project name(项目名称)：android_shopping
+ * Package(包名): mao.android_shopping
+ * Class(类名): ShoppingCartActivity
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/29
+ * Time(创建时间)： 20:58
+ * Version(版本): 1.0
+ * Description(描述)： 购物车页
+ */
+
+public class ShoppingCartActivity extends AppCompatActivity implements View.OnClickListener
+{
+    private TextView tv_count;
+    //private LinearLayout ll_cart;
+    ListView listView_cart;
+
+    // 声明一个购物车中的商品信息列表
+    private List<CartInfo> mCartList;
+    // 声明一个根据商品编号查找商品信息的映射，把商品信息缓存起来，这样不用每一次都去查询数据库
+    private final Map<Integer, GoodsInfo> mGoodsMap = new HashMap<>();
+    private TextView tv_total_price;
+    private LinearLayout ll_empty;
+    private LinearLayout ll_content;
+    private CartDao cartDao;
+    private GoodsDao goodsDao;
+
+    private final List<CartListViewInfo> list = new ArrayList<>();
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "ShoppingCartActivity";
+
+    /**
+     * 购物车列表视图适配器
+     */
+    private final CartListViewAdapter cartListViewAdapter = new CartListViewAdapter(this, list);
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+        setContentView(R.layout.activity_shopping_cart);
+        TextView tv_title = findViewById(R.id.tv_title);
+        tv_title.setText("购物车");
+        listView_cart = findViewById(R.id.ListView_cart);
+        tv_total_price = findViewById(R.id.tv_total_price);
+
+        tv_count = findViewById(R.id.tv_count);
+        tv_count.setText(String.valueOf(MainApplication.getInstance().count));
+
+        cartDao = CartDao.getInstance(this);
+        cartDao.openReadConnection();
+        cartDao.openWriteConnection();
+
+        goodsDao = GoodsDao.getInstance(this);
+        goodsDao.openReadConnection();
+        goodsDao.openWriteConnection();
+
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.btn_shopping_channel).setOnClickListener(this);
+        findViewById(R.id.btn_clear).setOnClickListener(this);
+        findViewById(R.id.btn_settle).setOnClickListener(this);
+        ll_empty = findViewById(R.id.ll_empty);
+        ll_content = findViewById(R.id.ll_content);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        //cartDao.closeConnection();
+        //goodsDao.closeConnection();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        showCart();
+    }
+
+    /**
+     * 展示购物车中的商品列表
+     */
+    /*private void showCart()
+    {
+        // 移除下面的所有子视图
+        ll_cart.removeAllViews();
+        // 查询购物车数据库中所有的商品记录
+        mCartList = cartDao.queryAll();
+        if (mCartList.size() == 0)
+        {
+            Log.d(TAG, "showCart: 购物车为空");
+            ll_empty.setVisibility(View.VISIBLE);
+            ll_content.setVisibility(View.GONE);
+            return;
+        }
+
+        for (CartInfo cartInfo : mCartList)
+        {
+            // 根据商品编号查询商品数据库中的商品记录
+            GoodsInfo goods = goodsDao.queryById(cartInfo.getGoodsId());
+            mGoodsMap.put(cartInfo.getGoodsId(), goods);
+
+            // 获取布局文件item_cart.xml的根视图
+            View view = LayoutInflater.from(this).inflate(R.layout.item_cart, null);
+            ImageView iv_thumb = view.findViewById(R.id.iv_thumb);
+            TextView tv_name = view.findViewById(R.id.tv_name);
+            TextView tv_desc = view.findViewById(R.id.tv_desc);
+            TextView tv_count = view.findViewById(R.id.tv_count);
+            TextView tv_price = view.findViewById(R.id.tv_price);
+            TextView tv_sum = view.findViewById(R.id.tv_sum);
+
+            iv_thumb.setImageURI(Uri.parse(goods.getPicPath()));
+            tv_name.setText(goods.getName());
+            tv_desc.setText(goods.getDescription());
+            tv_count.setText(String.valueOf(cartInfo.getCount()));
+            tv_price.setText(String.valueOf((int) goods.getPrice()));
+            // 设置商品总价
+            tv_sum.setText(String.valueOf((int) (cartInfo.getCount() * goods.getPrice())));
+
+            // 给商品行添加长按事件。长按商品行就删除该商品
+            view.setOnLongClickListener(v ->
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ShoppingCartActivity.this);
+                builder.setMessage("是否从购物车删除" + goods.getName() + "？");
+                builder.setPositiveButton("是", (dialog, which) ->
+                {
+                    // 移除当前视图
+                    ll_cart.removeView(v);
+                    // 删除该商品
+                    deleteGoods(cartInfo);
+                });
+                builder.setNegativeButton("否", null);
+                builder.create().show();
+                return true;
+            });
+
+            // 给商品行添加点击事件。点击商品行跳到商品的详情页
+            view.setOnClickListener(v ->
+            {
+                Intent intent = new Intent(ShoppingCartActivity.this, ShoppingDetailActivity.class);
+                intent.putExtra("goods_id", goods.getId());
+                startActivity(intent);
+            });
+
+            // 往购物车列表添加该商品行
+            ll_cart.addView(view);
+        }
+
+        // 重新计算购物车中的商品总金额
+        refreshTotalPrice();
+    }*/
+
+
+    /**
+     * 展示购物车中的商品列表
+     */
+    private void showCart()
+    {
+        // 查询购物车数据库中所有的商品记录
+        list.clear();
+        mCartList = cartDao.queryAll();
+        if (mCartList.size() == 0)
+        {
+            Log.d(TAG, "showCart: 购物车为空");
+            ll_empty.setVisibility(View.VISIBLE);
+            ll_content.setVisibility(View.GONE);
+            return;
+        }
+
+        for (CartInfo cartInfo : mCartList)
+        {
+            // 根据商品编号查询商品数据库中的商品记录
+            GoodsInfo goods = goodsDao.queryById(cartInfo.getGoodsId());
+            mGoodsMap.put(cartInfo.getGoodsId(), goods);
+
+
+            CartListViewInfo cartListViewInfo = new CartListViewInfo()
+                    .setGoodsId(goods.getId())
+                    .setPicPath(goods.getPicPath())
+                    .setName(goods.getName())
+                    .setDesc(goods.getDescription())
+                    .setCount(cartInfo.getCount())
+                    .setPrice((int) goods.getPrice())
+                    .setSum((int) (cartInfo.getCount() * goods.getPrice()));
+
+
+            list.add(cartListViewInfo);
+        }
+
+        listView_cart.setAdapter(cartListViewAdapter);
+        listView_cart.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ShoppingCartActivity.this);
+                builder.setMessage("是否从购物车删除" + list.get(position).getName() + "？");
+                builder.setPositiveButton("是", (dialog, which) ->
+                {
+                    CartListViewInfo cartListViewInfo = list.remove(position);
+                    // 删除该商品
+                    deleteGoods(new CartInfo().setGoodsId(cartListViewInfo.getGoodsId())
+                            .setCount(cartListViewInfo.getCount()));
+                    cartListViewAdapter.notifyDataSetChanged();
+                });
+                builder.setNegativeButton("否", null);
+                builder.create().show();
+                return true;
+            }
+        });
+        listView_cart.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Intent intent = new Intent(ShoppingCartActivity.this, ShoppingDetailActivity.class);
+                intent.putExtra("goods_id", list.get(position).getGoodsId());
+                startActivity(intent);
+            }
+        });
+
+        // 重新计算购物车中的商品总金额
+        refreshTotalPrice();
+    }
+
+    /**
+     * 删除商品
+     *
+     * @param info 信息
+     */
+    private void deleteGoods(CartInfo info)
+    {
+        MainApplication.getInstance().count -= info.getCount();
+        // 从购物车的数据库中删除商品
+        cartDao.deleteByGoodsId(info.getGoodsId());
+        // 从购物车的列表中删除商品
+        CartInfo removed = null;
+        for (CartInfo cartInfo : mCartList)
+        {
+            if (cartInfo.getGoodsId() == info.getGoodsId())
+            {
+                removed = cartInfo;
+                break;
+            }
+        }
+        mCartList.remove(removed);
+        // 显示最新的商品数量
+        showCount();
+        toastShow("已从购物车删除" + mGoodsMap.get(info.getGoodsId()).getName());
+        mGoodsMap.remove(info.getGoodsId());
+        // 刷新购物车中所有商品的总金额
+        refreshTotalPrice();
+    }
+
+    // 显示购物车图标中的商品数量
+    private void showCount()
+    {
+        tv_count.setText(String.valueOf(MainApplication.getInstance().count));
+        // 购物车中没有商品，显示“空空如也”
+        if (MainApplication.getInstance().count == 0)
+        {
+            ll_empty.setVisibility(View.VISIBLE);
+            ll_content.setVisibility(View.GONE);
+            list.clear();
+            cartListViewAdapter.notifyDataSetChanged();
+        }
+        else
+        {
+            ll_content.setVisibility(View.VISIBLE);
+            ll_empty.setVisibility(View.GONE);
+        }
+    }
+
+    // 重新计算购物车中的商品总金额
+    private void refreshTotalPrice()
+    {
+        int totalPrice = 0;
+        for (CartInfo cartInfo : mCartList)
+        {
+            GoodsInfo goods = mGoodsMap.get(cartInfo.getGoodsId());
+            totalPrice += goods.getPrice() * cartInfo.getCount();
+        }
+        tv_total_price.setText(String.valueOf(totalPrice));
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.iv_back:
+                // 点击了返回图标
+                // 关闭当前页面
+                finish();
+                break;
+
+            case R.id.btn_shopping_channel:
+                // 从购物车页面跳到商场页面
+                Intent intent = new Intent(this, ShoppingChannelActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                break;
+
+            case R.id.btn_clear:
+                // 清空购物车数据库
+                cartDao.deleteAll();
+                MainApplication.getInstance().count = 0;
+                // 显示最新的商品数量
+                showCount();
+                toastShow("购物车已清空");
+                break;
+
+            case R.id.btn_settle:
+                // 点击了“结算”按钮
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("结算商品");
+                builder.setMessage("请求发送失败");
+                builder.setPositiveButton("我知道了", null);
+                builder.create().show();
+                break;
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+#### 运行
+
+![image-20221003215850373](img/Android学习笔记/image-20221003215850373.png)
+
+
+
+![image-20221003215903941](img/Android学习笔记/image-20221003215903941.png)
+
+
+
+清空和结算按钮始终在屏幕底部
+
+
+
+![image-20221003215954048](img/Android学习笔记/image-20221003215954048.png)
+
+
+
+![image-20221003220029182](img/Android学习笔记/image-20221003220029182.png)
+
+
+
