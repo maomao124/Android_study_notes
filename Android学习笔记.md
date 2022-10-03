@@ -28695,3 +28695,82 @@ public class MainActivity extends AppCompatActivity
 
 #### 修改列表视图的分隔线样式
 
+修改分隔线样式要在XML文件中同时设置divider（分隔图片）与dividerHeight（分隔高度）两个属性， 并且遵循下列两条规则：
+
+* divider属性设置为@null时，不能再将dividerHeight属性设置为大于0的数值，因为这会导致最后一项没法完全显示，底部有一部分被掩盖了。原因是列表高度为wrap_content时，系统已按照没有分隔线的情况计算列表高度，此时dividerHeight占用了n-1块空白分隔区域，使得最后一项被挤到背影里面去了
+* 通过代码设置的话，务必先调用setDivider方法再调用setDividerHeight方法。如果先调用 setDividerHeight后调用setDivider，分隔线高度就会变成分隔图片的高度，而不是setDividerHeight设 置的高度。XML布局文件则不存在divider属性和dividerHeight属性的先后顺序问题
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@color/purple_200"
+            android:dividerHeight="5dp" />
+
+</LinearLayout>
+```
+
+
+
+![image-20221003152718043](img/Android学习笔记/image-20221003152718043.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@null" />
+
+</LinearLayout>
+```
+
+
+
+![image-20221003152827037](img/Android学习笔记/image-20221003152827037.png)
+
+
+
+
+
+通过java代码设置
+
+```java
+listView.setDivider(getResources().getDrawable(R.color.purple_200));
+listView.setDividerHeight(20);
+```
+
+
+
+
+
+
+
+
+
+#### 修改列表项的按压背景
+
