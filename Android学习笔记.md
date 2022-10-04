@@ -31311,3 +31311,541 @@ public class ShoppingChannelActivity extends AppCompatActivity implements View.O
 
 
 ### 网格视图GridView
+
+除了列表视图，网格视图GridView也是常见的列表类视图，它用于分行分列显示表格信息，比列表视图更适合展示物品清单。除了沿用列表视图的3个方法setAdapter、setOnItemClickListener、 setOnItemLongClickListener，网格视图还新增了部分属性与方法
+
+
+
+| XML中的属性 | GridView类的设置方法 | 说明 |
+| :---------: | :------------------: | :--: |
+|horizontalSpacing| setHorizontalSpacing| 指定网格项在水平方向的间距|
+|verticalSpacing |setVerticalSpacing |指定网格项在垂直方向的间距|
+|numColumns |setNumColumns |指定列的数目|
+|stretchMode| setStretchMode |指定剩余空间的拉伸模式|
+|columnWidth |setColumnWidth |指定每列的宽度。拉伸模式为spacingWidthspacingWidthUniform时，必须指定列宽|
+
+
+
+| XML中的拉伸模式 | GridView类的拉伸模式 | 说明 |
+| :-------------: | :------------------: | :--: |
+|none| NO_STRETCH| 不拉伸|
+|columnWidth| STRETCH_COLUMN_WIDTH |若有剩余空间，则拉伸列宽挤掉空隙|
+|spacingWidth| STRETCH_SPACING| 若有剩余空间，则列宽不变，把空间分配到每列间的空隙|
+|spacingWidthUniform| STRETCH_SPACING_UNIFORM |若有剩余空间，则列宽不变，把空间分配到每列左右的空隙|
+
+
+
+
+
+
+
+#### 代码
+
+##### 布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2" />
+
+</LinearLayout>
+```
+
+
+
+##### item_gridview.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="160dp"
+        android:layout_height="200dp"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#ffaa00" />
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:scaleType="fitCenter" />
+
+    <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="#00ccff"
+            android:textSize="17sp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+##### 实体类GridViewInfo
+
+```java
+package mao.android_gridview.entity;
+
+/**
+ * Project name(项目名称)：android_GridView
+ * Package(包名): mao.android_gridview.entity
+ * Class(类名): GridViewInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/4
+ * Time(创建时间)： 10:44
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class GridViewInfo
+{
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 图标
+     */
+    private int icon;
+
+    /**
+     * 内容
+     */
+    private String content;
+
+
+    /**
+     * Instantiates a new Grid view info.
+     */
+    public GridViewInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Grid view info.
+     *
+     * @param title   the title
+     * @param icon    the icon
+     * @param content the content
+     */
+    public GridViewInfo(String title, int icon, String content)
+    {
+        this.title = title;
+        this.icon = icon;
+        this.content = content;
+    }
+
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     * @return the title
+     */
+    public GridViewInfo setTitle(String title)
+    {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * Gets icon.
+     *
+     * @return the icon
+     */
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    /**
+     * Sets icon.
+     *
+     * @param icon the icon
+     * @return the icon
+     */
+    public GridViewInfo setIcon(int icon)
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     * @return the content
+     */
+    public GridViewInfo setContent(String content)
+    {
+        this.content = content;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GridViewInfo that = (GridViewInfo) o;
+
+        if (getIcon() != that.getIcon()) return false;
+        if (getTitle() != null ? !getTitle().equals(that.getTitle()) : that.getTitle() != null)
+        {
+            return false;
+        }
+        return getContent() != null ? getContent().equals(that.getContent()) : that.getContent() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getTitle() != null ? getTitle().hashCode() : 0;
+        result = 31 * result + getIcon();
+        result = 31 * result + (getContent() != null ? getContent().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("title：").append(title).append('\n');
+        stringbuilder.append("icon：").append(icon).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+##### 适配器GridViewAdapter
+
+```java
+package mao.android_gridview.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.android_gridview.R;
+import mao.android_gridview.entity.GridViewInfo;
+
+/**
+ * Project name(项目名称)：android_GridView
+ * Package(包名): mao.android_gridview.adapter
+ * Class(类名): GridViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/4
+ * Time(创建时间)： 10:46
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class GridViewAdapter extends BaseAdapter
+{
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<GridViewInfo> list;
+
+    public GridViewAdapter(Context context, List<GridViewInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+    }
+
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    @Override
+    public Object getItem(int position)
+    {
+        return list.get(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        GridViewHolder gridViewHolder;
+
+        if (convertView == null)
+        {
+            gridViewHolder = new GridViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_gridview, null);
+            gridViewHolder.title = convertView.findViewById(R.id.title);
+            gridViewHolder.icon = convertView.findViewById(R.id.icon);
+            gridViewHolder.content = convertView.findViewById(R.id.content);
+            convertView.setTag(gridViewHolder);
+        }
+        else
+        {
+            gridViewHolder = (GridViewHolder) convertView.getTag();
+        }
+        GridViewInfo gridViewInfo = list.get(position);
+        gridViewHolder.title.setText(gridViewInfo.getTitle());
+        gridViewHolder.icon.setImageResource(gridViewInfo.getIcon());
+        gridViewHolder.content.setText(gridViewInfo.getContent());
+        return convertView;
+    }
+
+
+    /**
+     * 网格视图持有人
+     *
+     * @author mao
+     */
+    private static class GridViewHolder
+    {
+        /**
+         * 标题
+         */
+        public TextView title;
+        /**
+         * 图标
+         */
+        public ImageView icon;
+        /**
+         * 内容
+         */
+        public TextView content;
+    }
+}
+```
+
+
+
+##### MainActivity2
+
+```java
+package mao.android_gridview;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_gridview.adapter.GridViewAdapter;
+import mao.android_gridview.entity.GridViewInfo;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        GridView gridView = findViewById(R.id.GridView);
+
+        List<GridViewInfo> list = new ArrayList<>(100);
+        for (int i = 1; i <= 100; i++)
+        {
+            GridViewInfo gridViewInfo = new GridViewInfo()
+                    .setTitle("标题" + i)
+                    .setIcon(R.drawable.img)
+                    .setContent("内容" + i + "..............");
+
+            list.add(gridViewInfo);
+        }
+
+        GridViewAdapter gridViewAdapter = new GridViewAdapter(this, list);
+
+        gridView.setAdapter(gridViewAdapter);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                toastShow("第" + (position + 1) + "个被点击了");
+            }
+        });
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                new AlertDialog.Builder(MainActivity2.this)
+                        .setTitle("删除提示")
+                        .setMessage("是否删除第" + (position + 1) + "个？")
+                        .setPositiveButton("确定删除", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                list.remove(position);
+                                gridViewAdapter.notifyDataSetChanged();
+                                toastShow("已删除");
+                            }
+                        })
+                        .setNeutralButton("取消", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+运行
+
+
+
+![image-20221004121547154](img/Android学习笔记/image-20221004121547154.png)
+
+
+
+![image-20221004121556673](img/Android学习笔记/image-20221004121556673.png)
+
+
+
+![image-20221004121613519](img/Android学习笔记/image-20221004121613519.png)
+
+
+
+![image-20221004121623376](img/Android学习笔记/image-20221004121623376.png)
+
+
+
+
+
+
+
+#### 三列
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="3" />
+
+</LinearLayout>
+```
+
+
+
+![image-20221004121858358](img/Android学习笔记/image-20221004121858358.png)
+
+
+
+![image-20221004121908553](img/Android学习笔记/image-20221004121908553.png)
+
+
+
+
+
+
+
+#### 有间距
+
