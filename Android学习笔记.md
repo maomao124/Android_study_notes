@@ -31849,3 +31849,252 @@ public class MainActivity2 extends AppCompatActivity
 
 #### 有间距
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2"
+            android:background="#00bbff"
+            android:horizontalSpacing="10dp"
+            android:verticalSpacing="10dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="160dp"
+        android:layout_height="200dp"
+        android:gravity="center"
+        android:background="@color/purple_200">
+
+    <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#ffaa00" />
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:scaleType="fitCenter" />
+
+    <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="#00ccff"
+            android:textSize="17sp" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221004123244195](img/Android学习笔记/image-20221004123244195.png)
+
+
+
+
+
+
+
+#### 拉伸模式 none
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:columnWidth="160dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2"
+            android:background="#00bbff"
+            android:stretchMode="none"
+            android:horizontalSpacing="2dp"
+            android:verticalSpacing="2dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221004125900858](img/Android学习笔记/image-20221004125900858.png)
+
+
+
+
+
+
+
+#### 拉伸模式 columnWidth
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:columnWidth="160dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2"
+            android:background="#00bbff"
+            android:stretchMode="columnWidth"
+            android:horizontalSpacing="2dp"
+            android:verticalSpacing="2dp"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221004130309776](img/Android学习笔记/image-20221004130309776.png)
+
+
+
+
+
+
+
+#### 拉伸模式 spacingWidth
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:columnWidth="160dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2"
+            android:background="#00bbff"
+            android:stretchMode="spacingWidth"
+            android:horizontalSpacing="2dp"
+            android:verticalSpacing="2dp"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221004130359682](img/Android学习笔记/image-20221004130359682.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 拉伸模式 spacingWidthUniform
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <GridView
+            android:id="@+id/GridView"
+            android:columnWidth="160dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="2"
+            android:background="#00bbff"
+            android:stretchMode="spacingWidthUniform"
+            android:horizontalSpacing="2dp"
+            android:verticalSpacing="2dp"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221004130606567](img/Android学习笔记/image-20221004130606567.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 翻页类视图
+
