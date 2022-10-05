@@ -32902,3 +32902,385 @@ public class MainActivity extends AppCompatActivity
 
 ### 简单的启动引导页
 
+翻页视图的使用范围很广，当用户安装一个新应用时，首次启动大多出现欢迎页面，这个引导页要往右 翻好几页，才会进入应用主页。这种启动引导页就是通过翻页视图实现的
+
+翻页技术的核心在于页面项的XML布局及其适配器， 因此首先要设计页面项的布局。一般来说，引导页由两部分组成，一部分是背景图；另一部分是页面下方的一排圆点，其中高亮的圆点表示当前位于第几页
+
+除了背景图与一排圆点之外，最后一页往往有个按钮，它便是进入应用主页的入口。于是页面项的XML 文件至少包含3个控件：引导页的背景图（采用ImageView）、底部的一排圆点（采用RadioGroup）、 最后一页的入口按钮（采用Button）
+
+启动引导页的适配器代码，主要完成3项工作：
+
+* 根据页面项的XML文件构造每页的视图
+* 让当前页码的圆点高亮显示
+* 如果翻到了最后一页，就显示中间的入口按钮
+
+
+
+
+
+#### 布局文件
+
+##### activity_main
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/ViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### activity_main2
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="34sp"
+            android:text="主页面" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_launch_boot
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ImageView
+            android:id="@+id/ImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+    <RadioGroup
+            android:id="@+id/RadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:paddingBottom="20dp">
+
+
+    </RadioGroup>
+
+    <Button
+            android:id="@+id/Button_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="开始使用"
+            android:textSize="28sp"
+            android:background="@color/purple_200"
+            android:textColor="#00ff00"
+            android:visibility="gone" />
+
+</RelativeLayout>
+```
+
+
+
+
+
+
+
+#### 适配器
+
+##### LaunchAdapter
+
+```java
+package mao.android_launch_boot_page.adapter;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_launch_boot_page.MainActivity2;
+import mao.android_launch_boot_page.R;
+
+/**
+ * Project name(项目名称)：android_launch_boot_page
+ * Package(包名): mao.android_launch_boot_page.adapter
+ * Class(类名): LaunchAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/5
+ * Time(创建时间)： 17:07
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class LaunchAdapter extends PagerAdapter
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "LaunchAdapter";
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 视图列表
+     */
+    private final List<View> viewList;
+
+    /**
+     * 图片
+     */
+    private final int[] images = new int[]
+            {
+                    R.drawable.l1,
+                    R.drawable.l2,
+                    R.drawable.l3,
+                    R.drawable.l4,
+                    R.drawable.l1,
+            };
+
+    public LaunchAdapter(Context context)
+    {
+        this.context = context;
+
+        viewList = new ArrayList<>(images.length);
+
+        for (int i = 0; i < images.length; i++)
+        {
+            Log.d(TAG, "LaunchAdapter: " + i);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_launch_boot, null);
+            ImageView imageView = view.findViewById(R.id.ImageView);
+            imageView.setImageResource(images[i]);
+
+            RadioGroup radioGroup = view.findViewById(R.id.RadioGroup);
+
+            for (int j = 0; j < images.length; j++)
+            {
+                RadioButton radioButton = new RadioButton(context);
+                radioButton.setLayoutParams(new RadioGroup.LayoutParams(
+                        RadioGroup.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT));
+
+                radioButton.setPadding(10, 10, 10, 10);
+                if (j == i)
+                {
+                    radioButton.setChecked(true);
+                }
+                radioButton.setClickable(false);
+                radioGroup.addView(radioButton);
+            }
+
+            if (i == images.length - 1)
+            {
+                Button button = view.findViewById(R.id.Button_start);
+                button.setVisibility(View.VISIBLE);
+                button.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        context.startActivity(new Intent(context, MainActivity2.class));
+                    }
+                });
+            }
+            viewList.add(view);
+        }
+
+    }
+
+    @Override
+    public int getCount()
+    {
+        return viewList.size();
+    }
+
+    @Override
+    public boolean isViewFromObject(@NonNull View view, @NonNull Object object)
+    {
+        return view == object;
+    }
+
+    @NonNull
+    @Override
+    public Object instantiateItem(@NonNull ViewGroup container, int position)
+    {
+        View view = viewList.get(position);
+        container.addView(view);
+        return view;
+    }
+
+    @Override
+    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
+    {
+        container.removeView(viewList.get(position));
+    }
+}
+```
+
+
+
+
+
+#### Activity
+
+##### MainActivity
+
+```java
+package mao.android_launch_boot_page;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
+
+import android.os.Bundle;
+
+import mao.android_launch_boot_page.adapter.LaunchAdapter;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ViewPager viewPager = findViewById(R.id.ViewPager);
+        LaunchAdapter launchAdapter = new LaunchAdapter(this);
+        viewPager.setAdapter(launchAdapter);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 主清单文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="mao.android_launch_boot_page">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity2"
+                android:exported="false" />
+        <activity
+                android:name=".MainActivity"
+                android:launchMode="singleInstance"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+
+
+#### 运行
+
+![image-20221005184054671](img/Android学习笔记/image-20221005184054671.png)
+
+
+
+![image-20221005184104186](img/Android学习笔记/image-20221005184104186.png)
+
+
+
+![image-20221005184113856](img/Android学习笔记/image-20221005184113856.png)
+
+
+
+![image-20221005184123732](img/Android学习笔记/image-20221005184123732.png)
+
+
+
+![image-20221005184134673](img/Android学习笔记/image-20221005184134673.png)
+
+
+
+![image-20221005184144427](img/Android学习笔记/image-20221005184144427.png)
+
+
+
+
+
+
+
+
+
+
+
