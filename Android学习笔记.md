@@ -33284,3 +33284,627 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+
+
+
+## 通知
+
+### Notification 控件
+
+实现通知，要创建两个对象 ， Notification和NotificationManager
+
+
+
+#### NotificationManager
+
+NotificationManager类是一个通知管理器类，这个对象是由系统维护的服务，是以单例模式的方式获得，所以一般并不直接实例化这个对象。
+
+在Activity中，可以使用Activity.getSystemService（String）方法获取NotificationManager对象，Activity.getSystemService（String）方法可以通过Android系统级服务的句柄，返回对应的对象。
+
+在这里需要返回NotificationManager，所以直接传递Context.NOTIFICATION SERVICE即可
+
+
+
+```java
+NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+```
+
+
+
+
+
+#### Notification
+
+使用Notificationcompat类的Bulder构造器来创建Notification对象，可以保证程序在所有的版本上都能正常工作。
+
+Android8.0新增了通知渠道这个概念，如果没有设置，则通知无法在Android8.0的机器上显示
+
+
+
+```java
+Notification notification = new NotificationCompat.Builder(this,"1").build();
+```
+
+
+
+![image-20221005191436089](img/Android学习笔记/image-20221005191436089.png)
+
+
+
+NotificationCompat.Builder()构造器中包含两个参数，一个是Context通知，一个是channelId，而channelId是android8.0引入的NotificationChannel通知渠道
+
+
+
+所以这块需要进行版本判断，并创建NotificationChannel对象，同时NotificationChannel构造中的id要与Notification中的channelId保持一致，importance为通知类型
+
+
+
+
+
+#### NotificationChannel
+
+Android 8.0引入了通知渠道，其允许您为要显示的每种通知类型创建用户可自定义的渠道。
+通知重要程度设置，NotificationManager类中：
+
+* **IMPORTANCE_NONE**：关闭通知
+* **IMPORTANCE_MIN**：开启通知，不会弹出，但没有提示音，状态栏中无显示
+* **IMPORTANCE_Low**：开启通知，不会弹出，不发出提示音，状态栏中显示
+* **IMPORTANCE_DEFAULT**：开启通知，不会弹出，发出提示音，状态栏中显示
+* **IMPORTANCE_HIGH**：开启通知，会弹出，发出提示音，状态栏中显示
+
+
+
+
+
+```java
+NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+{
+    NotificationChannel notificationChannel = new NotificationChannel("1", "测试通知", NotificationManager.IMPORTANCE_HIGH);
+    notificationManager.createNotificationChannel(notificationChannel);
+}
+
+Notification notification = new NotificationCompat.Builder(this, "1").build();
+```
+
+
+
+
+
+
+
+#### Notifition常用方法
+
+* setContentitle（string string）：设置标题
+* setContentText（String string）：设置文本内容
+* setSmallion（int icon）：设置小图标
+* setLargelcon（Bitmap icon）：设置通知的大图标
+* setColor（int argb）：设置小图标的颜色
+* setContentintent（Pendingintent intent）：设置点击通知后的跳转意图
+* setAutoCancellboolean boolean）：设置点击通知后自动清除通知
+* setWhen（long when）：设置通知被创建的时间
+
+
+
+Android从5.0系统开始，对于通知栏图标的设计进行了修改。现在Google要求，所有应用程序的通知栏图标，应该只使用alpha图层来进行绘制，而不应该包括RGB图层
+
+
+
+
+
+```java
+package mao.android_notification;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel("1", "测试通知", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(notificationChannel);
+
+        }
+
+        Notification notification = new NotificationCompat.Builder(this, "1")
+                .setContentTitle("标题")
+                .setContentText("内容")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setColor(Color.rgb(255, 0, 0))
+                .setAutoCancel(true)
+                .build();
+        
+        notificationManager.notify(1, notification);
+    }
+}
+```
+
+
+
+
+
+
+
+#### 实现点击后跳转到app
+
+主要通过构造Notification时setContentintent（Pendingintent intent）：设置点击通知后的跳转意图
+
+
+
+```java
+package mao.android_notification;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel("1", "测试通知", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        PendingIntent pendingIntent = PendingIntent.
+                getActivity(this, 0, new Intent(MainActivity.this, MainActivity2.class), 0);
+
+        Notification notification = new NotificationCompat.Builder(this, "1")
+                .setContentTitle("标题")
+                .setContentText("内容")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setColor(Color.rgb(255, 0, 0))
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+
+        notificationManager.notify(1, notification);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 简单封装
+
+
+
+```java
+
+    /**
+     * 创建通知渠道，通知的重要程度默认为NotificationManager.IMPORTANCE_HIGH
+     *
+     * @param id   id
+     * @param name 名字
+     */
+    private void createNotificationChannel(String id, String name)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+
+    /**
+     * 创建通知渠道
+     *
+     * @param id    id
+     * @param name  名字
+     * @param level 通知水平,比如：NotificationManager.IMPORTANCE_HIGH
+     */
+    private void createNotificationChannel(String id, String name, int level)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel(id, name, level);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+
+
+    /**
+     * 发送基本通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     */
+    private void sendBaseNotification(String channelId, int id, String title, String content)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+
+    /**
+     * 发送基本通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     * @param cls       点击后要跳转到的Activity类
+     */
+    private void sendBaseNotification(String channelId, int id, String title, String content, Class<?> cls)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.
+                getActivity(this, 0,
+                        new Intent(this, cls), 0);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+
+
+    /**
+     * 发送通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     * @param cls       点击后要跳转到的Activity类
+     * @param smallIcon 小图标
+     * @param largeIcon 大图标
+     */
+    private void sendNotification(String channelId, int id, String title, String content,
+                                  Class<?> cls, int smallIcon, Bitmap largeIcon)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.
+                getActivity(this, 0,
+                        new Intent(this, cls), 0);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(smallIcon)
+                .setLargeIcon(largeIcon)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+```
+
+
+
+
+
+
+
+布局：
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送通知" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送通知 带意图" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送通知 同一id" />
+
+    <Button
+            android:id="@+id/Button4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送通知 带大图标" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+```java
+package mao.android_notification;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+
+import java.util.Random;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+//        {
+//            NotificationChannel notificationChannel = new NotificationChannel("1", "测试通知", NotificationManager.IMPORTANCE_HIGH);
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        }
+//
+//        PendingIntent pendingIntent = PendingIntent.
+//                getActivity(this, 0, new Intent(MainActivity.this, MainActivity2.class), 0);
+//
+//        Notification notification = new NotificationCompat.Builder(this, "1")
+//                .setContentTitle("标题")
+//                .setContentText("内容")
+//                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                .setColor(Color.rgb(255, 0, 0))
+//                .setAutoCancel(true)
+//                .setContentIntent(pendingIntent)
+//                .build();
+//
+//        notificationManager.notify(1, notification);
+
+        createNotificationChannel("2", "测试通知");
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                sendBaseNotification("2", new Random().nextInt(100000), "标题", "内容");
+            }
+        });
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                sendBaseNotification("2", new Random().nextInt(100000), "标题", "内容", MainActivity2.class);
+            }
+        });
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                sendBaseNotification("2", 1, "标题", "内容", MainActivity2.class);
+            }
+        });
+        findViewById(R.id.Button4).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground);
+                sendNotification("2", new Random().nextInt(100000), "标题", "内容",
+                        MainActivity2.class, R.drawable.ic_launcher_foreground, bitmap);
+            }
+        });
+    }
+
+
+    /**
+     * 创建通知渠道，通知的重要程度默认为NotificationManager.IMPORTANCE_HIGH
+     *
+     * @param id   id
+     * @param name 名字
+     */
+    private void createNotificationChannel(String id, String name)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+
+    /**
+     * 创建通知渠道
+     *
+     * @param id    id
+     * @param name  名字
+     * @param level 通知水平,比如：NotificationManager.IMPORTANCE_HIGH
+     */
+    private void createNotificationChannel(String id, String name, int level)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel notificationChannel = new NotificationChannel(id, name, level);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+
+
+    /**
+     * 发送基本通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     */
+    private void sendBaseNotification(String channelId, int id, String title, String content)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+
+    /**
+     * 发送基本通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     * @param cls       点击后要跳转到的Activity类
+     */
+    private void sendBaseNotification(String channelId, int id, String title, String content, Class<?> cls)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.
+                getActivity(this, 0,
+                        new Intent(this, cls), 0);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+
+
+    /**
+     * 发送通知
+     *
+     * @param channelId 通道标识
+     * @param id        id
+     * @param title     标题
+     * @param content   内容
+     * @param cls       点击后要跳转到的Activity类
+     * @param smallIcon 小图标
+     * @param largeIcon 大图标
+     */
+    private void sendNotification(String channelId, int id, String title, String content,
+                                  Class<?> cls, int smallIcon, Bitmap largeIcon)
+    {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.
+                getActivity(this, 0,
+                        new Intent(this, cls), 0);
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(smallIcon)
+                .setLargeIcon(largeIcon)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        notificationManager.notify(id, notification);
+    }
+}
+```
+
+
+
+运行
+
+
+
+![image-20221005203745536](img/Android学习笔记/image-20221005203745536.png)
+
+
+
+![image-20221005203755612](img/Android学习笔记/image-20221005203755612.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 布局
+
+### 表格布局TableLayout
+
