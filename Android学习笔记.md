@@ -32154,3 +32154,418 @@ public class MainActivity2 extends AppCompatActivity
 
 
 
+
+
+由于监听器OnPageChangeListener多数情况只用到onPageSelected方法，很少用到 onPageScrollStateChanged和onPageScrolled两个方法，因此Android又提供了简化版的页面变更监听 器名为SimpleOnPageChangeListener，新的监听器仅需实现onPageSelected方法
+
+
+
+
+
+#### 代码
+
+##### item_viewpager.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:textSize="28sp"
+            android:textColor="@color/purple_200"/>
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="wrap_content"
+            android:layout_height="450dp" />
+
+    <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:textColor="#ff8800"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+##### 实体类 ViewPagerInfo
+
+```java
+package mao.android_viewpager.entity;
+
+/**
+ * Project name(项目名称)：android_ViewPager
+ * Package(包名): mao.android_viewpager.entity
+ * Class(类名): ViewPagerInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/5
+ * Time(创建时间)： 13:05
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class ViewPagerInfo
+{
+    /**
+     * 标题
+     */
+    private String title;
+    /**
+     * 图标
+     */
+    private int icon;
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * Instantiates a new View pager info.
+     */
+    public ViewPagerInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new View pager info.
+     *
+     * @param title   the title
+     * @param icon    the icon
+     * @param content the content
+     */
+    public ViewPagerInfo(String title, int icon, String content)
+    {
+        this.title = title;
+        this.icon = icon;
+        this.content = content;
+    }
+
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     * @return the title
+     */
+    public ViewPagerInfo setTitle(String title)
+    {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * Gets icon.
+     *
+     * @return the icon
+     */
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    /**
+     * Sets icon.
+     *
+     * @param icon the icon
+     * @return the icon
+     */
+    public ViewPagerInfo setIcon(int icon)
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     * @return the content
+     */
+    public ViewPagerInfo setContent(String content)
+    {
+        this.content = content;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("title：").append(title).append('\n');
+        stringbuilder.append("icon：").append(icon).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+##### 适配器 ViewPagerAdapter
+
+```java
+package mao.android_viewpager.apapter;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_viewpager.R;
+import mao.android_viewpager.entity.ViewPagerInfo;
+
+/**
+ * Project name(项目名称)：android_ViewPager
+ * Package(包名): mao.android_viewpager.apapter
+ * Class(类名): ViewPagerAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/5
+ * Time(创建时间)： 13:08
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ViewPagerAdapter extends PagerAdapter
+{
+
+    private static final String TAG = "ViewPagerAdapter";
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<ViewPagerInfo> list;
+
+    /**
+     * 视图列表
+     */
+    private final List<View> viewList;
+
+
+    public ViewPagerAdapter(Context context, List<ViewPagerInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+
+        viewList = new ArrayList<>(list.size());
+
+        for (ViewPagerInfo viewPagerInfo : list)
+        {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_viewpager, null);
+            TextView title = view.findViewById(R.id.title);
+            title.setText(viewPagerInfo.getTitle());
+            ImageView icon = view.findViewById(R.id.icon);
+            icon.setImageResource(viewPagerInfo.getIcon());
+            TextView content = view.findViewById(R.id.content);
+            content.setText(viewPagerInfo.getContent());
+            viewList.add(view);
+        }
+    }
+
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    @Override
+    public boolean isViewFromObject(@NonNull View view, @NonNull Object object)
+    {
+        return view == object;
+    }
+
+
+    @NonNull
+    @Override
+    public Object instantiateItem(@NonNull ViewGroup container, int position)
+    {
+        Log.d(TAG, "instantiateItem: p:" + position);
+        View view = viewList.get(position);
+        container.addView(view);
+        return view;
+    }
+
+    @Override
+    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
+    {
+        Log.d(TAG, "destroyItem: P:" + position);
+        container.removeView(viewList.get(position));
+    }
+}
+```
+
+
+
+
+
+##### MainActivity
+
+```java
+package mao.android_viewpager;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_viewpager.apapter.ViewPagerAdapter;
+import mao.android_viewpager.entity.ViewPagerInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ViewPager viewPager = findViewById(R.id.ViewPager);
+
+        List<ViewPagerInfo> list = new ArrayList<>(10);
+        for (int i = 1; i <= 10; i++)
+        {
+            ViewPagerInfo viewPagerInfo = new ViewPagerInfo()
+                    .setTitle("标题" + i)
+                    .setIcon(R.drawable.test)
+                    .setContent("内容" + i + ".......");
+            list.add(viewPagerInfo);
+        }
+
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, list);
+
+        viewPager.setAdapter(viewPagerAdapter);
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
+        {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+            {
+                Log.d(TAG, "onPageScrolled: " + position);
+                //toastShow("页面滑动中：" + (position + 1));
+            }
+
+            @Override
+            public void onPageSelected(int position)
+            {
+                Log.d(TAG, "onPageSelected: " + position);
+                toastShow("页面滑动结束：" + (position + 1));
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state)
+            {
+                Log.d(TAG, "onPageScrollStateChanged: " + state);
+                toastShow("页面滑动状态变化：" + state);
+            }
+        });
+
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+#### 运行
+
+![image-20221005162442999](img/Android学习笔记/image-20221005162442999.png)
+
+
+
+![image-20221005162455010](img/Android学习笔记/image-20221005162455010.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 翻页标签栏PagerTabStrip
+
