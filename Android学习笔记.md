@@ -32569,3 +32569,336 @@ public class MainActivity extends AppCompatActivity
 
 ### 翻页标签栏PagerTabStrip
 
+尽管翻页视图实现了左右滑动，可是没滑动的时候看不出这是个翻页视图，而且也不晓得当前滑到了哪 个页面。为此Android提供了翻页标签栏PagerTabStrip，它能够在翻页视图上方显示页面标题，从而方 便用户的浏览操作。PagerTabStrip类似选项卡效果，文本下面有横线，点击左右选项卡即可切换到对应页面。给翻页视图引入翻页标签栏只需下列两个步骤：
+
+
+
+步骤一，在XML文件的ViewPager节点内部添加PagerTabStrip节点
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/ViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <androidx.viewpager.widget.PagerTabStrip
+                android:id="@+id/PagerTabStrip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+    </androidx.viewpager.widget.ViewPager>
+
+
+</LinearLayout>
+```
+
+
+
+步骤二，在翻页适配器的代码中重写getPageTitle方法，在不同位置返回对应的标题文本
+
+
+
+
+
+item_viewpager.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+<!--    <TextView-->
+<!--            android:id="@+id/title"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:textSize="28sp"-->
+<!--            android:textColor="@color/purple_200"/>-->
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="450dp" />
+
+    <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:textColor="#ff8800"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+适配器 ViewPagerAdapter
+
+```java
+package mao.android_pagertabstrip.apapter;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.PagerAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_pagertabstrip.R;
+import mao.android_pagertabstrip.entity.ViewPagerInfo;
+
+
+/**
+ * Project name(项目名称)：android_ViewPager
+ * Package(包名): mao.android_viewpager.apapter
+ * Class(类名): ViewPagerAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/5
+ * Time(创建时间)： 13:08
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ViewPagerAdapter extends PagerAdapter
+{
+
+    private static final String TAG = "ViewPagerAdapter";
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 列表
+     */
+    private final List<ViewPagerInfo> list;
+
+    /**
+     * 视图列表
+     */
+    private final List<View> viewList;
+
+
+    public ViewPagerAdapter(Context context, List<ViewPagerInfo> list)
+    {
+        this.context = context;
+        this.list = list;
+
+        viewList = new ArrayList<>(list.size());
+
+        for (ViewPagerInfo viewPagerInfo : list)
+        {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_viewpager, null);
+//            TextView title = view.findViewById(R.id.title);
+//            title.setText(viewPagerInfo.getTitle());
+            ImageView icon = view.findViewById(R.id.icon);
+            icon.setImageResource(viewPagerInfo.getIcon());
+            TextView content = view.findViewById(R.id.content);
+            content.setText(viewPagerInfo.getContent());
+            viewList.add(view);
+        }
+    }
+
+    @Override
+    public int getCount()
+    {
+        return list.size();
+    }
+
+    @Override
+    public boolean isViewFromObject(@NonNull View view, @NonNull Object object)
+    {
+        return view == object;
+    }
+
+
+    @NonNull
+    @Override
+    public Object instantiateItem(@NonNull ViewGroup container, int position)
+    {
+        Log.d(TAG, "instantiateItem: p:" + position);
+        View view = viewList.get(position);
+        container.addView(view);
+        return view;
+    }
+
+    @Override
+    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
+    {
+        Log.d(TAG, "destroyItem: P:" + position);
+        container.removeView(viewList.get(position));
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position)
+    {
+        return list.get(position).getTitle();
+    }
+
+
+}
+```
+
+
+
+
+
+
+
+另外，若想修改翻页标签栏的文本样式，必须在Java代码中调用setTextSize和setTextColor方法才行， 因为PagerTabStrip不支持在XML文件中设置文本大小和文本颜色，只能在代码中设置文本样式
+
+
+
+
+
+```java
+package mao.android_pagertabstrip;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerTabStrip;
+import androidx.viewpager.widget.ViewPager;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import android.util.TypedValue;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.android_pagertabstrip.apapter.ViewPagerAdapter;
+import mao.android_pagertabstrip.entity.ViewPagerInfo;
+
+public class MainActivity extends AppCompatActivity
+{
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ViewPager viewPager = findViewById(R.id.ViewPager);
+
+        List<ViewPagerInfo> list = new ArrayList<>(10);
+        for (int i = 1; i <= 10; i++)
+        {
+            ViewPagerInfo viewPagerInfo = new ViewPagerInfo()
+                    .setTitle("标题" + i)
+                    .setIcon(R.drawable.test)
+                    .setContent("内容" + i + ".......");
+            list.add(viewPagerInfo);
+        }
+
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, list);
+
+        viewPager.setAdapter(viewPagerAdapter);
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
+        {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+            {
+                Log.d(TAG, "onPageScrolled: " + position);
+                //toastShow("页面滑动中：" + (position + 1));
+            }
+
+            @Override
+            public void onPageSelected(int position)
+            {
+                Log.d(TAG, "onPageSelected: " + position);
+                toastShow("页面滑动结束：" + (position + 1));
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state)
+            {
+                Log.d(TAG, "onPageScrollStateChanged: " + state);
+                toastShow("页面滑动状态变化：" + state);
+            }
+        });
+
+
+        PagerTabStrip pagerTabStrip = findViewById(R.id.PagerTabStrip);
+        pagerTabStrip.setTextColor(Color.rgb(200, 20, 255));
+        pagerTabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+运行
+
+
+
+![image-20221005164801227](img/Android学习笔记/image-20221005164801227.png)
+
+
+
+![image-20221005164813489](img/Android学习笔记/image-20221005164813489.png)
+
+
+
+![image-20221005164823122](img/Android学习笔记/image-20221005164823122.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 简单的启动引导页
+
