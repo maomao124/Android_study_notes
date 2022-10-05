@@ -32098,3 +32098,59 @@ public class MainActivity2 extends AppCompatActivity
 
 ## 翻页类视图
 
+### 翻页视图ViewPager
+
+为了实现左右滑动的翻 页功能，Android提供了相应的控件—翻页视图ViewPager。对于ViewPager来说，一个页面就是一个项 （相当于ListView的一个列表项），许多个页面组成了ViewPager的页面项
+
+翻页视图的原理类似列表视图和网格视图，它们的用法也很类似。例如，列表视图和网格视 图使用基本适配器BaseAdapter，翻页视图则使用翻页适配器PagerAdapter；列表视图和网格视图使用 列表项的点击监听器OnItemClickListener，翻页视图则使用页面变更监听器OnPageChangeListener监 听页面切换事件
+
+
+
+翻页视图3个常用方法的说明：
+
+* setAdapter：设置页面项的适配器。适配器用的是PagerAdapter及其子类
+* setCurrentItem：设置当前页码，也就是要显示哪个页面
+* addOnPageChangeListener：添加翻页视图的页面变更监听器。该监听器需实现接口 OnPageChangeListener下的3个方法
+  * onPageScrollStateChanged：在页面滑动状态变化时触发
+  * onPageScrolled：在页面滑动过程中触发
+  * onPageSelected：在选中页面时，即滑动结束后触发
+
+
+
+在XML文件中添加ViewPager时注意指定完整路径的节点名称
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/ViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+</LinearLayout>
+```
+
+
+
+
+
+由于翻页视图包含了多个页面项，因此要借助翻页适配器展示每个页面。翻页适配器的实现原理与基本 适配器类似，从PagerAdapter派生的翻页适配器主要实现下面6个方法
+
+* 构造方法：指定适配器需要处理的数据集合
+* getCount：获取页面项的个数
+* isViewFromObject：判断当前视图是否来自指定对象，返回view == object即可
+* instantiateItem：实例化指定位置的页面，并将其添加到容器中
+* destroyItem：从容器中销毁指定位置的页面
+* getPageTitle：获得指定页面的标题文本，有搭配翻页标签栏时才要实现该方法
+
+
+
