@@ -35329,3 +35329,231 @@ app:layout_constraintRight_toRightOf="parent"
 
 #### 尺寸约束
 
+view 中使用 warp_content 或者固定值等等是没有问题的。但是在 ConstraintLayout 中不推荐使用 match_parent 这个值，如果需要实现跟 match_parent 同样的效果，可以使用 0dp 来代替，其表示 match_parent，即适应约束。其跟 match_parent 还是有区别的
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity5">
+
+
+    <Button
+            android:id="@+id/btn_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+            android:id="@+id/btn_1"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:text="具体数值：180dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_center"/>
+
+    <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="0dp(match_parent)"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_1"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006225409923](img/Android学习笔记/image-20221006225409923.png)
+
+
+
+
+
+
+
+
+
+#### 宽高比 Ratio
+
+在 ConstraintLayout 中，还可以将宽定义成高的一个比例或者高定义成宽的比率。首先，需要将宽或者高设置为0dp（即match_parent），即要适应约束条件。然后通过 layout_constraintDimensionRatio 属性设置一个比率即可。这个比率可以是一个浮点数，表示宽度和高度之间的比率；也可以是“宽度:高度”形式的比率
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6">
+
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="30dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="宽高比2：1"
+            app:layout_constraintDimensionRatio="2:1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:id="@+id/button" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="宽高比2.0"
+            app:layout_constraintDimensionRatio="2.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button"
+            android:id="@+id/button2" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="宽高比3.0"
+            app:layout_constraintDimensionRatio="3.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button2"
+            android:id="@+id/button3" />
+
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="宽高比1：2"
+            app:layout_constraintDimensionRatio="1:2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button3"
+            android:id="@+id/button4" />
+
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="宽高比0.66"
+            app:layout_constraintDimensionRatio="0.66"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button4" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006230118371](img/Android学习笔记/image-20221006230118371.png)
+
+
+
+
+
+
+
+
+
+如果宽和高都设置为0dp（match_parent），那么 `layout_constraintDimensionRatio` 的值需要先加一个"W,"或者"H,"来表示约束宽度或高度
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity7">
+
+
+    <Button
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="宽和高都设置为0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="H,16:9"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006230439473](img/Android学习笔记/image-20221006230439473.png)
+
+
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity8">
+
+    <Button
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="宽和高都设置为0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="W,3:10"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+    
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006230639127](img/Android学习笔记/image-20221006230639127.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 百分比宽高 Percent
+
