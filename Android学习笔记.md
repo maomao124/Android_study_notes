@@ -34966,5 +34966,68 @@ public class MainActivity6 extends AppCompatActivity
 
 ### 帧布局FrameLayout
 
+FrameLayout(帧布局)顾名思义，就是按照帧来分布的一种布局
 
+使用FrameLayout，会直接在屏幕上开辟出一块空白的区域
+
+采用帧布局时，所有控件都默认显示在屏幕左上角，并按照先后放入的顺序重叠摆放，先放入的将会在更底层，后放入的控件显示在最顶层。帧布局使用于图层设计
+
+
+
+|           属性            |            解释            |
+| :-----------------------: | :------------------------: |
+|    android:foreground     | 设置改帧布局容器的前景图像 |
+| android:foregroundGravity |   设置前景图像显示的位置   |
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="@mipmap/ic_launcher_round"
+        android:foregroundGravity="bottom">
+
+    <View
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:background="#ff00cc" />
+
+    <View
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="#00ccff" />
+
+    <View
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="#ffaa00" />
+
+</FrameLayout>
+```
+
+
+
+
+
+
+
+![image-20221006215420002](img/Android学习笔记/image-20221006215420002.png)
+
+
+
+
+
+
+
+
+
+
+
+### 约束布局ConstraintLayout
 
