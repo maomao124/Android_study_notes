@@ -34541,3 +34541,283 @@ android:stretchColumns : 设置可伸展的列，该列可以向行方向伸展�
 
 
 
+
+
+
+
+#### 示例
+
+
+
+布局
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity6"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:background="@color/cardview_dark_background">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TableLayout
+                android:id="@+id/TableLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stretchColumns="*">
+
+            <TableRow
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center">
+
+                <TextView
+                        android:id="@+id/id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:layout_gravity="center"
+                        android:textColor="#00ccff"
+                        android:text="学号" />
+
+                <TextView
+                        android:id="@+id/name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textColor="#ff00cc"
+                        android:layout_gravity="center"
+                        android:text="姓名" />
+
+                <TextView
+                        android:id="@+id/sex"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textColor="#aa00ff"
+                        android:layout_gravity="center"
+                        android:text="性别" />
+
+                <TextView
+                        android:id="@+id/age"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:layout_gravity="center"
+                        android:textColor="#ffcc00"
+                        android:text="年龄" />
+
+            </TableRow>
+
+        </TableLayout>
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+item_table.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/TableRow"
+        android:orientation="vertical">
+
+
+        <TextView
+                android:id="@+id/id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:textColor="#00ccff" />
+
+        <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:textColor="#ff00cc" />
+
+        <TextView
+                android:id="@+id/sex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:textColor="#aa00ff" />
+
+        <TextView
+                android:id="@+id/age"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textSize="20sp"
+                android:textColor="#ffcc00" />
+
+</TableRow>
+```
+
+
+
+
+
+MainActivity6
+
+```java
+package mao.android_tablelayout;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+
+import java.util.Random;
+import java.util.UUID;
+
+public class MainActivity6 extends AppCompatActivity
+{
+
+    /**
+     * 得到int随机
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    public static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main6);
+
+        TableLayout tableLayout = findViewById(R.id.TableLayout);
+
+        for (int i = 0; i < 500; i++)
+        {
+            int id = 100000 + i + 1;
+            String name = UUID.randomUUID().toString().substring(0, 6);
+            String sex = Math.random() > 0.5 ? "男" : "女";
+            int age = getIntRandom(15, 25);
+
+            View view = LayoutInflater.from(this).inflate(R.layout.item_table, null);
+            TextView textView_id = view.findViewById(R.id.id);
+            textView_id.setText(String.valueOf(id));
+            TextView textView_name = view.findViewById(R.id.name);
+            textView_name.setText(name);
+            TextView textView_sex = view.findViewById(R.id.sex);
+            textView_sex.setText(sex);
+            if (sex.equals("男"))
+            {
+                textView_sex.setTextColor(Color.rgb(130, 80, 255));
+            }
+            TextView textView_age = view.findViewById(R.id.age);
+            textView_age.setText(String.valueOf(age));
+
+            TableRow tableRow = view.findViewById(R.id.TableRow);
+            tableRow.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    new AlertDialog.Builder(MainActivity6.this)
+                            .setTitle("更新id为" + id + "的信息")
+                            .setMessage("\n\n\n\n\n\n\n\n\n\n")
+                            .create()
+                            .show();
+                }
+            });
+
+            tableRow.setOnLongClickListener(new View.OnLongClickListener()
+            {
+                @Override
+                public boolean onLongClick(View v)
+                {
+                    new AlertDialog.Builder(MainActivity6.this)
+                            .setTitle("删除提示")
+                            .setMessage("是否删除id为" + id + "的信息？")
+                            .setPositiveButton("确定删除", new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    tableLayout.removeView(view);
+                                }
+                            })
+                            .setNeutralButton("取消", null)
+                            .create()
+                            .show();
+                    return true;
+                }
+            });
+
+            tableLayout.addView(view);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+运行
+
+![image-20221006145944713](img/Android学习笔记/image-20221006145944713.png)
+
+
+
+![image-20221006145956276](img/Android学习笔记/image-20221006145956276.png)
+
+
+
+![image-20221006150013554](img/Android学习笔记/image-20221006150013554.png)
+
+
+
+![image-20221006150025976](img/Android学习笔记/image-20221006150025976.png)
+
+
+
+
+
+
+
+
+
+
+
+### 帧布局FrameLayout
+
+
+
