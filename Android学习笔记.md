@@ -34549,7 +34549,7 @@ android:stretchColumns : 设置可伸展的列，该列可以向行方向伸展�
 
 
 
-布局
+##### activity_main6
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -34625,7 +34625,7 @@ android:stretchColumns : 设置可伸展的列，该列可以向行方向伸展�
 
 
 
-item_table.xml
+##### item_table.xml
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -34673,7 +34673,93 @@ item_table.xml
 
 
 
-MainActivity6
+##### item_edit.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="姓名："
+                android:textSize="20sp" />
+
+        <EditText
+                android:id="@+id/EditText_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="姓名"
+                android:maxLength="6" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="性别："
+                android:textSize="20sp" />
+
+        <EditText
+                android:id="@+id/EditText_sex"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="性别"
+                android:maxLength="1" />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="年龄："
+                android:textSize="20sp" />
+
+        <EditText
+                android:id="@+id/EditText_age"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="年龄"
+                android:maxLength="2"
+                android:inputType="number" />
+
+    </LinearLayout>
+
+
+
+</LinearLayout>
+```
+
+
+
+
+
+##### MainActivity6
 
 ```java
 package mao.android_tablelayout;
@@ -34686,9 +34772,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 import java.util.UUID;
@@ -34748,9 +34836,31 @@ public class MainActivity6 extends AppCompatActivity
                 @Override
                 public void onClick(View v)
                 {
+                    View view1 = LayoutInflater.from(MainActivity6.this).inflate(R.layout.item_edit, null);
+
+                    EditText editText_name = view1.findViewById(R.id.EditText_name);
+                    EditText editText_sex = view1.findViewById(R.id.EditText_sex);
+                    EditText editText_age = view1.findViewById(R.id.EditText_age);
+
+                    editText_name.setText(textView_name.getText().toString());
+                    editText_sex.setText(textView_sex.getText().toString());
+                    editText_age.setText(textView_age.getText().toString());
+
                     new AlertDialog.Builder(MainActivity6.this)
                             .setTitle("更新id为" + id + "的信息")
-                            .setMessage("\n\n\n\n\n\n\n\n\n\n")
+                            .setView(view1)
+                            .setPositiveButton("确认修改", new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    textView_name.setText(editText_name.getText().toString());
+                                    textView_sex.setText(editText_sex.getText().toString());
+                                    textView_age.setText(editText_age.getText().toString());
+                                    toastShow("已更改");
+                                }
+                            })
+                            .setNegativeButton("取消", null)
                             .create()
                             .show();
                 }
@@ -34770,6 +34880,7 @@ public class MainActivity6 extends AppCompatActivity
                                 public void onClick(DialogInterface dialog, int which)
                                 {
                                     tableLayout.removeView(view);
+                                    toastShow("已删除");
                                 }
                             })
                             .setNeutralButton("取消", null)
@@ -34782,6 +34893,16 @@ public class MainActivity6 extends AppCompatActivity
             tableLayout.addView(view);
         }
     }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
 }
 ```
 
@@ -34791,7 +34912,7 @@ public class MainActivity6 extends AppCompatActivity
 
 
 
-运行
+##### 运行
 
 ![image-20221006145944713](img/Android学习笔记/image-20221006145944713.png)
 
@@ -34806,6 +34927,32 @@ public class MainActivity6 extends AppCompatActivity
 
 
 ![image-20221006150025976](img/Android学习笔记/image-20221006150025976.png)
+
+
+
+
+
+![image-20221006192953686](img/Android学习笔记/image-20221006192953686.png)
+
+
+
+![image-20221006193019964](img/Android学习笔记/image-20221006193019964.png)
+
+
+
+
+
+![image-20221006193309154](img/Android学习笔记/image-20221006193309154.png)
+
+
+
+![image-20221006193337353](img/Android学习笔记/image-20221006193337353.png)
+
+
+
+
+
+
 
 
 
