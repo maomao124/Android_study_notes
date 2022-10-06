@@ -35031,3 +35031,301 @@ FrameLayout(帧布局)顾名思义，就是按照帧来分布的一种布局
 
 ### 约束布局ConstraintLayout
 
+约束布局 ConstraintLayout，也有人把它称作“增强型的相对布局”，扁平式的布局方式，无任何嵌套，减少布局的层级，优化渲染性能。是最受欢迎的 Jetpack 库之一，其实是 Android Studio 2.2 中主要的新增功能之一，也是 Google 在2016年的 I/O 大会上重点宣传的一个功能。AS 已经将它作为新建页面默认布局了。经历这几年的迭代，功能已经非常的成熟，现在 2.0 正式版本也发布了，也许你已熟悉了旧版本中的功能，并开始用它来快速构建复杂的页面布局，而新版本除了包含旧版本中的所有功能之外，还在 AS 中集成了可以直接预览 XML 的工具，甚至可以直接在预览界面中对布局进行编辑
+
+
+
+#### 优点
+
+ConstraintLayout 可以理解为 RelativeLayout + LinearLayout 的混合强化版，同时新版 Android Studio 的布局编辑器也提供了对 ConstraintLayout 完善的编辑支持。使用 ConstraintLayout 可以很方便地在一个层级上实现复杂的布局，功能也很完善，是 Android 官方目前非常重视的一个 Layout（替代以前的 RelativeLayout），使用 ConstraintLayout 后基本可以抛弃 LinearLayout 和 RelativeLayout 的使用，完全不需要任何嵌套就可以实现复杂的 UI，使用起来特别清爽。减少了很多的嵌套的层级，这样 View 在渲染的时候，减少了很多多余的 measure 和 layout 的开销，如果嵌套的层次越多，提升的效果越明显
+
+
+
+
+
+需要在模块级build.gradle文件中添加依赖，如果有，则可以忽略
+
+
+
+![image-20221006220829153](img/Android学习笔记/image-20221006220829153.png)
+
+
+
+```
+dependencies {
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+}
+```
+
+
+
+
+
+
+
+
+
+#### 相对位置
+
+要在ConstraintLayout中确定 view 的位置，必须至少添加一个水平和垂直的约束。每一个约束表示到另一个 view、父布局或者不可见的参考线的连接或者对齐。如果水平或者垂直方向上没有约束，那么其位置就是0
+
+
+
+下面是 ConstraintLayout 确定位置的属性，这些属性的值即可以是 parent（父布局），也可以是某个 view 的 id，和同类型的RelativeLayout属性很相似
+
+
+
+| ConstraintLayout               | RelativeLayout   | 作用             |
+| :----------------------------: | :--------------: | :--------------: |
+| layout_constraintLeft_toLeftOf | layout_alignLeft | 与参照控件左对齐 |
+| layout_constraintLeft_toRightOf | layout_toRightOf | 在参照控件的右边 |
+| layout_constraintRight_toLeftOf | layout_toLeftOf  | 在参照控件的左边 |
+| layout_constraintRight_toRightOf | layout_alignRight | 与参照控件右对齐 |
+| layout_constraintTop_toTopOf     | layout_alignTop   | 与参照控件上对齐 |
+| layout_constraintTop_toBottomOf | layout_below       | 在参照控件底部   |
+| layout_constraintBottom_toTopOf | layout_alignBottom | 在参照控件的上部 |
+| layout_constraintBottom_toBottomOf     | layout_above         | 与参照控件下对齐   |
+| layout_constraintBaseline_toBaselineOf | layout_alignBaseline | 与参照控件基线对齐 |
+| layout_constraintStart_toEndOf   |      |      |
+| layout_constraintStart_toStartOf |      |      |
+| layout_constraintEnd_toStartOf |      |      |
+| layout_constraintEnd_toEndOf   |      |      |
+
+
+
+start/end 一般情况下和 left/right 是一样的效果，主要是为了做国际化适配
+
+
+
+
+
+##### 相对父容器
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2">
+
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="左对齐"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="右对齐"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="水平居中"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="垂直居中"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="底部对齐"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="水平居中+垂直居中"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006223816587](img/Android学习笔记/image-20221006223816587.png)
+
+
+
+
+
+```xml
+app:layout_constraintLeft_toLeftOf="parent"
+app:layout_constraintRight_toRightOf="parent"
+```
+
+解释：
+
+即view的左边对齐父布局的左边，view的右边对齐父布局的右边，除非这个view的大小刚好充满整个父布局；
+否则的话，就是水平居中显示了。我们可以理解为有两个相同的力，把view拉到中间
+
+
+
+
+
+
+
+##### 水平方向的相对位置
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3">
+
+
+    <Button
+            android:id="@+id/btn_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="水平参照物"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Left_toLeftOf"
+            app:layout_constraintBottom_toTopOf="@id/btn_center"
+            app:layout_constraintLeft_toLeftOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Right_toLeftOf"
+            app:layout_constraintBottom_toTopOf="@id/btn_center"
+            app:layout_constraintRight_toLeftOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Right_toRightOf"
+            app:layout_constraintRight_toRightOf="@id/btn_center"
+            app:layout_constraintTop_toBottomOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Left_toRightOf"
+            app:layout_constraintLeft_toRightOf="@id/btn_center"
+            app:layout_constraintTop_toBottomOf="@id/btn_center" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006224440035](img/Android学习笔记/image-20221006224440035.png)
+
+
+
+
+
+
+
+##### 竖直方向的相对位置
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4">
+
+
+    <Button
+            android:id="@+id/btn_center"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:text="竖直参照物"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Top_toTopOf"
+            app:layout_constraintTop_toTopOf="@id/btn_center"
+            app:layout_constraintRight_toLeftOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bottom_toTopOf"
+            app:layout_constraintBottom_toTopOf="@id/btn_center"
+            app:layout_constraintRight_toLeftOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Top_toBottomOf"
+            app:layout_constraintLeft_toRightOf="@id/btn_center"
+            app:layout_constraintTop_toBottomOf="@id/btn_center" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bottom_toBottomOf"
+            app:layout_constraintLeft_toRightOf="@id/btn_center"
+            app:layout_constraintBottom_toBottomOf="@id/btn_center" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221006224917308](img/Android学习笔记/image-20221006224917308.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 尺寸约束
+
