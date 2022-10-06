@@ -33908,3 +33908,636 @@ public class MainActivity extends AppCompatActivity
 
 ### 表格布局TableLayout
 
+Tablelayout 类以行和列的形式对控件进行管理，每一行为一个 TableRow 对象，或一个 View 控件。当为 TableRow 对象时，可在 TableRow 下添加子控件，默认情况下，每个子控件占据一列。当为View时，该 View 将独占一行
+
+
+
+如果我们直接往TableLayout中添加组件的话，那么这个组件将占满一行；
+
+如果我们想一行上有多个组件的话，就要添加一个 TableRow 的容器，把组件都丢到里面；
+
+TableRow 中的组件个数就决定了该行有多少列，而列的宽度由含有最多子控件的 TableRow 决定；
+
+TableRow 的 layout_width 属性，默认是 martch_parent 的，我们自己设置成其他的值也不会生效。但是 layout_height 默认是 wrap_content 的，我们可以自己设置大小
+
+
+
+整个表格布局的宽度取决于父容器的宽度（占满父容器本身）
+
+多少列则是看 TableRow 中的组件个数，组件最多的就是 TableLayout 的列数；
+
+比如第一TableRow含2个子控件，第二个TableRow含3个，第三个TableRow含4个，那么该TableLayout的列数为4；
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+![image-20221006121647763](img/Android学习笔记/image-20221006121647763.png)
+
+
+
+
+
+
+
+
+
+#### TableLayout属性
+
+* android:stretchColumns : 设置运行被拉伸的列的列序号
+* android:shrinkColumns : 设置允许被收缩的列的列序号
+* android:collapseColumns : 设置需要被隐藏的列的序号
+
+以上这三个属性的列号都是从 0 开始算的，比如 stretchColunmns = "2"，对应的是第 3 列；可以设置多个，用逗号隔开比如 stretchColunmns = "0,2"；如果是所有列都生效,则用"*"号即可
+
+
+
+
+
+
+
+##### stretchColumns
+
+android:stretchColumns : 设置可伸展的列，该列可以向行方向伸展，最多可占据一整行
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="0,2">
+
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+        </TableRow>
+
+
+    </TableLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221006122846480](img/Android学习笔记/image-20221006122846480.png)
+
+
+
+
+
+
+
+
+
+##### shrinkColumns
+
+设置允许被收缩的列的列序号
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:shrinkColumns="1">
+
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="11111111111111" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="22222222222222" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="33333333333333" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="11111111111111" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="22222222222222" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="33333333333333" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="11111111111111" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="22222222222222" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="33333333333333" />
+
+        </TableRow>
+
+
+    </TableLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221006123622772](img/Android学习笔记/image-20221006123622772.png)
+
+
+
+
+
+
+
+不使用shrinkColumns的效果
+
+![image-20221006123705358](img/Android学习笔记/image-20221006123705358.png)
+
+
+
+
+
+
+
+
+
+##### collapseColumns
+
+设置需要被隐藏的列的序号
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:collapseColumns="1">
+
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+
+    </TableLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221006124508449](img/Android学习笔记/image-20221006124508449.png)
+
+
+
+
+
+
+
+#### 单元格属性
+
+* android:layout_column : 指定该单元格在第几列显示
+* android:layout_span : 指定该单元格占据的列数（未指定时，为1）
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="2"
+                    android:text="从第2列" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_span="2"
+                    android:text="占两列" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4" />
+
+        </TableRow>
+
+
+    </TableLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221006125619766](img/Android学习笔记/image-20221006125619766.png)
+
+
+
+
+
