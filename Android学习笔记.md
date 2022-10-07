@@ -35557,3 +35557,256 @@ view 中使用 warp_content 或者固定值等等是没有问题的。但是在 
 
 #### 百分比宽高 Percent
 
+ConstraintLayout 还能使用百分比来设置 view 的宽高。要使用百分比，宽或高同样要设置为 0dp（match_parent）
+
+
+
+* app:layout_constraintWidth_default ：设置宽为百分比，可以设置percent、spread和wrap
+* app:layout_constraintWidth_percent ：0到1之间的值，为占父布局宽度的多少
+* app:layout_constraintHeight_default ：设置高为百分比，可以设置percent、spread和wrap
+* app:layout_constraintHeight_percent：0到1之间的值，为占父布局高度的多少
+  
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity9">
+
+
+    <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="宽50%"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintWidth_percent="0.5"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221007140409914](img/Android学习笔记/image-20221007140409914.png)
+
+
+
+
+
+
+
+
+
+#### 偏移量 bias
+
+如果想让view的位置偏向某一侧，可以使用以下的两个属性来设置：
+
+* layout_constraintHorizontal_bias ：水平偏向 
+* layout_constraintVertical_bias ：竖直偏向
+
+
+
+其值是0到1之间。默认的居中效果就是50％
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity10">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="左偏移0.2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_bias="0.3"
+            android:id="@+id/button5" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="右偏移0.2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_bias="0.7"
+            app:layout_constraintTop_toBottomOf="@+id/button5" />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221007141209643](img/Android学习笔记/image-20221007141209643.png)
+
+
+
+
+
+
+
+
+
+#### 圆形定位 Circular positioning
+
+以一个控件为圆心设置角度和半径定位
+
+
+
+- layout_constraintCircle：关联另一个控件，将另一个控件放置在自己圆的半径上，会和下面两个属性一起使用
+- layout_constraintCircleRadius：圆的半径
+- layout_constraintCircleAngle：圆的角度
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity11">
+
+
+    <Button
+            android:text="中心"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="0" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="30" />
+    
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="60" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="90" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="120" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="150" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="180" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="210" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="240" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="270" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="300" />
+
+    <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintCircle="@id/button6"
+            app:layout_constraintCircleRadius="150dp"
+            app:layout_constraintCircleAngle="330" />
+    
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+![image-20221007142121758](img/Android学习笔记/image-20221007142121758.png)
+
+
+
+
+
+
+
+
+
+#### 权重 weight
+
