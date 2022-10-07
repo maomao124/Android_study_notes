@@ -36044,3 +36044,431 @@ barrierDirection 指定方向，constraint_referenced_ids引用的控件 id（�
 
 #### Group
 
+Group用于控制多个控件的可见性
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity15">
+
+
+    <androidx.constraintlayout.widget.Group
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:id="@+id/group"
+            app:constraint_referenced_ids="Button21,Button22">
+
+    </androidx.constraintlayout.widget.Group>
+
+
+    <Button
+            android:id="@+id/Button21"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:id="@+id/Button22"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:id="@+id/Button23"
+            android:text="切换可见性"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@+id/Button22"
+            app:layout_constraintStart_toEndOf="@+id/Button21"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/group" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/Button21"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+```java
+package mao.android_constraintlayout;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Group;
+
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity15 extends AppCompatActivity
+{
+
+    private int i = 0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main15);
+
+        Group group = findViewById(R.id.group);
+
+
+        findViewById(R.id.Button23).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (i % 3 == 0)
+                {
+                    group.setVisibility(View.VISIBLE);
+                }
+                else if (i % 3 == 1)
+                {
+                    group.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    group.setVisibility(View.GONE);
+                }
+                i++;
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+![image-20221007151840834](img/Android学习笔记/image-20221007151840834.png)
+
+
+
+
+
+![image-20221007151853137](img/Android学习笔记/image-20221007151853137.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 隐藏边距 goneMargin
+
+当约束目标的可见性为View.GONE时，还可以通过以下属性设置不同的边距值：
+
+* layout_goneMarginStart 
+* layout_goneMarginEnd 
+* layout_goneMarginLeft 
+* layout_goneMarginTop 
+* layout_goneMarginRight 
+* layout_goneMarginBottom
+
+
+
+
+
+
+
+#### 链 Chains
+
+将相连的 view 两两约束好的实际上就形成了链。在 ConstraintLayout 中可以实现各种不同的链，权重链是其中一种。整个链由链中的第一个view（链头）上设置的属性控制
+
+
+
+
+
+
+
+
+
+##### 创建链条
+
+如果一组小部件通过双向连接（见图，显示最小的链，带有两个小部件），则将其视为链条
+
+
+
+##### 链条头
+
+链条由在链的第一个元素（链的“头”）上设置的属性控制
+
+头是水平链最左边的View，或垂直链最顶端的View
+
+
+
+##### 链的margin
+
+如果在连接上指定了边距，则将被考虑在内
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity16">
+
+
+    <Button
+            android:id="@+id/buttonA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:text="Button"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonB"/>
+
+    <Button
+            android:id="@+id/buttonB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonA"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221007204341156](img/Android学习笔记/image-20221007204341156.png)
+
+
+
+
+
+通过app:layout_constraintRight_toLeftOf="@+id/buttonB"和app:layout_constraintLeft_toRightOf="@+id/buttonA"就建立了链条，（我中有你，你中有我）
+
+
+
+然后它们两个成了一个整体，所以链条左边设置app:layout_constraintLeft_toLeftOf="parent" 使得和父控件左对齐，
+右边设置app:layout_constraintRight_toRightOf="parent"使得和父控件右对齐，
+这样整个链条就居中了，最后对左控件设置了margin，相当于整个链条左边有了margin
+
+
+
+
+
+##### 链条样式
+
+当在链的第一个元素上设置属性 layout_constraintHorizontal_chainStyle 或layout_constraintVertical_chainStyle 时，链的行为将根据指定的样式（默认为CHAIN_SPREAD）而更改
+
+
+
+* layout_constraintHorizontal_chainStyle ：横向约束链 
+* layout_constraintVertical_chainStyle ：纵向约束链
+
+
+
+取值如下：
+
+- Spread：视图是均匀分布的（在考虑外边距之后）。这是默认值。
+- Spread inside：第一个和最后一个视图固定在链两端的约束边界上，其余视图均匀分布。
+- Weighted：当链设置为 spread 或 spread inside 时，您可以通过将一个或多个视图设置为“match_parent”(0dp) 来填充剩余空间。默认情况下，设置为“match_parent”的每个视图之间的空间均匀分布，但您可以使用 layout_constraintHorizontal_weight 和 layout_constraintVertical_weight 属性为每个视图分配重要性权重。如果您熟悉线性布局中的 layout_weight 的话，就会知道该样式与它的原理是相同的。因此，权重值最高的视图获得的空间最大；相同权重的视图获得同样大小的空间。
+- Packed：视图打包在一起（在考虑外边距之后）。 然后，您可以通过更改链的头视图偏差调整整条链的偏差（左/右或上/下）
+
+
+
+![image-20221007203141516](img/Android学习笔记/image-20221007203141516.png)
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity17">
+
+
+    <Button
+            android:id="@+id/buttonA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonB"/>
+
+    <Button
+            android:id="@+id/buttonB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonA"
+            app:layout_constraintRight_toLeftOf="@+id/buttonC"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+    <Button
+            android:id="@+id/buttonC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonB"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+
+
+
+
+
+
+
+    <Button
+            android:id="@+id/buttonAA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonBB"
+            app:layout_constraintTop_toBottomOf="@+id/buttonA" />
+
+    <Button
+            android:id="@+id/buttonBB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonAA"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonCC"
+            app:layout_constraintTop_toBottomOf="@+id/buttonB" />
+
+    <Button
+            android:id="@+id/buttonCC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonBB"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonB" />
+
+
+
+
+
+
+
+    <Button
+            android:id="@+id/buttonAAA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonBBB"
+            app:layout_constraintTop_toBottomOf="@+id/buttonAA" />
+
+    <Button
+            android:id="@+id/buttonBBB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonAAA"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonCCC"
+            app:layout_constraintTop_toBottomOf="@+id/buttonBB" />
+
+    <Button
+            android:id="@+id/buttonCCC"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonBBB"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonBB" />
+
+
+    <Button
+            android:id="@+id/buttonAAAA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/buttonAAA" />
+
+    <Button
+            android:id="@+id/buttonBBBB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonAAAA"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonCCCC"
+            app:layout_constraintTop_toBottomOf="@+id/buttonBBB" />
+
+    <Button
+            android:id="@+id/buttonCCCC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            app:layout_constraintLeft_toRightOf="@+id/buttonBBBB"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonBBB" />
+    
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+![image-20221007210218770](img/Android学习笔记/image-20221007210218770.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 新增VirtualLayouts：Flow布局
+
