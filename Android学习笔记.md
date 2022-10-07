@@ -35810,3 +35810,237 @@ ConstraintLayout 还能使用百分比来设置 view 的宽高。要使用百分
 
 #### 权重 weight
 
+LinearLayout中可以设置权重，ConstraintLayout 同样也有这个属性
+
+
+
+* app:layout_constraintHorizontal_weight ：水平权重 
+* app:layout_constraintVertical_weight ：竖直权重
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity12">
+
+
+    <Button
+            android:id="@+id/btn_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="权重为1"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/btn_2"/>
+
+    <Button
+            android:id="@+id/btn_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="权重为2"
+            app:layout_constraintHorizontal_weight="2"
+            app:layout_constraintLeft_toRightOf="@id/btn_1"
+            app:layout_constraintRight_toLeftOf="@id/btn_3"/>
+
+    <Button
+            android:id="@+id/btn_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintHorizontal_weight="1"
+            android:text="权重为1"
+            app:layout_constraintLeft_toRightOf="@id/btn_2"
+            app:layout_constraintRight_toRightOf="parent"/>
+    
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+![image-20221007142726931](img/Android学习笔记/image-20221007142726931.png)
+
+
+
+
+
+
+
+
+
+#### 辅助线 Guideline
+
+Guideline 可以用来辅助布局，通过 Guideline 能创建出一条水平线或者垂直线，该线不会显示到界面上，但是能够利用这些线条来添加约束去完成界面的布局
+
+
+
+* android:orientation=”horizontal|vertical”：表示是水平或垂直引导线。
+* app:layout_constraintGuide_begin=”30dp”：如果是水平引导线，则距离布局顶部30dp，如果是垂直引导线，则距离布局左边30dp。
+* app:layout_constraintGuide_end=”30dp”：如果是水平引导线，则距离布局底部30dp，如果是垂直引导线，则距离布局右边30dp
+* app:layout_constraintGuide_percent=”0.5”：如果是水平引导线，则距离布局顶部为整个布局高度的50%，如果是垂直引导线，则距离布局左边文这个布局宽度的50%
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity13">
+
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_h"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="275dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@+id/guideline_v"
+            app:layout_constraintTop_toTopOf="@+id/guideline_h" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/guideline_h"
+            app:layout_constraintStart_toStartOf="@+id/guideline_v"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/button7" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@+id/guideline_v"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline_h"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+![image-20221007144132638](img/Android学习笔记/image-20221007144132638.png)
+
+
+
+![image-20221007144159810](img/Android学习笔记/image-20221007144159810.png)
+
+
+
+
+
+
+
+#### 屏障 Barrier
+
+Barrier，直译为障碍、屏障。在约束布局中，可以使用属性constraint_referenced_ids属性来引用多个带约束的组件，从而将它们看作一个整体，Barrier 的介入可以完成很多其他布局不能完成的功能
+
+barrierDirection 指定方向，constraint_referenced_ids引用的控件 id（多个id以逗号隔开）
+
+
+
+姓名、联系方式位于左侧区域（随着文本的宽度变化左侧区域的宽度也随之变化），使用传统的布局方式实现嵌套过多，布局不够优雅，可以使用Barrier来实现
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity14">
+
+
+    <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="姓名："
+            app:layout_constraintBottom_toBottomOf="@+id/et_name"
+            app:layout_constraintTop_toTopOf="@+id/et_name"/>
+
+    <TextView
+            android:id="@+id/tv_contract"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="联系方式："
+            app:layout_constraintBottom_toBottomOf="@+id/et_contract"
+            app:layout_constraintTop_toTopOf="@+id/et_contract"/>
+
+    <EditText
+            android:id="@+id/et_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="请输入姓名"
+            app:layout_constraintLeft_toLeftOf="@+id/barrier"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText
+            android:id="@+id/et_contract"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="请输入联系方式"
+            app:layout_constraintLeft_toLeftOf="@+id/barrier"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/et_name"/>
+
+    <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="right"
+            app:constraint_referenced_ids="tv_name,tv_contract"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+![image-20221007145059343](img/Android学习笔记/image-20221007145059343.png)
+
+
+
+
+
+![image-20221007145126314](img/Android学习笔记/image-20221007145126314.png)
+
+
+
+
+
+
+
+
+
+#### Group
+
