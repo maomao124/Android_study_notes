@@ -36472,3 +36472,478 @@ public class MainActivity15 extends AppCompatActivity
 
 #### 新增VirtualLayouts：Flow布局
 
+Flow布局是Chains的强化版，是一种新的VirtualLayouts。用于构建流式排版效果：当出现空间不足时，可自动换行或自动延展到屏幕的另一区域。即当需要对多个View进行流式布局 / 不确定其布局空间的实际尺寸时，就可使用Flow布局
+
+
+
+![image-20221007211804173](img/Android学习笔记/image-20221007211804173.png)
+
+
+
+![image-20221007211816447](img/Android学习笔记/image-20221007211816447.png)
+
+
+
+![image-20221007211825708](img/Android学习笔记/image-20221007211825708.png)
+
+
+
+![image-20221007211838338](img/Android学习笔记/image-20221007211838338.png)
+
+
+
+![image-20221007211855559](img/Android学习笔记/image-20221007211855559.png)
+
+
+
+
+
+![image-20221007211905508](img/Android学习笔记/image-20221007211905508.png)
+
+
+
+
+
+使用步骤：
+
+* 通过属性`constraint_referenced_ids`获取要引用的视图
+* 根据这些视图创建一个虚拟的virtual view group
+* 对这些视图进行流式布局
+
+
+
+核心属性：flow_wrapMode，用于控制元素的排列方式
+
+* NONE : 默认模式。Views不会被包裹到另一行或列。如果它们在屏幕之外，则不能被看到。
+* CHAIN : CHAIN与Chains非常相似，可以认为是Chains的强化版本。CHAIN是根据orientation逐行或逐列进行排列的，默认的展示风格是SPREAD。
+* ALIGNED : ALIGNED模式与CHAIN类似，但链式是在将不同行和列的视图对齐后考虑的，默认的样式是SPREAD
+
+
+
+![image-20221007215144183](img/Android学习笔记/image-20221007215144183.png)
+
+
+
+![image-20221007215156960](img/Android学习笔记/image-20221007215156960.png)
+
+
+
+![image-20221007215212445](img/Android学习笔记/image-20221007215212445.png)
+
+
+
+
+
+##### flow_wrapMode:chain
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ConstraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity18">
+
+
+    <Button
+            android:id="@+id/Button111"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击添加-chain"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textAllCaps="false" />
+
+
+    <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/Flow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:flow_wrapMode="chain"
+            app:constraint_referenced_ids="Button1112"
+            app:layout_constraintTop_toBottomOf="@id/Button111"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/Button1112"
+            android:text="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+```java
+package mao.android_constraintlayout;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.helper.widget.Flow;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class MainActivity18 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main18);
+        final int[] i = {2};
+        ConstraintLayout constraintLayout = findViewById(R.id.ConstraintLayout);
+
+        List<Integer> ids = new ArrayList<>();
+
+        Flow flow = findViewById(R.id.Flow);
+
+        Button button = findViewById(R.id.Button1112);
+        ids.add(button.getId());
+
+
+        findViewById(R.id.Button111).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Button button1 = new Button(MainActivity18.this);
+                button1.setText(String.valueOf(i[0]));
+                i[0]++;
+                int id = 10023 + i[0];
+                button1.setId(id);
+                ids.add(id);
+                constraintLayout.addView(button1);
+                int[] ids_array = new int[ids.size()];
+                for (int j = 0; j < ids.size(); j++)
+                {
+                    ids_array[j] = ids.get(j);
+                }
+                flow.setReferencedIds(ids_array);
+
+            }
+        });
+
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221007215342303](img/Android学习笔记/image-20221007215342303.png)
+
+
+
+![image-20221007215351582](img/Android学习笔记/image-20221007215351582.png)
+
+
+
+![image-20221007215401000](img/Android学习笔记/image-20221007215401000.png)
+
+
+
+![image-20221007215409890](img/Android学习笔记/image-20221007215409890.png)
+
+
+
+![image-20221007215418420](img/Android学习笔记/image-20221007215418420.png)
+
+
+
+![image-20221007215426882](img/Android学习笔记/image-20221007215426882.png)
+
+
+
+
+
+
+
+##### flow_wrapMode:none
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ConstraintLayout"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity19">
+
+
+    <Button
+            android:id="@+id/Button111"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击添加-none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textAllCaps="false" />
+
+
+    <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/Flow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:flow_wrapMode="none"
+            app:constraint_referenced_ids="Button1112"
+            app:layout_constraintTop_toBottomOf="@id/Button111"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/Button1112"
+            android:text="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+```java
+package mao.android_constraintlayout;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.helper.widget.Flow;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity19 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main19);
+
+        final int[] i = {2};
+        ConstraintLayout constraintLayout = findViewById(R.id.ConstraintLayout);
+
+        List<Integer> ids = new ArrayList<>();
+
+        Flow flow = findViewById(R.id.Flow);
+
+        Button button = findViewById(R.id.Button1112);
+        ids.add(button.getId());
+
+
+        findViewById(R.id.Button111).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Button button1 = new Button(MainActivity19.this);
+                button1.setText(String.valueOf(i[0]));
+                i[0]++;
+                int id = 10023 + i[0];
+                button1.setId(id);
+                ids.add(id);
+                constraintLayout.addView(button1);
+                int[] ids_array = new int[ids.size()];
+                for (int j = 0; j < ids.size(); j++)
+                {
+                    ids_array[j] = ids.get(j);
+                }
+                flow.setReferencedIds(ids_array);
+
+            }
+        });
+    }
+}
+```
+
+
+
+![image-20221007215921164](img/Android学习笔记/image-20221007215921164.png)
+
+
+
+![image-20221007215931521](img/Android学习笔记/image-20221007215931521.png)
+
+
+
+![image-20221007215940252](img/Android学习笔记/image-20221007215940252.png)
+
+
+
+
+
+
+
+##### flow_wrapMode:aligned
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ConstraintLayout"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+    <Button
+            android:id="@+id/Button111"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击添加-aligned"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textAllCaps="false" />
+
+
+    <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/Flow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:flow_wrapMode="aligned"
+            app:constraint_referenced_ids="Button1112"
+            app:layout_constraintTop_toBottomOf="@id/Button111"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/Button1112"
+            android:text="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+```java
+package mao.android_constraintlayout;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.helper.widget.Flow;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity20 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main20);
+
+        final int[] i = {2};
+        ConstraintLayout constraintLayout = findViewById(R.id.ConstraintLayout);
+
+        List<Integer> ids = new ArrayList<>();
+
+        Flow flow = findViewById(R.id.Flow);
+
+        Button button = findViewById(R.id.Button1112);
+        ids.add(button.getId());
+
+
+        findViewById(R.id.Button111).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Button button1 = new Button(MainActivity20.this);
+                button1.setText(String.valueOf(i[0]));
+                i[0]++;
+                int id = 10023 + i[0];
+                button1.setId(id);
+                ids.add(id);
+                constraintLayout.addView(button1);
+                int[] ids_array = new int[ids.size()];
+                for (int j = 0; j < ids.size(); j++)
+                {
+                    ids_array[j] = ids.get(j);
+                }
+                flow.setReferencedIds(ids_array);
+
+            }
+        });
+    }
+}
+```
+
+
+
+![image-20221007220554075](img/Android学习笔记/image-20221007220554075.png)
+
+
+
+![image-20221007220604165](img/Android学习笔记/image-20221007220604165.png)
+
+
+
+![image-20221007220612128](img/Android学习笔记/image-20221007220612128.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 其它类视图
+
+### 自动完成文本视图
+
+**即AutoCompleteTextView视图**
+
+
+
+
+
