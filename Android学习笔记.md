@@ -36941,9 +36941,150 @@ public class MainActivity20 extends AppCompatActivity
 
 ### 自动完成文本视图
 
-**即AutoCompleteTextView视图**
+**即AutoCompleteTextView控件**
+
+在百度上面进行关键词搜索的时候，输入需要搜索的关键字就会显示一个下拉列表，列表中会匹配到用户输入的关键词汇
+
+Android 也为开发者提供了一个这样的组件，那就是 AutoCompleteTextView 组件也叫做动完成文本框
+
+AutoCompleteTextView 是 EditText 的子类，从外表上看它就是一个普通的编辑框组件，其实它内在的功能就是在用户输入一定的字符时，该组
+件会显示一个下拉列表。在这个列表中用户单击需要的字符，该字符将自动填写在编辑框当中
 
 
 
 
+
+#### XML属性
+
+
+
+| XML属性                     | 描述                                   |
+| :-------------------------: | :------------------------------------: |
+| android:completionHint      | 设置下拉菜单中显示的提示               |
+| android:completionHintView  | 设置下拉菜单中显示的提示视图           |
+| android:completionThreshold | 设置用户至少输入几个字符才显示提示列表 |
+| android:dropDownAnchor | 设置提示列表显示在某个组件的下面，值为某组件的 id |
+| android:dropDownHeight | 设置下拉列表的高度                                |
+| android:dropDownHorizontalOffset | 设置下拉列表与文本框之间的水平偏移，下拉菜单默认与文本框左对齐 |
+| android:dropDownSelector         | 设置下拉列表选择器的背景                                     |
+| android:dropDownVerticalOffset | 设置下拉列表与文本框之间的垂直偏移，下拉菜单默认在文本框下面 |
+| android:dropDownWidth          | 设置下拉列表的宽度                                           |
+| android:popupBackground | 设置下拉列表的背景 |
+
+
+
+
+
+
+
+
+
+#### 代码
+
+
+
+##### 布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+    <AutoCompleteTextView
+            android:id="@+id/AutoCompleteTextView"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:completionHint="请输入国家名称"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:completionThreshold="1"
+            android:hint="输入内容"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+##### MainActivity
+
+```java
+package mao.android_autocompletetextview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        AutoCompleteTextView autoCompleteTextView = findViewById(R.id.AutoCompleteTextView);
+
+        String country[] =
+                {
+                        "阿尔巴尼亚", "阿尔及利亚", "阿富汗", "阿根廷", "埃及", "爱尔兰", "澳大利亚",
+                        "巴哈马", "白俄罗斯", "百慕大", "巴基斯坦", "巴拿马", "保加利亚", "巴西", "冰岛",
+                        "波兰", "朝鲜", "丹麦", "厄瓜多尔", "俄罗斯", "法国", "芬兰", "菲律宾", "古巴",
+                        "韩国", "荷兰", "哈萨克斯坦", "加纳", "加拿大", "柬埔寨", "利比里亚", "利比亚", "马尔代夫",
+                        "美国", "蒙古", "缅甸", "秘鲁", "摩洛哥", "墨西哥", "尼日利亚", "葡萄牙", "日本",
+                        "瑞典", "瑞士", "塞尔维亚", "苏丹", "泰国", "乌克兰", "西班牙", "希腊", "新加坡", "新西兰",
+                        "匈牙利", "叙利亚", "牙买加", "伊拉克", "伊朗", "印度", "印度尼西亚", "英国",
+                        "越南", "以色列", "中国大陆", "中国澳门", "中国香港", "中国台湾", "智利", "中非共和国"
+                };
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1
+                , country);
+        autoCompleteTextView.setAdapter(arrayAdapter);
+
+    }
+}
+```
+
+
+
+
+
+#### 运行
+
+
+
+![image-20221007224923765](img/Android学习笔记/image-20221007224923765.png)
+
+
+
+![image-20221007224950969](img/Android学习笔记/image-20221007224950969.png)
+
+
+
+![image-20221007225018351](img/Android学习笔记/image-20221007225018351.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 悬浮框PopupWindow
 
