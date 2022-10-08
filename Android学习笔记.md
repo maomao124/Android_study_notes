@@ -39141,7 +39141,600 @@ public class MainActivity extends AppCompatActivity
 
 ### 菜单Menu
 
+在Android中的菜单有如下几种：
+
+- **OptionMenu**：选项菜单，android中最常见的菜单，通过Menu键来调用
+- **SubMenu**：子菜单，android中点击子菜单将弹出一个显示子菜单项的悬浮框， 子菜单不支持嵌套，即不能包括其他子菜单
+- **ContextMenu**：上下文菜单，通过长按某个视图组件后出现的菜单，该组件需注册上下文菜单
 
 
 
+
+
+#### 选项菜单 OptionMenu
+
+如何使用OptionMenu？重写两个方法就好，其实这两个方法我们在创建项目的时候就会自动生成
+
+- public boolean **onCreateOptionsMenu**(Menu menu)：调用OptionMenu，在这里完成菜单初始化
+- public boolean **onOptionsItemSelected**(MenuItem item)：菜单项被选中时触发，这里完成事件处理
+
+
+
+当然除了上面这两个方法我们可以重写外我们还可以重写这三个方法：
+
+- public void **onOptionsMenuClosed**(Menu menu)：菜单关闭会调用该方法
+- public boolean **onPrepareOptionsMenu**(Menu menu)：选项菜单显示前会调用该方法， 可在这里进行菜单的调整(动态加载菜单列表)
+- public boolean **onMenuOpened**(int featureId, Menu menu)：选项菜单打开以后会调用这个方法
+
+
+
+而加载菜单的方式有两种，一种是直接通过编写菜单XML文件，然后调用： **getMenuInflater().inflate(R.menu.menu_main, menu);**加载菜单 或者通过代码动态添加，onCreateOptionsMenu的参数menu，调用add方法添加 菜单，add(菜单项的组号，ID，排序号，标题)，另外如果排序号是按添加顺序排序的话都填0即可
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="通过菜单更改颜色"
+            android:gravity="center"
+            android:textColor="#ff00ff"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+```java
+package mao.android_menu;
+
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.BLUE;
+import static android.graphics.Color.CYAN;
+import static android.graphics.Color.GRAY;
+import static android.graphics.Color.GREEN;
+import static android.graphics.Color.RED;
+import static android.graphics.Color.YELLOW;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, RED, 4, "红色");
+        menu.add(1, GREEN, 2, "绿色");
+        menu.add(1, BLUE, 3, "蓝色");
+        menu.add(1, YELLOW, 1, "黄色");
+        menu.add(1, GRAY, 5, "灰色");
+        menu.add(1, CYAN, 6, "蓝绿色");
+        menu.add(1, BLACK, 7, "黑色");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case RED:
+                textView.setTextColor(Color.RED);
+                break;
+            case GREEN:
+                textView.setTextColor(Color.GREEN);
+                break;
+            case BLUE:
+                textView.setTextColor(Color.BLUE);
+                break;
+            case YELLOW:
+                textView.setTextColor(Color.YELLOW);
+                break;
+            case GRAY:
+                textView.setTextColor(Color.GRAY);
+                break;
+            case CYAN:
+                textView.setTextColor(Color.CYAN);
+                break;
+            case BLACK:
+                textView.setTextColor(Color.BLACK);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onOptionsMenuClosed(Menu menu)
+    {
+        toastShow("菜单关闭");
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        toastShow("菜单打开前");
+        return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu)
+    {
+        toastShow("菜单打开后");
+        return true;
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+![image-20221008192623864](img/Android学习笔记/image-20221008192623864.png)
+
+
+
+![image-20221008192636232](img/Android学习笔记/image-20221008192636232.png)
+
+
+
+![image-20221008192650554](img/Android学习笔记/image-20221008192650554.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 上下文菜单 ContextMenu
+
+长按某个View后出现的菜单则为上下文菜单，我们需要为这个View注册上下文菜单
+
+使用的流程如下：
+
+- 重写onCreateContextMenu()方法
+- 为view组件注册上下文菜单，使用registerForContextMenu()方法,参数是View
+- 重写onContextItemSelected()方法为菜单项指定事件监听器
+
+
+
+
+
+```java
+package mao.android_menu;
+
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.BLUE;
+import static android.graphics.Color.CYAN;
+import static android.graphics.Color.GRAY;
+import static android.graphics.Color.GREEN;
+import static android.graphics.Color.RED;
+import static android.graphics.Color.YELLOW;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, RED, 4, "红色");
+        menu.add(1, GREEN, 2, "绿色");
+        menu.add(1, BLUE, 3, "蓝色");
+        menu.add(1, YELLOW, 1, "黄色");
+        menu.add(1, GRAY, 5, "灰色");
+        menu.add(1, CYAN, 6, "蓝绿色");
+        menu.add(1, BLACK, 7, "黑色");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case RED:
+                textView.setTextColor(Color.RED);
+                break;
+            case GREEN:
+                textView.setTextColor(Color.GREEN);
+                break;
+            case BLUE:
+                textView.setTextColor(Color.BLUE);
+                break;
+            case YELLOW:
+                textView.setTextColor(Color.YELLOW);
+                break;
+            case GRAY:
+                textView.setTextColor(Color.GRAY);
+                break;
+            case CYAN:
+                textView.setTextColor(Color.CYAN);
+                break;
+            case BLACK:
+                textView.setTextColor(Color.BLACK);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onOptionsMenuClosed(Menu menu)
+    {
+        toastShow("菜单关闭");
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        toastShow("菜单打开前");
+        return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu)
+    {
+        toastShow("菜单打开后");
+        return true;
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        registerForContextMenu(textView);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterForContextMenu(textView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
+    {
+        menu.add(1, 16, 1, "16sp");
+        menu.add(1, 24, 2, "24sp");
+        menu.add(1, 30, 3, "30sp");
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item)
+    {
+        int itemId = item.getItemId();
+        switch (itemId)
+        {
+            case 16:
+                textView.setTextSize(16);
+                break;
+            case 24:
+                textView.setTextSize(24);
+                break;
+            case 30:
+                textView.setTextSize(30);
+                break;
+        }
+        return true;
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221008194532473](img/Android学习笔记/image-20221008194532473.png)
+
+
+
+
+
+![image-20221008194552280](img/Android学习笔记/image-20221008194552280.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 子菜单 SubMenu
+
+
+
+```java
+package mao.android_menu;
+
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.BLUE;
+import static android.graphics.Color.CYAN;
+import static android.graphics.Color.GRAY;
+import static android.graphics.Color.GREEN;
+import static android.graphics.Color.RED;
+import static android.graphics.Color.YELLOW;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, RED, 4, "红色");
+        menu.add(1, GREEN, 2, "绿色");
+        menu.add(1, BLUE, 3, "蓝色");
+        menu.add(1, YELLOW, 1, "黄色");
+        menu.add(1, GRAY, 5, "灰色");
+        menu.add(1, CYAN, 6, "蓝绿色");
+        menu.add(1, BLACK, 7, "黑色");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case RED:
+                textView.setTextColor(Color.RED);
+                break;
+            case GREEN:
+                textView.setTextColor(Color.GREEN);
+                break;
+            case BLUE:
+                textView.setTextColor(Color.BLUE);
+                break;
+            case YELLOW:
+                textView.setTextColor(Color.YELLOW);
+                break;
+            case GRAY:
+                textView.setTextColor(Color.GRAY);
+                break;
+            case CYAN:
+                textView.setTextColor(Color.CYAN);
+                break;
+            case BLACK:
+                textView.setTextColor(Color.BLACK);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onOptionsMenuClosed(Menu menu)
+    {
+        toastShow("菜单关闭");
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        toastShow("菜单打开前");
+        return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu)
+    {
+        toastShow("菜单打开后");
+        return true;
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        registerForContextMenu(textView);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterForContextMenu(textView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
+    {
+        menu.add(1, 16, 1, "16sp");
+        SubMenu subMenu = menu.addSubMenu(1, 0, 2, "24-27sp");
+        menu.add(1, 30, 3, "30sp");
+        subMenu.add(1, 24, 1, "24sp");
+        subMenu.add(1, 25, 2, "25sp");
+        subMenu.add(1, 26, 3, "26sp");
+        subMenu.add(1, 27, 4, "27sp");
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item)
+    {
+        int itemId = item.getItemId();
+        switch (itemId)
+        {
+            case 16:
+                textView.setTextSize(16);
+                break;
+            case 24:
+                textView.setTextSize(24);
+                break;
+            case 25:
+                textView.setTextSize(25);
+                break;
+            case 26:
+                textView.setTextSize(26);
+                break;
+            case 27:
+                textView.setTextSize(27);
+                break;
+            case 30:
+                textView.setTextSize(30);
+                break;
+        }
+        return true;
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+![image-20221008195456130](img/Android学习笔记/image-20221008195456130.png)
+
+
+
+![image-20221008195509115](img/Android学习笔记/image-20221008195509115.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 侧滑菜单 DrawerLayout
 
