@@ -38333,9 +38333,813 @@ public class MainActivity extends AppCompatActivity
 
 ### 可折叠列表ExpandableListView
 
+ExpandableListView，就是可折叠的列表，它是ListView的子类， 在ListView的基础上它把应用中的列表项分为几组，每组里又可包含多个列表项。类似于QQ联系人列表，他的用法与ListView非常相似，只是ExpandableListVivew显示的列表项需由ExpandableAdapter提供
 
 
 
+
+
+#### xml相关属性
+
+- **android:childDivider**：指定各组内子类表项之间的分隔条，图片不会完全显示， 分离子列表项的是一条直线
+- **android:childIndicator**：显示在子列表旁边的Drawable对象，可以是一个图像
+- **android:childIndicatorEnd**：子列表项指示符的结束约束位置
+- **android:childIndicatorLeft**：子列表项指示符的左边约束位置
+- **android:childIndicatorRight**：子列表项指示符的右边约束位置
+- **android:childIndicatorStart**：子列表项指示符的开始约束位置
+- **android:groupIndicator**：显示在组列表旁边的Drawable对象，可以是一个图像
+- **android:indicatorEnd**：组列表项指示器的结束约束位置
+- **android:indicatorLeft**：组列表项指示器的左边约束位置
+- **android:indicatorRight**：组列表项指示器的右边约束位置
+- **android:indicatorStart**：组列表项指示器的开始约束位置
+
+
+
+
+
+
+
+#### 实现ExpandableAdapter的三种方式
+
+* 扩展**BaseExpandableListAdpter**实现ExpandableAdapter。
+
+* 使用**SimpleExpandableListAdpater**将两个List集合包装成ExpandableAdapter
+
+* 使用**simpleCursorTreeAdapter**将Cursor中的数据包装成SimpleCuroTreeAdapter 
+
+
+
+重写**BaseExpandableListAdpter**，其实和之前写的普通的BaseAdapter是类似的， 但是BaseExpandableListAdpter则分成了两部分：组和子列表
+
+重写**isChildSelectable()**方法需要返回true，不然不会触发子Item的点击事件
+
+
+
+
+
+
+
+
+
+#### 布局
+
+##### activity_main
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <ExpandableListView
+            android:id="@+id/ExpandableListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:childDivider="#ff00ff"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+##### item_exlist_group
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+    <TextView
+            android:id="@+id/tv_group_name"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="30dp"
+            tools:text="test"
+            android:textStyle="bold"
+            android:textColor="#00ccff"
+            android:textSize="20sp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+##### item_exlist_item
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:background="#ffcccc">
+
+    <ImageView
+            android:id="@+id/img_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            tools:src="@mipmap/ic_launcher"
+            android:focusable="false" />
+
+    <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:focusable="false"
+            android:textColor="#00ccff"
+            tools:text="test"
+            android:textSize="20sp"/>
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+
+
+#### 实体类
+
+##### Group
+
+```java
+package mao.android_expandablelistview.entity;
+
+/**
+ * Project name(项目名称)：android_ExpandableListView
+ * Package(包名): mao.android_expandablelistview.entity
+ * Class(类名): Group
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 14:00
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Group
+{
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * Instantiates a new Group.
+     */
+    public Group()
+    {
+    }
+
+    /**
+     * Instantiates a new Group.
+     *
+     * @param name the name
+     */
+    public Group(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public Group setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+}
+```
+
+
+
+
+
+
+
+##### Item
+
+```java
+package mao.android_expandablelistview.entity;
+
+/**
+ * Project name(项目名称)：android_ExpandableListView
+ * Package(包名): mao.android_expandablelistview.entity
+ * Class(类名): Item
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 14:00
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Item
+{
+    /**
+     * 图标
+     */
+    private int icon;
+
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * Instantiates a new Item.
+     */
+    public Item()
+    {
+    }
+
+    /**
+     * Instantiates a new Item.
+     *
+     * @param icon the icon
+     * @param name the name
+     */
+    public Item(int icon, String name)
+    {
+        this.icon = icon;
+        this.name = name;
+    }
+
+
+    /**
+     * Gets icon.
+     *
+     * @return the icon
+     */
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    /**
+     * Sets icon.
+     *
+     * @param icon the icon
+     * @return the icon
+     */
+    public Item setIcon(int icon)
+    {
+        this.icon = icon;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public Item setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Item item = (Item) o;
+
+        if (getIcon() != item.getIcon()) return false;
+        return getName() != null ? getName().equals(item.getName()) : item.getName() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getIcon();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        return result;
+    }
+
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("icon：").append(icon).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+#### 适配器
+
+##### MyBaseExpandableListAdapter
+
+```java
+package mao.android_expandablelistview.adapter;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+import androidx.appcompat.app.AlertDialog;
+
+import java.util.List;
+
+import mao.android_expandablelistview.R;
+import mao.android_expandablelistview.entity.Group;
+import mao.android_expandablelistview.entity.Item;
+
+/**
+ * Project name(项目名称)：android_ExpandableListView
+ * Package(包名): mao.android_expandablelistview.adapter
+ * Class(类名): MyBaseExpandableListAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 13:57
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter
+{
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+
+    /**
+     * 组数据
+     */
+    private final List<Group> groupData;
+
+    /**
+     * 项数据
+     */
+    private final List<List<Item>> ItemData;
+
+
+    public MyBaseExpandableListAdapter(Context context, List<Group> groupData, List<List<Item>> itemData)
+    {
+        this.context = context;
+        this.groupData = groupData;
+        ItemData = itemData;
+    }
+
+    /**
+     * 得到组数
+     *
+     * @return int
+     */
+    @Override
+
+    public int getGroupCount()
+    {
+        return groupData.size();
+    }
+
+    /**
+     * 获得孩子数
+     *
+     * @param groupPosition 组位置
+     * @return int
+     */
+    @Override
+    public int getChildrenCount(int groupPosition)
+    {
+        return ItemData.get(groupPosition).size();
+    }
+
+    /**
+     * 获得Group
+     *
+     * @param groupPosition 组位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getGroup(int groupPosition)
+    {
+        return groupData.get(groupPosition);
+    }
+
+    /**
+     * getChild
+     *
+     * @param groupPosition 组位置
+     * @param childPosition 孩子位置
+     * @return {@link Object}
+     */
+    @Override
+    public Object getChild(int groupPosition, int childPosition)
+    {
+        return ItemData.get(groupPosition).get(childPosition);
+    }
+
+    /**
+     * 得到组id
+     *
+     * @param groupPosition 组位置
+     * @return long
+     */
+    @Override
+    public long getGroupId(int groupPosition)
+    {
+        return groupPosition;
+    }
+
+    /**
+     * 让孩子id
+     *
+     * @param groupPosition 组位置
+     * @param childPosition 孩子位置
+     * @return long
+     */
+    @Override
+    public long getChildId(int groupPosition, int childPosition)
+    {
+        return groupPosition * 100000L + childPosition;
+    }
+
+    /**
+     * 有稳定id
+     *
+     * @return boolean
+     */
+    @Override
+    public boolean hasStableIds()
+    {
+        return false;
+    }
+
+    /**
+     * 得到Group视图
+     *
+     * @param groupPosition 组位置
+     * @param isExpanded    isExpanded
+     * @param convertView   convertView
+     * @param parent        parent
+     * @return {@link View}
+     */
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent)
+    {
+        ViewHolderGroup viewHolderGroup;
+        if (convertView == null)
+        {
+            viewHolderGroup = new ViewHolderGroup();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_exlist_group, parent, false);
+            viewHolderGroup.tv_group_name = convertView.findViewById(R.id.tv_group_name);
+            convertView.setTag(viewHolderGroup);
+        }
+        else
+        {
+            viewHolderGroup = (ViewHolderGroup) convertView.getTag();
+        }
+        viewHolderGroup.tv_group_name.setText(groupData.get(groupPosition).getName());
+        return convertView;
+    }
+
+    /**
+     * 得到子视图
+     *
+     * @param groupPosition 组位置
+     * @param childPosition 孩子位置
+     * @param isLastChild   是否为最后孩子
+     * @param convertView   convertView
+     * @param parent        parent
+     * @return {@link View}
+     */
+    @Override
+    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent)
+    {
+        ViewHolderItem viewHolderItem;
+        if (convertView == null)
+        {
+            viewHolderItem = new ViewHolderItem();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_exlist_item, parent, false);
+            viewHolderItem.img_icon = convertView.findViewById(R.id.img_icon);
+            viewHolderItem.tv_name = convertView.findViewById(R.id.tv_name);
+            convertView.setTag(viewHolderItem);
+        }
+        else
+        {
+            viewHolderItem = (ViewHolderItem) convertView.getTag();
+        }
+        viewHolderItem.img_icon.setImageResource(ItemData.get(groupPosition).get(childPosition).getIcon());
+        viewHolderItem.tv_name.setText(ItemData.get(groupPosition).get(childPosition).getName());
+
+        convertView.setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v)
+            {
+                Log.d("adapter", "onLongClick: ");
+
+                new AlertDialog.Builder(context)
+                        .setTitle("删除提示")
+                        .setMessage("是否删除第" + (groupPosition + 1) + "个组的第" + (childPosition + 1) + "项?")
+                        .setPositiveButton("确定删除", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                ItemData.get(groupPosition).remove(childPosition);
+                                MyBaseExpandableListAdapter.this.notifyDataSetChanged();
+                                toastShow("已删除");
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .create()
+                        .show();
+
+                return true;
+            }
+        });
+
+        convertView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                toastShow("点击了第" + (groupPosition + 1) + "个组的第" + (childPosition + 1) + "项");
+            }
+        });
+
+        return convertView;
+    }
+
+    /**
+     * 设置子列表是否可选中
+     *
+     * @param groupPosition 组位置
+     * @param childPosition 孩子位置
+     * @return boolean
+     */
+    @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition)
+    {
+        return true;
+    }
+
+
+    private static class ViewHolderGroup
+    {
+        private TextView tv_group_name;
+    }
+
+    private static class ViewHolderItem
+    {
+        private ImageView img_icon;
+        private TextView tv_name;
+    }
+
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+#### Activity
+
+##### MainActivity
+
+```java
+package mao.android_expandablelistview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import mao.android_expandablelistview.adapter.MyBaseExpandableListAdapter;
+import mao.android_expandablelistview.entity.Group;
+import mao.android_expandablelistview.entity.Item;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ExpandableListView expandableListView = findViewById(R.id.ExpandableListView);
+
+        List<Group> groupList = new ArrayList<>(5);
+
+        groupList.add(new Group("分组一"));
+        groupList.add(new Group("分组二"));
+        groupList.add(new Group("分组三"));
+        groupList.add(new Group("分组四"));
+        groupList.add(new Group("分组五"));
+        groupList.add(new Group("分组六"));
+        groupList.add(new Group("分组七"));
+        groupList.add(new Group("分组八"));
+        groupList.add(new Group("分组九"));
+
+        List<List<Item>> itemList = new ArrayList<>();
+
+        for (int i = 0; i < groupList.size(); i++)
+        {
+            List<Item> list = new ArrayList<>(20);
+            for (int j = 0; j < 20; j++)
+            {
+                String name = UUID.randomUUID().toString().substring(0, 6);
+                list.add(new Item().setIcon(R.mipmap.ic_launcher).setName(name));
+            }
+            itemList.add(list);
+        }
+
+        BaseExpandableListAdapter baseExpandableListAdapter = new MyBaseExpandableListAdapter(this, groupList, itemList);
+
+        expandableListView.setAdapter(baseExpandableListAdapter);
+
+
+        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
+        {
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id)
+            {
+                toastShow("点击了第" + (groupPosition + 1) + "个组");
+                return false;
+            }
+        });
+
+//        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener()
+//        {
+//            @Override
+//            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id)
+//            {
+//                toastShow("点击了第" + (groupPosition + 1) + "个组的第" + (childPosition + 1) + "项");
+//                return false;
+//            }
+//        });
+
+//        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+//        {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+//            {
+//                toastShow("长按：" + (position + 1));
+//                return true;
+//            }
+//        });
+
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+#### 运行
+
+
+
+![image-20221008152356403](img/Android学习笔记/image-20221008152356403.png)
+
+
+
+![image-20221008152410502](img/Android学习笔记/image-20221008152410502.png)
+
+
+
+![image-20221008152426172](img/Android学习笔记/image-20221008152426172.png)
+
+
+
+![image-20221008152439077](img/Android学习笔记/image-20221008152439077.png)
+
+
+
+![image-20221008152454615](img/Android学习笔记/image-20221008152454615.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 菜单Menu
 
 
 
