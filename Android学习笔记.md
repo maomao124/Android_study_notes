@@ -39738,3 +39738,717 @@ public class MainActivity extends AppCompatActivity
 
 ### 侧滑菜单 DrawerLayout
 
+* 主内容视图一定要是DrawerLayout的第一个子视图
+* 主内容视图宽度和高度需要match_parent
+* 必须显示指定侧滑视图的android:**layout_gravity属性** android:layout_gravity = "start"时，从左向右滑出菜单 android:layout_gravity = "end"时，从右向左滑出菜单 不推荐使用left和right
+* 侧滑视图的宽度以dp为单位，不建议超过**320dp**
+* 设置侧滑事件：mDrawerLayout.setDrawerListener(DrawerLayout.DrawerListener)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 布局
+
+##### activity_main
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/DrawerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <FrameLayout
+            android:id="@+id/ly_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    <ListView
+            android:id="@+id/list_left_drawer"
+            android:layout_width="180dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="#080808"
+            android:choiceMode="singleChoice"
+            android:divider="#FFFFFF"
+            android:dividerHeight="1dp" />
+
+</androidx.drawerlayout.widget.DrawerLayout>
+```
+
+
+
+
+
+##### fg_content
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/tv_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textSize="25sp" />
+
+</RelativeLayout>
+```
+
+
+
+
+
+##### item_list
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+    <ImageView
+            android:id="@+id/img_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:focusable="false" />
+
+    <TextView
+            android:id="@+id/txt_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/img_icon"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+</RelativeLayout>
+```
+
+
+
+
+
+
+
+#### 实体类
+
+##### Item
+
+```java
+package mao.android_drawerlayout.entity;
+
+/**
+ * Project name(项目名称)：android_DrawerLayout
+ * Package(包名): mao.android_drawerlayout.entity
+ * Class(类名): Item
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 20:23
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Item
+{
+    /**
+     * 图标标识
+     */
+    private int iconId;
+
+    /**
+     * 图标名字
+     */
+    private String iconName;
+
+    /**
+     * Instantiates a new Item.
+     */
+    public Item()
+    {
+    }
+
+    /**
+     * Instantiates a new Item.
+     *
+     * @param iconId   the icon id
+     * @param iconName the icon name
+     */
+    public Item(int iconId, String iconName)
+    {
+        this.iconId = iconId;
+        this.iconName = iconName;
+    }
+
+
+    /**
+     * Gets icon id.
+     *
+     * @return the icon id
+     */
+    public int getIconId()
+    {
+        return iconId;
+    }
+
+    /**
+     * Sets icon id.
+     *
+     * @param iconId the icon id
+     * @return the icon id
+     */
+    public Item setIconId(int iconId)
+    {
+        this.iconId = iconId;
+        return this;
+    }
+
+    /**
+     * Gets icon name.
+     *
+     * @return the icon name
+     */
+    public String getIconName()
+    {
+        return iconName;
+    }
+
+    /**
+     * Sets icon name.
+     *
+     * @param iconName the icon name
+     * @return the icon name
+     */
+    public Item setIconName(String iconName)
+    {
+        this.iconName = iconName;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("iconId：").append(iconId).append('\n');
+        stringbuilder.append("iconName：").append(iconName).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+#### 适配器
+
+##### MyAdapter
+
+```java
+package mao.android_drawerlayout.adapter;
+
+import android.content.Context;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+
+/**
+ * Project name(项目名称)：android_DrawerLayout
+ * Package(包名): mao.android_drawerlayout.adapter
+ * Class(类名): MyAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 20:24
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ *
+ * @param <T> the type parameter
+ */
+
+
+public abstract class MyAdapter<T> extends BaseAdapter
+{
+    private ArrayList<T> mData;
+    private int mLayoutRes;           //布局id
+
+
+    /**
+     * Instantiates a new My adapter.
+     */
+    public MyAdapter()
+    {
+    }
+
+    /**
+     * Instantiates a new My adapter.
+     *
+     * @param mData      the m data
+     * @param mLayoutRes the m layout res
+     */
+    public MyAdapter(ArrayList<T> mData, int mLayoutRes)
+    {
+        this.mData = mData;
+        this.mLayoutRes = mLayoutRes;
+    }
+
+    @Override
+    public int getCount()
+    {
+        return mData != null ? mData.size() : 0;
+    }
+
+    @Override
+    public T getItem(int position)
+    {
+        return mData.get(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        ViewHolder holder = ViewHolder.bind(parent.getContext(), convertView, parent, mLayoutRes
+                , position);
+        bindView(holder, getItem(position));
+        return holder.getItemView();
+    }
+
+    /**
+     * Bind view.
+     *
+     * @param holder the holder
+     * @param obj    the obj
+     */
+    public abstract void bindView(ViewHolder holder, T obj);
+
+    /**
+     * 添加一个元素
+     *
+     * @param data the data
+     */
+    public void add(T data)
+    {
+        if (mData == null)
+        {
+            mData = new ArrayList<>();
+        }
+        mData.add(data);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * 往特定位置，添加一个元素
+     *
+     * @param position the position
+     * @param data     the data
+     */
+    public void add(int position, T data)
+    {
+        if (mData == null)
+        {
+            mData = new ArrayList<>();
+        }
+        mData.add(position, data);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Remove.
+     *
+     * @param data the data
+     */
+    public void remove(T data)
+    {
+        if (mData != null)
+        {
+            mData.remove(data);
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Remove.
+     *
+     * @param position the position
+     */
+    public void remove(int position)
+    {
+        if (mData != null)
+        {
+            mData.remove(position);
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Clear.
+     */
+    public void clear()
+    {
+        if (mData != null)
+        {
+            mData.clear();
+        }
+        notifyDataSetChanged();
+    }
+
+
+    /**
+     * The type View holder.
+     */
+    public static class ViewHolder
+    {
+
+        private SparseArray<View> mViews;   //存储ListView 的 item中的View
+        private View item;                  //存放convertView
+        private int position;               //游标
+        private Context context;            //Context上下文
+
+        //构造方法，完成相关初始化
+        private ViewHolder(Context context, ViewGroup parent, int layoutRes)
+        {
+            mViews = new SparseArray<>();
+            this.context = context;
+            View convertView = LayoutInflater.from(context).inflate(layoutRes, parent, false);
+            convertView.setTag(this);
+            item = convertView;
+        }
+
+        /**
+         * Bind view holder.
+         *
+         * @param context     the context
+         * @param convertView the convert view
+         * @param parent      the parent
+         * @param layoutRes   the layout res
+         * @param position    the position
+         * @return the view holder
+         */
+        //绑定ViewHolder与item
+        public static ViewHolder bind(Context context, View convertView, ViewGroup parent,
+                                      int layoutRes, int position)
+        {
+            ViewHolder holder;
+            if (convertView == null)
+            {
+                holder = new ViewHolder(context, parent, layoutRes);
+            }
+            else
+            {
+                holder = (ViewHolder) convertView.getTag();
+                holder.item = convertView;
+            }
+            holder.position = position;
+            return holder;
+        }
+
+        /**
+         * Gets view.
+         *
+         * @param <T> the type parameter
+         * @param id  the id
+         * @return the view
+         */
+        @SuppressWarnings("unchecked")
+        public <T extends View> T getView(int id)
+        {
+            T t = (T) mViews.get(id);
+            if (t == null)
+            {
+                t = (T) item.findViewById(id);
+                mViews.put(id, t);
+            }
+            return t;
+        }
+
+
+        /**
+         * 获取当前条目
+         *
+         * @return the item view
+         */
+        public View getItemView()
+        {
+            return item;
+        }
+
+        /**
+         * 获取条目位置
+         *
+         * @return the item position
+         */
+        public int getItemPosition()
+        {
+            return position;
+        }
+
+        /**
+         * 设置文字
+         *
+         * @param id   the id
+         * @param text the text
+         * @return the text
+         */
+        public ViewHolder setText(int id, CharSequence text)
+        {
+            View view = getView(id);
+            if (view instanceof TextView)
+            {
+                ((TextView) view).setText(text);
+            }
+            return this;
+        }
+
+        /**
+         * 设置图片
+         *
+         * @param id          the id
+         * @param drawableRes the drawable res
+         * @return the image resource
+         */
+        public ViewHolder setImageResource(int id, int drawableRes)
+        {
+            View view = getView(id);
+            if (view instanceof ImageView)
+            {
+                ((ImageView) view).setImageResource(drawableRes);
+            }
+            else
+            {
+                view.setBackgroundResource(drawableRes);
+            }
+            return this;
+        }
+
+
+        /**
+         * 设置点击监听
+         *
+         * @param id       the id
+         * @param listener the listener
+         * @return the on click listener
+         */
+        public ViewHolder setOnClickListener(int id, View.OnClickListener listener)
+        {
+            getView(id).setOnClickListener(listener);
+            return this;
+        }
+
+        /**
+         * 设置可见
+         *
+         * @param id      the id
+         * @param visible the visible
+         * @return the visibility
+         */
+        public ViewHolder setVisibility(int id, int visible)
+        {
+            getView(id).setVisibility(visible);
+            return this;
+        }
+
+        /**
+         * 设置标签
+         *
+         * @param id  the id
+         * @param obj the obj
+         * @return the tag
+         */
+        public ViewHolder setTag(int id, Object obj)
+        {
+            getView(id).setTag(obj);
+            return this;
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+#### 碎片
+
+##### ContentFragment
+
+```java
+package mao.android_drawerlayout;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+
+/**
+ * Project name(项目名称)：android_DrawerLayout
+ * Package(包名): mao.android_drawerlayout
+ * Class(类名): ContentFragment
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 20:20
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ContentFragment extends Fragment
+{
+    private TextView tv_content;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.fg_content, container, false);
+        tv_content = view.findViewById(R.id.tv_content);
+        String text = getArguments().getString("text");
+        tv_content.setText(text);
+        return view;
+    }
+}
+```
+
+
+
+
+
+
+
+#### Activity
+
+##### MainActivity
+
+```java
+package mao.android_drawerlayout;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+
+import mao.android_drawerlayout.adapter.MyAdapter;
+import mao.android_drawerlayout.entity.Item;
+
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener
+{
+
+    private DrawerLayout drawer_layout;
+    private ListView list_left_drawer;
+    private ArrayList<Item> menuLists;
+    private MyAdapter<Item> myAdapter = null;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        drawer_layout = findViewById(R.id.DrawerLayout);
+        list_left_drawer = findViewById(R.id.list_left_drawer);
+
+        menuLists = new ArrayList<Item>();
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项一"));
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项二"));
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项三"));
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项四"));
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项五"));
+        menuLists.add(new Item(R.mipmap.ic_launcher_round, "选项六"));
+
+        myAdapter = new MyAdapter<Item>(menuLists, R.layout.item_list)
+        {
+            @Override
+            public void bindView(ViewHolder holder, Item obj)
+            {
+                holder.setImageResource(R.id.img_icon, obj.getIconId());
+                holder.setText(R.id.txt_content, obj.getIconName());
+            }
+        };
+        list_left_drawer.setAdapter(myAdapter);
+        list_left_drawer.setOnItemClickListener(this);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        ContentFragment contentFragment = new ContentFragment();
+        Bundle args = new Bundle();
+        args.putString("text", menuLists.get(position).getIconName());
+        contentFragment.setArguments(args);
+        FragmentManager fm = getSupportFragmentManager();
+        fm.beginTransaction().replace(R.id.ly_content, contentFragment).commit();
+        drawer_layout.closeDrawer(list_left_drawer);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 运行
+
+
+
+![image-20221008204319678](img/Android学习笔记/image-20221008204319678.png)
+
+
+
+
+
+
+
+
+
+
+
