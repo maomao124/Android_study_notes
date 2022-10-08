@@ -37643,5 +37643,100 @@ public class MainActivity2 extends AppCompatActivity
 
 #### 动态导入
 
+##### activity_main3
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity3">
+
+
+    <ViewFlipper
+            android:id="@+id/ViewFlipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+##### MainActivity3
+
+```java
+package mao.android_viewflipper;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ViewFlipper;
+
+public class MainActivity3 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        ViewFlipper viewFlipper = findViewById(R.id.ViewFlipper);
+
+        viewFlipper.setInAnimation(this, R.anim.right_in);
+        viewFlipper.setOutAnimation(this, R.anim.right_out);
+
+        View view1 = LayoutInflater.from(this).inflate(R.layout.item_1,null);
+        View view2 = LayoutInflater.from(this).inflate(R.layout.item_2,null);
+        View view3 = LayoutInflater.from(this).inflate(R.layout.item_3,null);
+        View view4 = LayoutInflater.from(this).inflate(R.layout.item_4,null);
+        View view5 = LayoutInflater.from(this).inflate(R.layout.item_5,null);
+
+        viewFlipper.setFlipInterval(2000);
+        viewFlipper.addView(view1);
+        viewFlipper.addView(view2);
+        viewFlipper.addView(view3);
+        viewFlipper.addView(view4);
+        viewFlipper.addView(view5);
+        
+        viewFlipper.startFlipping();
+
+    }
+}
+```
+
+
+
+
+
+
+
+##### 运行
+
+![image-20221008120637894](img/Android学习笔记/image-20221008120637894.png)
+
+
+
+![image-20221008120652388](img/Android学习笔记/image-20221008120652388.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 进度条ProgressBar
 
