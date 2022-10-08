@@ -37341,3 +37341,307 @@ public class MainActivity extends AppCompatActivity
 
 ### 翻转视图ViewFlipper
 
+ViewFlipper是Android自带的一个多页面管理控件，且可以自动播放！ 和ViewPager不同，ViewPager是一页页的，而ViewFlipper则是一层层的，和ViewPager一样，很多时候， 用来实现进入应用后的引导页，或者用于图片轮播
+
+
+
+#### 常用的方法
+
+- **setInAnimation**：设置View进入屏幕时使用的动画
+- **setOutAnimation**：设置View退出屏幕时使用的动画
+- **showNext**：调用该方法来显示ViewFlipper里的下一个View
+- **showPrevious**：调用该方法来显示ViewFlipper的上一个View
+- **setFilpInterval**：设置View之间切换的时间间隔
+- **setFlipping**：使用上面设置的时间间隔来开始切换所有的View，切换会循环进行
+- **stopFlipping**：停止View切换
+
+
+
+
+
+
+
+#### 静态导入
+
+
+
+##### activity_main2
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2">
+
+
+    <ViewFlipper
+            android:id="@+id/ViewFlipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inAnimation="@anim/right_in"
+            android:outAnimation="@anim/right_out">
+
+        <include layout="@layout/item_1" />
+
+        <include layout="@layout/item_2" />
+
+        <include layout="@layout/item_3" />
+
+        <include layout="@layout/item_4" />
+
+        <include layout="@layout/item_5" />
+
+
+    </ViewFlipper>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+##### item_1
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="1"
+            android:gravity="center"
+            android:textSize="58sp"
+            android:background="#00ccff"
+            android:textColor="#cc00ff"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_2
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="2"
+            android:gravity="center"
+            android:textSize="58sp"
+            android:background="#ffaaaa"
+            android:textColor="@color/design_default_color_secondary"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_3
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="3"
+            android:gravity="center"
+            android:textSize="58sp"
+            android:background="#ccff00"
+            android:textColor="@color/design_default_color_secondary"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+</LinearLayout>
+```
+
+
+
+##### item_4
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="4"
+            android:gravity="center"
+            android:textSize="58sp"
+            android:background="#aa00ff"
+            android:textColor="@color/design_default_color_secondary"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+</LinearLayout>
+```
+
+
+
+##### item_5
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="5"
+            android:gravity="center"
+            android:textSize="58sp"
+            android:background="#00ff00"
+            android:textColor="#ff0000"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+</LinearLayout>
+```
+
+
+
+
+
+
+
+##### 动画right_in
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <translate
+            android:duration="1000"
+            android:fromXDelta="100%p"
+            android:toXDelta="0" />
+
+</set>
+```
+
+
+
+
+
+
+
+##### 动画right_out
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <translate
+            android:duration="1000"
+            android:fromXDelta="0"
+            android:toXDelta="-100%p" />
+
+</set>
+```
+
+
+
+
+
+##### MainActivity2
+
+```java
+package mao.android_viewflipper;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.ViewFlipper;
+
+public class MainActivity2 extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        ViewFlipper viewFlipper = findViewById(R.id.ViewFlipper);
+        viewFlipper.setFlipInterval(2000);
+        viewFlipper.startFlipping();
+    }
+}
+```
+
+
+
+
+
+
+
+##### 运行
+
+![image-20221008112103596](img/Android学习笔记/image-20221008112103596.png)
+
+
+
+![image-20221008112113560](img/Android学习笔记/image-20221008112113560.png)
+
+
+
+![image-20221008112130303](img/Android学习笔记/image-20221008112130303.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 动态导入
+
+
+
