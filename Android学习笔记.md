@@ -38035,3 +38035,171 @@ public class CirclePgBar extends View
 
 ### 拖动条SeekBar
 
+最常见的地方就是音乐播放器或者视频播放器了，音量控制或者播放进度控制，都用到了这个SeekBar
+
+
+
+#### xml常用属性
+
+**android:max** ：滑动条的最大值
+
+**android:progress**：滑动条的当前值
+
+**android:secondaryProgress**：二级滑动条的进度
+
+**android:thumb**  ：滑块的drawable
+
+
+
+
+
+#### 监听器
+
+SeekBar的事件：**SeekBar.OnSeekBarChangeListener** 我们只需重写三个对应的方法：
+
+* **onProgressChanged**：进度发生改变时会触发
+* **onStartTrackingTouch**：按住SeekBar时会触发
+* **onStopTrackingTouch**：放开SeekBar时触发
+
+
+
+​				
+
+
+
+#### 代码
+
+
+
+##### 布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <SeekBar
+            android:id="@+id/SeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/SeekBar"
+            android:textSize="30sp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+##### MainActivity
+
+```java
+package mao.android_seekbar;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        SeekBar seekBar = findViewById(R.id.SeekBar);
+
+        TextView textView = findViewById(R.id.TextView);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                Log.d(TAG, "onProgressChanged: " + progress);
+                textView.setText(String.valueOf(progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+                toastShow("开始触摸SeekBar，当前值：" + seekBar.getProgress());
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+                toastShow("停止触摸SeekBar，当前值：" + seekBar.getProgress());
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+![image-20221008131756700](img/Android学习笔记/image-20221008131756700.png)
+
+
+
+![image-20221008131814153](img/Android学习笔记/image-20221008131814153.png)
+
+
+
+![image-20221008131854455](img/Android学习笔记/image-20221008131854455.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 星级评分条RatingBar
+
