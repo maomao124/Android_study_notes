@@ -37740,3 +37740,298 @@ public class MainActivity3 extends AppCompatActivity
 
 ### 进度条ProgressBar
 
+ProgressBar的应用场景很多，比如 用户登录时，后台在发请求，以及等待服务器返回信息，这个时候会用到进度条；或者当在进行一些比较 耗时的操作，需要等待一段较长的时间，这个时候如果没有提示，用户可能会以为程序Carsh或者手机死机 了，这样会大大降低用户体验，所以在需要进行耗时操作的地方，添加上进度条，让用户知道当前的程序在执行中，也可以直观的告诉用户当前任务的执行进度等
+
+
+
+ProgressBar继承与View类，直接子类有AbsSeekBar和ContentLoadingProgressBar， 其中AbsSeekBar的子类有SeekBar和RatingBar，可见这二者也是基于ProgressBar实现的
+
+
+
+
+
+#### xml常用属性
+
+- android:**max**：进度条的最大值
+- android:**progress**：进度条已完成进度值
+- android:**progressDrawable**：设置轨道对应的Drawable对象
+- android:**indeterminate**：如果设置成true，则进度条不精确显示进度
+- android:**indeterminateDrawable**：设置不显示进度的进度条的Drawable对象
+- android:**indeterminateDuration**：设置不精确显示进度的持续时间
+- android:**secondaryProgress**：二级进度条，类似于视频播放的一条是当前播放进度，一条是缓冲进度，前者通过progress属性进行设置！
+
+
+
+
+
+#### 常用方法
+
+- **getMax**()：返回这个进度条的范围的上限
+- **getProgress**()：返回进度
+- **getSecondaryProgress**()：返回次要进度
+- **incrementProgressBy**(int diff)：指定增加的进度
+- **isIndeterminate**()：指示进度条是否在不确定模式下
+- **setIndeterminate**(boolean indeterminate)：设置不确定模式下
+
+
+
+
+
+
+
+#### 代码
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity2"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <ProgressBar
+            style="@android:style/Widget.ProgressBar.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    <ProgressBar
+            style="@android:style/Widget.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    <!--系统提供的水平进度条-->
+    <ProgressBar
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="43" />
+
+    <ProgressBar
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:indeterminate="true" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+![image-20221008122641839](img/Android学习笔记/image-20221008122641839.png)
+
+
+
+![image-20221008122650963](img/Android学习笔记/image-20221008122650963.png)
+
+
+
+
+
+
+
+
+
+#### 自定义圆形进度条
+
+
+
+```java
+package mao.android_progressbar.view;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.View;
+
+/**
+ * Project name(项目名称)：android_ProgressBar
+ * Package(包名): mao.android_progressbar.view
+ * Class(类名): CirclePgBar
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/8
+ * Time(创建时间)： 12:48
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CirclePgBar extends View
+{
+    private Paint mBackPaint;
+    private Paint mFrontPaint;
+    private Paint mTextPaint;
+    private float mStrokeWidth = 50;
+    private float mHalfStrokeWidth = mStrokeWidth / 2;
+    private float mRadius = 200;
+    private RectF mRect;
+    private int mProgress = 0;
+    //目标值，想改多少就改多少
+    private int mTargetProgress = 91;
+    private int mMax = 100;
+    private int mWidth;
+    private int mHeight;
+
+
+    public CirclePgBar(Context context)
+    {
+        super(context);
+        init();
+    }
+
+    public CirclePgBar(Context context, AttributeSet attrs)
+    {
+        super(context, attrs);
+        init();
+    }
+
+    public CirclePgBar(Context context, AttributeSet attrs, int defStyleAttr)
+    {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+
+    //完成相关参数初始化
+    private void init()
+    {
+        mBackPaint = new Paint();
+        mBackPaint.setColor(Color.WHITE);
+        mBackPaint.setAntiAlias(true);
+        mBackPaint.setStyle(Paint.Style.STROKE);
+        mBackPaint.setStrokeWidth(mStrokeWidth);
+
+        mFrontPaint = new Paint();
+        mFrontPaint.setColor(Color.GREEN);
+        mFrontPaint.setAntiAlias(true);
+        mFrontPaint.setStyle(Paint.Style.STROKE);
+        mFrontPaint.setStrokeWidth(mStrokeWidth);
+
+
+        mTextPaint = new Paint();
+        mTextPaint.setColor(Color.GREEN);
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setTextSize(80);
+        mTextPaint.setTextAlign(Paint.Align.CENTER);
+    }
+
+
+    //重写测量大小的onMeasure方法和绘制View的核心方法onDraw()
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        mWidth = getRealSize(widthMeasureSpec);
+        mHeight = getRealSize(heightMeasureSpec);
+        setMeasuredDimension(mWidth, mHeight);
+
+    }
+
+
+    @Override
+    protected void onDraw(Canvas canvas)
+    {
+        initRect();
+        float angle = mProgress / (float) mMax * 360;
+        canvas.drawCircle(mWidth / 2, mHeight / 2, mRadius, mBackPaint);
+        canvas.drawArc(mRect, -90, angle, false, mFrontPaint);
+        canvas.drawText(mProgress + "%", mWidth / 2 + mHalfStrokeWidth, mHeight / 2 + mHalfStrokeWidth, mTextPaint);
+        if (mProgress < mTargetProgress)
+        {
+            mProgress += 1;
+            invalidate();
+        }
+
+    }
+
+    public int getRealSize(int measureSpec)
+    {
+        int result = 1;
+        int mode = MeasureSpec.getMode(measureSpec);
+        int size = MeasureSpec.getSize(measureSpec);
+
+        if (mode == MeasureSpec.AT_MOST || mode == MeasureSpec.UNSPECIFIED)
+        {
+            //自己计算
+            result = (int) (mRadius * 2 + mStrokeWidth);
+        }
+        else
+        {
+            result = size;
+        }
+
+        return result;
+    }
+
+    private void initRect()
+    {
+        if (mRect == null)
+        {
+            mRect = new RectF();
+            int viewSize = (int) (mRadius * 2);
+            int left = (mWidth - viewSize) / 2;
+            int top = (mHeight - viewSize) / 2;
+            int right = left + viewSize;
+            int bottom = top + viewSize;
+            mRect.set(left, top, right, bottom);
+        }
+    }
+}
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity4"
+        android:orientation="vertical"
+        android:gravity="center">
+
+
+    <mao.android_progressbar.view.CirclePgBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+</LinearLayout>
+```
+
+
+
+![image-20221008125603427](img/Android学习笔记/image-20221008125603427.png)
+
+
+
+![image-20221008125611217](img/Android学习笔记/image-20221008125611217.png)
+
+
+
+
+
+
+
+
+
+### 拖动条SeekBar
+
