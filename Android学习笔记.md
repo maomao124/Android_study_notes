@@ -38203,3 +38203,141 @@ public class MainActivity extends AppCompatActivity
 
 ### 星级评分条RatingBar
 
+#### xml常用属性
+
+* **android:isIndicator**：是否用作指示，用户无法更改，默认false
+* **android:numStars**：显示多少个星星，必须为整数
+* **android:rating**：默认评分值，必须为浮点数
+* **android:stepSize：** 评分每次增加的值，必须为浮点数
+
+
+
+
+
+#### 代码
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击评分"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@+id/ratingBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            android:layout_marginBottom="8dp" />
+
+    <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/ratingBar"
+            android:numStars="7"
+            android:rating="2.5"
+            android:stepSize="0.5" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+```java
+package mao.android_ratingbar;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.widget.RatingBar;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        RatingBar ratingBar = findViewById(R.id.ratingBar);
+
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener()
+        {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser)
+            {
+                toastShow("评分：" + rating);
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+运行
+
+
+
+![image-20221008133856970](img/Android学习笔记/image-20221008133856970.png)
+
+
+
+![image-20221008133908037](img/Android学习笔记/image-20221008133908037.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 可折叠列表ExpandableListView
+
+
+
+
+
+
+
+
+
