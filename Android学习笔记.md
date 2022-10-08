@@ -37088,3 +37088,256 @@ public class MainActivity extends AppCompatActivity
 
 ### 悬浮框PopupWindow
 
+PopupWindow 是一个可以用来展示任意 View 的弹窗，并且它可以在当前正在运行的 Activity 之上的任意位置悬浮
+
+- 悬浮在当前运行的 Activity 之上（这一点和 AlertDialog 类似）
+- 可以通过编写 View 布局，自定义弹窗的样式（AlertDialog 也可以实现，不过通常我们不这么用）
+- 可以悬浮在任意位置
+
+
+
+AlertDialog是非堵塞线程的，而PopupWindow则是堵塞线程的
+
+
+
+
+
+#### 常用的构造方法
+
+- **public PopupWindow (Context context)**
+- **public PopupWindow(View contentView, int width, int height)**
+- **public PopupWindow(View contentView)**
+- **public PopupWindow(View contentView, int width, int height, boolean focusable)**
+
+
+
+contentView是PopupWindow显示的View，focusable是否显示焦点
+
+
+
+
+
+#### 常用的方法
+
+- **setContentView**(View contentView)：设置PopupWindow显示的View
+- **getContentView**()：获得PopupWindow显示的View
+- **showAsDropDown(View anchor)**：相对某个控件的位置（正左下方），无偏移
+- **showAsDropDown(View anchor, int xoff, int yoff)**：相对某个控件的位置，有偏移
+- **showAtLocation(View parent, int gravity, int x, int y)**： 相对于父控件的位置（例如正中央Gravity.CENTER，下方Gravity.BOTTOM等），可以设置偏移或无偏移 PS:parent这个参数只要是activity中的view就可以了！
+- **setWidth/setHeight**：设置宽高，也可以在构造方法那里指定好宽高， 除了可以写具体的值，还可以用WRAP_CONTENT或MATCH_PARENT， popupWindow的width和height属性直接和第一层View相对应。
+- **setFocusable(true)**：设置焦点，PopupWindow弹出后，所有的触屏和物理按键都由PopupWindows 处理。其他任何事件的响应都必须发生在PopupWindow消失之后，（home 等系统层面的事件除外）。 比如这样一个PopupWindow出现的时候，按back键首先是让PopupWindow消失，第二次按才是退出 activity，准确的说是想退出activity你得首先让PopupWindow消失，因为不并是任何情况下按back PopupWindow都会消失，必须在PopupWindow设置了背景的情况下 。
+- **setAnimationStyle(int)：**设置动画效果
+
+
+
+
+
+
+
+#### 代码
+
+##### activity_main
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+    <Button
+            android:id="@+id/Button_"
+            android:text="点击弹出"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+##### item_popup
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮1" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮2" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="按钮3" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+##### MainActivity
+
+```java
+package mao.android_popupwindow;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.PopupWindow;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        Button button = findViewById(R.id.Button_);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_popup, null);
+                Button button1 = view.findViewById(R.id.Button1);
+                Button button2 = view.findViewById(R.id.Button2);
+                Button button3 = view.findViewById(R.id.Button3);
+
+                button1.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        toastShow("你点击了按钮1");
+                    }
+                });
+
+                button2.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        toastShow("你点击了按钮2");
+                    }
+                });
+
+                button3.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        toastShow("你点击了按钮3");
+                    }
+                });
+
+
+                PopupWindow popupWindow = new PopupWindow(view,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                popupWindow.setBackgroundDrawable(new ColorDrawable(0x44000000));
+                popupWindow.setFocusable(true);
+                popupWindow.setTouchable(true);
+                popupWindow.setTouchInterceptor(new View.OnTouchListener()
+                {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event)
+                    {
+                        // 这里如果返回true的话，touch事件将被拦截
+                        // 拦截后 PopupWindow的onTouchEvent不被调用，这样点击外部区域无法dismiss
+                        return false;
+                    }
+                });
+                popupWindow.showAsDropDown(button,0,30);
+            }
+        });
+
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 运行
+
+
+
+![image-20221007233646876](img/Android学习笔记/image-20221007233646876.png)
+
+
+
+![image-20221007233658280](img/Android学习笔记/image-20221007233658280.png)
+
+
+
+![image-20221007233714556](img/Android学习笔记/image-20221007233714556.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 翻转视图ViewFlipper
+
