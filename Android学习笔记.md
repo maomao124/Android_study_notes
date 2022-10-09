@@ -41495,3 +41495,527 @@ public class MainActivity extends AppCompatActivity
 
 # 独立线程服务IntentService
 
+如果我们直接把耗时线程放到Service中的onStart()方法中，虽然可以这样做，但是很容易会引起ANR异常(Application Not Responding)，即应用无响应
+
+* Service不是一个单独的进程,它和它的应用程序在同一个进程中
+* Service不是一个线程,这样就意味着我们应该避免在Service中进行耗时操作
+
+
+
+于是，Android给我们提供了解决上述问题的替代品，IntentService。
+
+IntentService是继承与Service并处理异步请求的一个类,在IntentService中有 一个工作线程来处理耗时操作,请求的Intent记录会加入队列
+
+
+
+
+
+客户端通过startService(Intent)来启动IntentService; 我们并不需要手动地区控制IntentService,当任务执行完后,IntentService会自动停止; 可以启动IntentService多次,每个耗时操作会以工作队列的方式在IntentService的 onHandleIntent回调方法中执行,并且每次只会执行一个工作线程,执行完一，再到二......
+
+
+
+
+
+
+
+## IntentService的使用
+
+
+
+```java
+package mao.android_intentservice.service;
+
+import android.app.IntentService;
+import android.content.Intent;
+import android.content.Context;
+import android.os.IBinder;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+
+public class MyIntentService extends IntentService
+{
+
+    private static final String TAG = "MyIntentService";
+
+    public MyIntentService()
+    {
+        super("MyIntentService");
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent)
+    {
+        //Intent是从Activity发过来的，携带识别参数，根据参数不同执行不同的任务
+        if (intent == null)
+        {
+            return;
+        }
+        String action = intent.getExtras().getString("param");
+
+        if (action.equals("s1"))
+        {
+            Log.i(TAG, "启动service1");
+        }
+        else if (action.equals("s2"))
+        {
+            Log.i(TAG, "启动service2");
+        }
+        else if (action.equals("s3"))
+        {
+            Log.i(TAG, "启动service3");
+        }
+
+        try
+        {
+            Thread.sleep(3000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        Log.d(TAG, "onBind: ");
+        return super.onBind(intent);
+    }
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId)
+    {
+        Log.d(TAG, "onStartCommand: ");
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void setIntentRedelivery(boolean enabled)
+    {
+        super.setIntentRedelivery(enabled);
+        Log.d(TAG, "setIntentRedelivery: ");
+    }
+
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+    }
+}
+```
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_IntentService"
+            tools:targetApi="31">
+        <service
+                android:name=".service.MyIntentService"
+                android:exported="false">
+            <intent-filter>
+                <action android:name="mao.android_intentservice.service.MyIntentService" />
+            </intent-filter>
+        </service>
+
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+```java
+package mao.android_intentservice;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Intent intent1 = new Intent();
+        intent1.setAction("mao.android_intentservice.service.MyIntentService");
+        intent1.setPackage("mao.android_intentservice");
+        intent1.putExtra("param", "s1");
+
+        Intent intent2 = new Intent();
+        intent2.setAction("mao.android_intentservice.service.MyIntentService");
+        intent2.setPackage("mao.android_intentservice");
+        intent2.putExtra("param", "s2");
+
+        Intent intent3 = new Intent();
+        intent3.setAction("mao.android_intentservice.service.MyIntentService");
+        intent3.setPackage("mao.android_intentservice");
+        intent3.putExtra("param", "s3");
+
+
+        startService(intent1);
+        startService(intent2);
+        startService(intent3);
+    }
+}
+```
+
+
+
+
+
+
+
+日志：
+
+```sh
+2022-10-09 21:08:22.622 18657-18694 libEGL                  mao.android_intentservice            D  Emulator has host GPU support, qemu.gles is set to 1.
+2022-10-09 21:08:22.613 18657-18657 RenderThread            mao.android_intentservice            W  type=1400 audit(0.0:451): avc: denied { write } for name="property_service" dev="tmpfs" ino=8453 scontext=u:r:untrusted_app:s0:c161,c256,c512,c768 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0 app=mao.android_intentservice
+2022-10-09 21:08:22.622 18657-18694 libc                    mao.android_intentservice            W  Unable to set property "qemu.gles" to "1": connection failed; errno=13 (Permission denied)
+2022-10-09 21:08:22.649 18657-18694 libEGL                  mao.android_intentservice            D  loaded /vendor/lib/egl/libEGL_emulation.so
+2022-10-09 21:08:22.656 18657-18694 libEGL                  mao.android_intentservice            D  loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+2022-10-09 21:08:22.660 18657-18694 libEGL                  mao.android_intentservice            D  loaded /vendor/lib/egl/libGLESv2_emulation.so
+2022-10-09 21:08:22.833 18657-18657 d_intentservic          mao.android_intentservice            W  Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (greylist, reflection, allowed)
+2022-10-09 21:08:22.834 18657-18657 d_intentservic          mao.android_intentservice            W  Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (greylist, reflection, allowed)
+2022-10-09 21:08:22.940 18657-18657 MyIntentService         mao.android_intentservice            D  onCreate: 
+2022-10-09 21:08:22.941 18657-18657 MyIntentService         mao.android_intentservice            D  onStartCommand: 
+2022-10-09 21:08:22.941 18657-18695 MyIntentService         mao.android_intentservice            I  启动service1
+2022-10-09 21:08:22.943 18657-18657 MyIntentService         mao.android_intentservice            D  onStartCommand: 
+2022-10-09 21:08:22.943 18657-18657 MyIntentService         mao.android_intentservice            D  onStartCommand: 
+2022-10-09 21:08:22.970 18657-18692 HostConnection          mao.android_intentservice            D  HostConnection::get() New Host Connection established 0x93ee7e10, tid 18692
+2022-10-09 21:08:22.971 18657-18692 HostConnection          mao.android_intentservice            D  HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_2 
+2022-10-09 21:08:22.975 18657-18692 OpenGLRenderer          mao.android_intentservice            W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+2022-10-09 21:08:23.002 18657-18692 EGL_emulation           mao.android_intentservice            D  eglCreateContext: 0xa01266e0: maj 2 min 0 rcv 2
+2022-10-09 21:08:23.009 18657-18692 EGL_emulation           mao.android_intentservice            D  eglMakeCurrent: 0xa01266e0: ver 2 0 (tinfo 0xa010df60)
+2022-10-09 21:08:23.022 18657-18692 Gralloc3                mao.android_intentservice            W  mapper 3.x is not supported
+2022-10-09 21:08:23.023 18657-18692 HostConnection          mao.android_intentservice            D  createUnique: call
+2022-10-09 21:08:23.023 18657-18692 HostConnection          mao.android_intentservice            D  HostConnection::get() New Host Connection established 0x93ee97b0, tid 18692
+2022-10-09 21:08:23.025 18657-18692 HostConnection          mao.android_intentservice            D  HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_2 
+2022-10-09 21:08:23.025 18657-18692 eglCodecCommon          mao.android_intentservice            D  allocate: Ask for block of size 0x1000
+2022-10-09 21:08:23.026 18657-18692 eglCodecCommon          mao.android_intentservice            D  allocate: ioctl allocate returned offset 0x3ffff4000 size 0x2000
+2022-10-09 21:08:23.033 18657-18692 EGL_emulation           mao.android_intentservice            D  eglMakeCurrent: 0xa01266e0: ver 2 0 (tinfo 0xa010df60)
+2022-10-09 21:08:23.059  2088-2125  ActivityTaskManager     system_process                       I  Displayed mao.android_intentservice/.MainActivity: +834ms
+2022-10-09 21:08:25.944 18657-18695 MyIntentService         mao.android_intentservice            I  启动service2
+2022-10-09 21:08:28.946 18657-18695 MyIntentService         mao.android_intentservice            I  启动service3
+2022-10-09 21:08:31.949 18657-18657 MyIntentService         mao.android_intentservice            D  onDestroy: 
+```
+
+
+
+
+
+当一个后台的任务,需要分成几个子任务,然后按先后顺序执行,子任务 (简单的说就是异步操作),此时如果我们还是定义一个普通Service然后 在onStart方法中开辟线程,然后又要去控制线程,这样显得非常的繁琐; 此时应该自定义一个IntentService然后再onHandleIntent()方法中完成相关任务
+
+
+
+
+
+
+
+## Activity与Service通信
+
+假如我们启动的是一个下载 的后台Service，而我们想知道Service中下载任务的进度！那么这肯定是需要Service 与Activity进行通信的，而他们之间交流的媒介就是Service中的onBind()方法！ 返回一个我们自定义的Binder对象
+
+
+
+基本流程如下：
+
+- 自定义Service中，自定义一个Binder类，然后将需要暴露的方法都写到该类中！
+- service类中，实例化这个自定义Binder类，然后重写onBind()方法，将这个Binder对象返回！
+- Activity类中实例化一个ServiceConnection对象，重写onServiceConnected()方法，然后获取Binder对象，然后调用相关方法即可
+
+
+
+
+
+```java
+package mao.android_intentservice.service;
+
+import android.app.IntentService;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+
+public class MyIntentService extends IntentService
+{
+
+    private static final String TAG = "MyIntentService";
+
+    private int count = 0;
+
+    private final MyBinder myBinder = new MyBinder();
+
+    public class MyBinder extends Binder
+    {
+        public int getCount()
+        {
+            return count;
+        }
+
+    }
+
+
+    public MyIntentService()
+    {
+        super("MyIntentService");
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent)
+    {
+        //Intent是从Activity发过来的，携带识别参数，根据参数不同执行不同的任务
+        if (intent == null)
+        {
+            return;
+        }
+        String action = intent.getExtras().getString("param");
+
+        if (action.equals("s1"))
+        {
+            Log.i(TAG, "启动service1");
+        }
+        else if (action.equals("s2"))
+        {
+            Log.i(TAG, "启动service2");
+        }
+        else if (action.equals("s3"))
+        {
+            Log.i(TAG, "启动service3");
+        }
+
+        try
+        {
+            Thread.sleep(3000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        Log.d(TAG, "onBind: ");
+        return myBinder;
+    }
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId)
+    {
+        Log.d(TAG, "onStartCommand: ");
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void setIntentRedelivery(boolean enabled)
+    {
+        super.setIntentRedelivery(enabled);
+        Log.d(TAG, "setIntentRedelivery: ");
+    }
+
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+    }
+}
+```
+
+
+
+
+
+
+
+```java
+package mao.android_intentservice;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.telecom.ConnectionService;
+import android.util.Log;
+import android.widget.Button;
+
+import mao.android_intentservice.service.MyIntentService;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private static final String TAG = "MainActivity";
+
+    private MyIntentService.MyBinder binder;
+
+    private final ServiceConnection serviceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            Log.d(TAG, "onServiceConnected: ");
+            binder = (MyIntentService.MyBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            Log.d(TAG, "onServiceDisconnected: ");
+        }
+    };
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Intent intent1 = new Intent();
+        intent1.setAction("mao.android_intentservice.service.MyIntentService");
+        intent1.setPackage("mao.android_intentservice");
+        intent1.putExtra("param", "s1");
+
+        Intent intent2 = new Intent();
+        intent2.setAction("mao.android_intentservice.service.MyIntentService");
+        intent2.setPackage("mao.android_intentservice");
+        intent2.putExtra("param", "s2");
+
+        Intent intent3 = new Intent();
+        intent3.setAction("mao.android_intentservice.service.MyIntentService");
+        intent3.setPackage("mao.android_intentservice");
+        intent3.putExtra("param", "s3");
+
+
+        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+        bindService(intent2, serviceConnection, BIND_AUTO_CREATE);
+        bindService(intent3, serviceConnection, BIND_AUTO_CREATE);
+
+    }
+}
+```
+
+
+
+
+
+
+
+## IBinder
+
+IBinder是远程对象的基本接口，是饿了高性能而设计的轻量级远程调用机制的核心部分。但他 不仅用于远程调用，也用于进程内调用。该接口定义了与远程对象间交互的协议。但不要直接实现 这个接口，而是**继承**(extends)**Binder**。
+
+IBinder主要的API是**transact()**，与之对应的API是**Binder.onTransact()**。通过前者，你能 想远程IBinder对象发送发出调用，后者使你的远程对象能够响应接收到的调用。IBinder的API都是 **Syncronous(同步)**执行的，比如**transact()**直到对方的**Binder.onTransact()**方法调用玩 后才返回。 调用发生在进程内时无疑是这样的，而在进程间时，在**IPC**的帮助下，也是同样的效果。
+
+通过**transact()**发送的数据是**Parcel**，Parcel是一种一般的缓冲区，除了有数据外还带有 一些描述它内容的元数据。元数据用于管理IBinder对象的引用，这样就能在缓冲区从一个进程移动 到另一个进程时保存这些引用。这样就保证了当一个IBinder被写入到Parcel并发送到另一个进程中， 如果另一个进程把同一个IBinder的引用回发到原来的进程，那么这个原来的进程就能接收到发出的 那个IBinder的引用。这种机制使IBinder和Binder像唯一标志符那样在进程间管理。
+
+系统为每个进程维护一个存放交互线程的线程池。这些交互线程用于派送所有从另外进程发来的IPC 调用。例如：当一个IPC从进程Ａ发到进程Ｂ，Ａ中那个发出调用的线程(这个应该不在线程池中)就阻塞 在**transact()**中了。进程Ｂ中的交互线程池中的一个线程接收了这个调用，它调用 **Binder.onTransact()**，完成后用一个Parcel来做为结果返回。然后进程Ａ中的那个等待的线程在 收到返回的Parcel后得以继续执行。实际上，另一个进程看起来就像是当前进程的一个线程， 但不是当前进程创建的。
+
+Binder机制还支持进程间的递归调用。例如，进程Ａ执行自己的IBinder的transact()调用进程Ｂ 的Binder，而进程Ｂ在其Binder.onTransact()中又用transact()向进程Ａ发起调用，那么进程Ａ 在等待它发出的调用返回的同时，还会用Binder.onTransact()响应进程Ｂ的transact()。 总之Binder造成的结果就是让我们感觉到跨进程的调用与进程内的调用没什么区别。
+
+当操作远程对象时，你经常需要查看它们是否有效，有三种方法可以使用：
+
+- transact()方法将在IBinder所在的进程不存在时抛出RemoteException异常。
+- 如果目标进程不存在，那么调用pingBinder()时返回false。
+- 可以用linkToDeath()方法向IBinder注册一个IBinder.DeathRecipient， 在IBinder代表的进程退出时被调用
+
+
+
+**IBinder是Android给我们提供的一个进程间通信的一个接口，而我们一般是不直接实现这个接口的，** **而是通过继承Binder类来实现进程间通信！是Android中实现IPC(进程间通信)的一种方式**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 广播Broadcast
+
+
+
+
+
+
+
+
+
