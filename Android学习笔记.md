@@ -42009,8 +42009,159 @@ Binder机制还支持进程间的递归调用。例如，进程Ａ执行自己�
 
 
 
+
+
 # 广播Broadcast
 
+## 收发应用广播
+
+### 收发标准广播
+
+App在运行的时候有各种各样的数据流转，有的数据从上一个页面流向下一个页面，此时可通过意图在 活动之间传递包裹；有的数据从应用内存流向存储卡，此时可进行文件读写操作。还有的数据流向千奇百怪，比如活动页面向碎片传递数据
+
+然而若是由碎片向活动页面传递数据，就没有类似 setResult这样回馈结果的方法了
+
+随着App工程的代码量日益增长，承载数据流通的管道会越发不够用，好比装修房子的时候，给每个房 间都预留了网线插口，只有插上网线才能上网。可是现在联网设备越来越多，除了电脑之外，电视也要 联网，平板也要联网，乃至空调都要联网，如此一来网口早就不够用了。那怎样解决众多设备的联网问 题呢？原来家家户户都配了无线路由器，路由器向四周发射WiFi信号，各设备只要安装了无线网卡，就 能接收WiFi信号从而连接上网。于是“发射器+接收器”的模式另辟蹊径，比起网线这种固定管道要灵活得 多，无须拉线即可随时随地传输数据
+
+Android的广播机制正是借鉴了WiFi的通信原理，不必搭建专门的通路，就能在发送方与接收方之间建 立连接。同时广播（Broadcast）也是Android的四大组件之一，它用于Android各组件之间的灵活通 信，与活动的区别在于：
+
+* 活动只能一对一通信；而广播可以一对多，一人发送广播，多人接收处理
+* 对于发送方来说，广播不需要考虑接收方有没有在工作，接收方在工作就接收广播，不在工作就丢 弃广播
+* 对于接收方来说，因为可能会收到各式各样的广播，所以接收方要自行过滤符合条件的广播，之后 再解包处理
+
+
+
+
+
+与广播有关的方法主要有以下3个：
+
+* sendBroadcast：发送广播
+* registerReceiver：注册广播的接收器，可在onStart或onResume方法中注册接收器
+* unregisterReceiver：注销广播的接收器，可在onStop或onPause方法中注销接收器
+
+
+
+
+
+广播的收发过程可分为3个步骤：发送标准广播、定义广播接收器、开关广播接收器
+
+
+
+
+
+#### 发送标准广播
+
+广播的发送操作很简单，一共只有两步：先创建意图对象，再调用sendBroadcast方法发送广播即可。 不过要注意，意图对象需要指定广播的动作名称，如同每个路由器都得给自己的WiFi起个名称一般
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+    }
+
+
+}
+```
+
+
+
+
+
+#### 定义广播接收器
+
+广播发出来之后，还得有设备去接收广播，也就是需要广播接收器。接收器主要规定两个事情，一个是 接收什么样的广播，另一个是收到广播以后要做什么。由于接收器的处理逻辑大同小异，因此Android 提供了抽象之后的接收器基类BroadcastReceiver，开发者自定义的接收器都从BroadcastReceiver派生 而来。新定义的接收器需要重写onReceive方法，方法内部先判断当前广播是否符合待接收的广播名称，校验通过再开展后续的业务逻辑
+
+
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b"))
+            {
+                return;
+            }
+            textView.setText("收到广播");
+        }
+    }
+
+}
+```
 
 
 
@@ -42018,4 +42169,121 @@ Binder机制还支持进程间的递归调用。例如，进程Ａ执行自己�
 
 
 
+#### 开关广播接收器
+
+为了避免资源浪费，还要求合理使用接收器。就像WiFi上网，需要上网时才打开WiFi，不需要上网时就 关闭WiFi。广播接收器也是如此，活动页面启动之后才注册接收器，活动页面停止之际就注销接收器。 在注册接收器的时候，允许事先指定只接收某种类型的广播，即通过意图过滤器挑选动作名称一致的广 播
+
+
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+    private MyReceiver receiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":收到广播");
+        }
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter("mao.android_application_broadcast.b");
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221009230405342](img/Android学习笔记/image-20221009230405342.png)
+
+
+
+
+
+
+
+![image-20221009230423298](img/Android学习笔记/image-20221009230423298.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 收发有序广播
 
