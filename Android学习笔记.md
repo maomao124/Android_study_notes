@@ -40452,3 +40452,477 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
 
+
+
+
+
+
+
+
+
+### 网页视图 WebView
+
+WebView是Android内置webkit内核的高性能浏览器,而WebView则是在这个基础上进行封装后的一个 控件,WebView直译网页视图,我们可以简单的看作一个可以嵌套到界面上的一个浏览器控件
+
+
+
+#### 相关方法
+
+**WebChromeClient**：辅助WebView处理Javascript的对话框、网站图标、网站title、加载进度等
+
+
+
+|                             方法                             |            作用            |
+| :----------------------------------------------------------: | :------------------------: |
+| **onJsAlert**(WebView view,String url,String message,JsResult result) |   处理Js中的Alert对话框    |
+| **onJsConfirm**(WebView view,String url,String message,JsResult result) |  处理Js中的Confirm对话框   |
+| **onJsPrompt**(WebView view,String url,String message,String defaultValue,JsPromptResult result) |   处理Js中的Prompt对话框   |
+|     **onProgressChanged**(WebView view,int newProgress)      | 当加载进度条发生改变时调用 |
+|        **onReceivedIcon**(WebView view, Bitmap icon)         |       获得网页的icon       |
+|       **onReceivedTitle**(WebView view, String title)        |       获得网页的标题       |
+
+
+
+
+
+**WebViewClient**：辅助WebView处理各种通知与请求事件
+
+
+
+|                             方法                             |                             作用                             |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+|          **onPageStared**(WebView view,String url)           |                    通知主程序网页开始加载                    |
+|  **onPageFinished**(WebView view,String url,Bitmap favicon)  |                   通知主程序,网页加载完毕                    |
+| **doUpdateVisitedHistory**(WebView view,String url,boolean isReload) |                         更新历史记录                         |
+|         **onLoadResource**(WebView view,String url)          |            通知主程序WebView即将加载指定url的资源            |
+| **onScaleChanged**(WebView view,float oldScale,float newScale) |                 ViewView的缩放发生改变时调用                 |
+|   **shouldOverrideKeyEvent**(WebView view,KeyEvent event)    | 控制webView是否处理按键时间,如果返回true,则WebView不处理,返回false则处理 |
+|    **shouldOverrideUrlLoading**(WebView view,String url)     | 控制对新加载的Url的处理,返回true,说明主程序处理WebView不做处理,返回false意味着WebView会对其进行处理 |
+| **onReceivedError**(WebView view,int errorCode,String description,String failingUrl) |                 遇到不可恢复的错误信息时调用                 |
+
+
+
+
+
+**WebSettings**：WebView相关配置的设置，比如setJavaScriptEnabled()设置是否允许JS脚本执行
+
+
+
+|                             方法                             |                             作用                             |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+|                      **getSettings**()                       |      返回一个WebSettings对象,用来控制WebView的属性设置       |
+|                   **loadUrl**(String url)                    |                        加载指定的Url                         |
+|  **loadData**(String data,String mimeType,String encoding)   | 加载指定的Data到WebView中.使用"data:"作为标记头,该方法不能加载网络数据.其中mimeType为数据类型如:textml,image/jpeg. encoding为字符的编码方式 |
+| **loadDataWithBaseURL**(String baseUrl, String data, String mimeType, String encoding, String historyUrl) |                   比上面的loadData更加强大                   |
+|          **setWebViewClient**(WebViewClient client)          | 为WebView指定一个WebViewClient对象.WebViewClient可以辅助WebView处理各种通知,请求等事件。 |
+|        **setWebChromeClient**(WebChromeClient client)        | 为WebView指定一个WebChromeClient对象,WebChromeClient专门用来辅助WebView处理js的对话框,网站title,网站图标,加载进度条等 |
+
+
+
+
+
+**loadUrl**()：直接显示网页内容(单独显示网络图片)，一般不会出现乱码。* **loadData***(data, "text/html", "UTF-8")：用来加载URI格式的数据，不能通过网络来加载内容， 不能加载图片，而且经常会遇到乱码的问题，我们知道String类型的数据主要是Unicode编码的， 而WebView一般为了节省资源使用的是UTF-8编码，尽管我们按上面写了，但是还需要为webView设置： webview.getSettings().setDefaultTextEncodingName("UTF -8");* **loadDataWithBaseURL***(baseUrl, string, "text/html", "utf-8", null)：loadData类的一个 增强类，可以加载图片，baseUrl为你存储的图片路径，而且只需在这里设置utf-8就可以解决乱码 问题了
+
+
+
+
+
+
+
+#### 直接在Activity上加载一个WebView
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/WebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+</WebView>
+```
+
+
+
+
+
+```java
+package mao.android_webview;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * web视图
+     */
+    private WebView webView;
+
+    /**
+     * 退出时间
+     */
+    private long exitTime = 0;
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        webView = findViewById(R.id.WebView);
+
+        webView.setWebViewClient(new WebViewClient()
+        {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url)
+            {
+                view.loadUrl(url);
+                return true;
+            }
+        });
+
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);//支持缩放
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setAllowContentAccess(true);
+        webView.getSettings().setAppCacheEnabled(true);//是否使用缓存
+
+        webView.loadUrl("https://www.bilibili.com/");
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if (webView.canGoBack())
+        {
+            webView.goBack();
+        }
+        else
+        {
+            if ((System.currentTimeMillis() - exitTime) > 2000)
+            {
+                Toast.makeText(getApplicationContext(), "再按一次退出程序",
+                        Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            }
+            else
+            {
+                super.onBackPressed();
+            }
+
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+            android:usesCleartextTraffic="true"
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_WebView"
+            tools:targetApi="31">
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+![image-20221009141006352](img/Android学习笔记/image-20221009141006352.png)
+
+
+
+
+
+![image-20221009142142864](img/Android学习笔记/image-20221009142142864.png)
+
+
+
+
+
+![image-20221009142359933](img/Android学习笔记/image-20221009142359933.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 碎片Fragment
+
+## 概念
+
+碎片Fragment是个特别的存在，它有点像报纸上的专栏，看起来只占据页面的一小块区域，但是这一区 域有自己的生命周期，可以自行其是，仿佛独立王国；并且该区域只占据空间不扰乱业务，添加之后不 影响宿主页面的其他区域，去除之后也不影响宿主页面的其他区域
+
+每个碎片都有对应的XML布局文件，依据其使用方式可分为静态注册与动态注册两类。静态注册指的是 在XML文件中直接放置fragment节点，类似于一个普通控件，可被多个布局文件同时引用。静态注册一 般用于某个通用的页面部件（如Logo条、广告条等），每个活动页面均可直接引用该部件
+
+他出现的初衷是为了适应大屏幕的平板电脑， 当然现在他仍然是平板APP UI设计的宠儿，而且我们普通手机开发也会加入这个Fragment， 我们可以把他看成一个小型的Activity，又称Activity片段！想想，如果一个很大的界面，我们 就一个布局，写起界面来会有多麻烦，而且如果组件多的话是管理起来也很麻烦！而使用Fragment 我们可以把屏幕划分成几块，然后进行分组，进行一个模块化的管理！从而可以更加方便的在 运行过程中动态地更新Activity的用户界面！另外Fragment并不能单独使用，他需要嵌套在Activity 中使用，尽管他拥有自己的生命周期，但是还是会受到宿主Activity的生命周期的影响，比如Activity 被destory销毁了，他也会跟着销毁
+
+- 3.0版本后引入,即minSdk要大于11
+- Fragment需要嵌套在Activity中使用,当然也可以嵌套到另外一个Fragment中,但这个被嵌套 的Fragment也是需要嵌套在Activity中的,间接地说,Fragment还是需要嵌套在Activity中!! 受寄主Activity的生命周期影响,当然他也有自己的生命周期!另外不建议在Fragment里面 嵌套Fragment因为嵌套在里面的Fragment生命周期不可控
+
+
+
+
+
+## 生命周期
+
+
+
+![image-20221009125706682](img/Android学习笔记/image-20221009125706682.png)
+
+
+
+
+
+
+
+## 碎片的静态注册
+
+
+
+
+
+
+
+
+
+fragment_static.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <TextView
+            android:id="@+id/tv_adv"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="广告图片"
+            android:textColor="#000000"
+            android:textSize="17sp" />
+
+    <ImageView
+            android:id="@+id/iv_adv"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:src="@mipmap/ic_launcher"
+            android:scaleType="fitCenter" />
+
+
+</LinearLayout>
+```
+
+
+
+
+
+BlankFragment
+
+```java
+package mao.android_fragment.fragment;
+
+import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import mao.android_fragment.R;
+
+
+public class BlankFragment extends Fragment
+{
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.fragment_static, container, false);
+        TextView tv_adv = view.findViewById(R.id.tv_adv);
+        ImageView iv_adv = view.findViewById(R.id.iv_adv);
+        tv_adv.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Toast.makeText(getActivity(), "点击了广告文本", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        iv_adv.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Toast.makeText(getActivity(), "点击了广告图片", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return view;
+    }
+}
+```
+
+
+
+
+
+
+
+若想在活动页面的XML文件中引用上面定义的StaticFragment，可以直接添加一个fragment节点，但需注意下列两点：
+
+* fragment节点必须指定id属性，否则App运行会报错
+* fragment节点必须通过name属性指定碎片类的完整路径
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+    <FrameLayout
+            android:id="@+id/fragment_static"
+            android:name="mao.android_fragment.fragment.BlankFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/textView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+Activity在onCreate( )方法中调用setContentView()加载布局文件
+
+
+
+
+
+
+
+## 碎片的动态注册
+
+碎片拥有两种使用方式，也就是静态注册和动态注册。相比静态注册，实际开发中动态注册用得更多。 静态注册是在XML文件中直接添加fragment节点，而动态注册迟至代码执行时才动态添加碎片。动态生成的碎片基本给翻页视图使用
+
+
+
+https://blog.csdn.net/shaochen2015821426/article/details/79461921
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 后台服务Service
+
+
+
+
+
