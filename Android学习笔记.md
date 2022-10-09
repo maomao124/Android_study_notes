@@ -40922,7 +40922,576 @@ https://blog.csdn.net/shaochen2015821426/article/details/79461921
 
 # 后台服务Service
 
+## Service与Thread线程的区别
+
+Thread是线程，程序执行的最小单元，分配CPU的基本单位！ 而Service则是Android提供一个允许长时间留驻后台的一个组件，最常见的用法就是做轮询操作！或者想在后台做一些事情，比如后台下载更新
 
 
 
+
+
+
+
+## Service的生命周期
+
+
+
+![image-20221009143333200](img/Android学习笔记/image-20221009143333200.png)
+
+
+
+
+
+
+
+
+
+## 相关方法
+
+- **onCreate()**：当Service第一次被创建后立即回调该方法，该方法在整个生命周期 中只会调用一次！
+- **onDestory()**：当Service被关闭时会回调该方法，该方法只会回调一次！
+- **onStartCommand(intent,flag,startId)**：早期版本是onStart(intent,startId), 当客户端调用startService(Intent)方法时会回调，可多次调用StartService方法， 但不会再创建新的Service对象，而是继续复用前面产生的Service对象，但会继续回调 onStartCommand()方法！
+- **IBinder onOnbind(intent)**：该方法是Service都必须实现的方法，该方法会返回一个 IBinder对象，app通过该对象与Service组件进行通信！
+- **onUnbind(intent)**：当该Service上绑定的所有客户端都断开时会回调该方法
+
+
+
+
+
+
+
+## 启动方式
+
+### StartService启动Service
+
+* 首次启动会创建一个Service实例,依次调用onCreate()和onStartCommand()方法,此时Service 进入运行状态,如果再次调用StartService启动Service,将不会再创建新的Service对象, 系统会直接复用前面创建的Service对象,调用它的onStartCommand()方法！
+* 但这样的Service与它的调用者无必然的联系,就是说当调用者结束了自己的生命周期, 但是只要不调用stopService,那么Service还是会继续运行的!
+* 无论启动了多少次Service,只需调用一次StopService即可停掉Service
+
+
+
+
+
+
+
+### BindService启动Service
+
+* 当首次使用bindService绑定一个Service时,系统会实例化一个Service实例,并调用其onCreate()和onBind()方法,然后调用者就可以通过IBinder和Service进行交互了,此后如果再次使用bindService绑定Service,系统不会创建新的Sevice实例,也不会再调用onBind()方法,只会直接把IBinder对象传递给其他后来增加的客户端
+* 如果我们解除与服务的绑定,只需调用unbindService(),此时onUnbind和onDestory方法将会被调用!这是一个客户端的情况,假如是多个客户端绑定同一个Service的话,情况如下 当一个客户完成和service之间的互动后，它调用 unbindService() 方法来解除绑定。当所有的客户端都和service解除绑定后，系统会销毁service。（除非service也被startService()方法开启）
+* 另外,和上面那张情况不同,bindService模式下的Service是与调用者相互关联的,可以理解为 "一条绳子上的蚂蚱",要死一起死,在bindService后,一旦调用者销毁,那么Service也立即终止
+
+
+
+
+
+bindService(Intent Service,ServiceConnection conn,int flags)方法说明：
+
+* **service**:通过该intent指定要启动的Service
+* **conn**:ServiceConnection对象,用户监听访问者与Service间的连接情况, 连接成功回调该对象中的onServiceConnected(ComponentName,IBinder)方法; 如果Service所在的宿主由于异常终止或者其他原因终止,导致Service与访问者间断开连接时调用***onServiceDisconnected***(CompanentName)方法,主动通过**unBindService()** 方法断开并不会调用上述方法
+* **flags**:指定绑定时是否自动创建Service(如果Service还未创建), 参数可以是0(不自动创建),BIND_AUTO_CREATE(自动创建)
+
+
+
+
+
+
+
+## 生命周期验证
+
+### StartService启动Service
+
+
+
+```java
+package mao.android_startservice.service;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
+
+public class MyService extends Service
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MyService";
+
+    public MyService()
+    {
+    }
+
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        Log.d(TAG, "onBind: ");
+        return null;
+    }
+
+    @Override
+    public void onCreate()
+    {
+        Log.d(TAG, "onCreate: ");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        Log.d(TAG, "onStartCommand: ");
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        Log.d(TAG, "onDestroy: ");
+    }
+}
+```
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Android_StartService"
+            tools:targetApi="31">
+
+        <service
+                android:name=".service.MyService"
+                android:enabled="true"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="mao.android_startservice.service.MYSERVICE" />
+            </intent-filter>
+
+        </service>
+
+
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始服务"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="268dp" />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止服务"
+            android:id="@+id/button2"
+            app:layout_constraintStart_toEndOf="@id/button1"
+            android:layout_marginStart="120dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+```java
+package mao.android_startservice;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent();
+        intent.setAction("mao.android_startservice.service.MYSERVICE");
+        intent.setPackage("mao.android_startservice");
+
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startService(intent);
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                stopService(intent);
+            }
+        });
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221009192320154](img/Android学习笔记/image-20221009192320154.png)
+
+
+
+
+
+
+
+
+
+### BindService启动Service
+
+Context的bindService方法：
+
+- ServiceConnection对象:监听访问者与Service间的连接情况,如果成功连接,回调 onServiceConnected(),如果异常终止或者其他原因终止导致Service与访问者断开 连接则回调onServiceDisconnected方法,调用unBindService()不会调用该方法!
+- onServiceConnected方法中有一个IBinder对象,该对象即可实现与被绑定Service 之间的通信!我们再开发Service类时,默认需要实现IBinder onBind()方法,该方法返回的 IBinder对象会传到ServiceConnection对象中的onServiceConnected的参数,我们就可以 在这里通过这个IBinder与Service进行通信!
+
+
+
+步骤：
+
+* **Step 1:**在自定义的Service中继承Binder,实现自己的IBinder对象
+* **Step 2:**通过onBind( )方法返回自己的IBinder对象
+* **Step 3:**在绑定该Service的类中定义一个ServiceConnection对象,重写两个方法, onServiceConnected和onDisconnected！然后直接读取IBinder传递过来的参数即可
+
+
+
+
+
+
+
+```java
+package mao.android_bindservice.service;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.util.Log;
+
+public class MyService extends Service
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MyService";
+
+    private int count;
+
+    private volatile boolean quit;
+
+
+    //定义onBinder方法所返回的对象
+    private final MyBinder binder = new MyBinder();
+
+    public class MyBinder extends Binder
+    {
+        public int getCount()
+        {
+            return count;
+        }
+    }
+
+
+    public MyService()
+    {
+    }
+
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        Log.d(TAG, "onBind: ");
+        return binder;
+    }
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+
+        Log.d(TAG, "onCreate: ");
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while (!quit)
+                {
+                    try
+                    {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    count++;
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent)
+    {
+        Log.d(TAG, "onUnbind: ");
+        return true;
+    }
+
+
+    @Override
+    public void onDestroy()
+    {
+        this.quit = true;
+    }
+
+    @Override
+    public void onRebind(Intent intent)
+    {
+        super.onRebind(intent);
+        Log.d(TAG, "onRebind: ");
+    }
+}
+```
+
+
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="绑定service"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="88dp" />
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="取消绑定service"
+            app:layout_constraintTop_toBottomOf="@+id/Button1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="164dp" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="获取service状态"
+            app:layout_constraintTop_toBottomOf="@+id/Button2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
+```java
+package mao.android_bindservice;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import mao.android_bindservice.service.MyService;
+
+public class MainActivity extends AppCompatActivity
+{
+
+
+    private MyService.MyBinder binder;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+    private final ServiceConnection conn = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            Log.d(TAG, "onServiceConnected: ");
+            binder = (MyService.MyBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            Log.d(TAG, "onServiceDisconnected: ");
+        }
+    };
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent();
+        intent.setAction("mao.android_bindservice.service.MyService");
+        intent.setPackage("mao.android_bindservice");
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                bindService(intent, conn, Service.BIND_AUTO_CREATE);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                unbindService(conn);
+            }
+        });
+
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                toastShow("Service的count的值为:" + binder.getCount());
+            }
+        });
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221009200059743](img/Android学习笔记/image-20221009200059743.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 独立线程服务IntentService
 
