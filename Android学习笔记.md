@@ -43629,5 +43629,304 @@ public class MainActivity extends AppCompatActivity
 
 ### 定时管理器AlarmManager
 
+尽管系统的分钟广播能够实现定时功能（每分钟一次），但是这种定时功能太低级了，既不能定制可长 可短的时间间隔，也不能限制定时广播的次数。为此Android提供了专门的定时管理器 AlarmManager，它利用系统闹钟定时发送广播，比分钟广播拥有更强大的功能。由于闹钟与震动器同 属系统服务，且闹钟的服务名称为ALARM_SERVICE，因此依然调用getSystemService方法获取闹钟管理器的实例
 
 
+
+```java
+AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+```
+
+
+
+
+
+得到闹钟实例后，即可调用它的各种方法设置闹钟规则了，AlarmManager的常见方法说明如下：
+
+* set：设置一次性定时器。第一个参数为定时器类型，通常填AlarmManager.RTC_WAKEUP；第二个参数为期望的执行时刻（单位为毫秒）；第三个参数为待执行的延迟意图（PendingIntent类型）
+* setAndAllowWhileIdle：设置一次性定时器，参数说明同set方法，不同之处在于：即使设备处于 空闲状态，也会保证执行定时器。因为从Android 6.0开始，set方法在暗屏时不保证发送广播，必 须调用setAndAllowWhileIdle方法才能保证发送广播
+* setRepeating：设置重复定时器。第一个参数为定时器类型；第二个参数为首次执行时间（单位为 毫秒）；第三个参数为下次执行的间隔时间（单位为毫秒）；第四个参数为待执行的延迟意图 （PendingIntent类型）。然而从Android 4.4开始，setRepeating方法不保证按时发送广播，只能通过setAndAllowWhileIdle方法间接实现重复定时功能
+* cancel：取消指定延迟意图的定时器
+
+
+
+延迟意图，它是PendingIntent类型，顾名思义，延迟意图不是马上执行 的意图，而是延迟若干时间才执行的意图。像之前的活动页面跳转，调用startActivity方法跳到下个页 面，此时跳转动作是立刻发生的，所以要传入Intent对象。由于定时器的广播不是立刻发送的，而是时刻到达了才发送广播，因此不能传Intent对象只能传PendingIntent对象。当然意图与延迟意图不止一处区别，它们的差异主要有下列3点：
+
+* PendingIntent代表延迟的意图，它指向的组件不会马上激活；而Intent代表实时的意图，一旦被 启动，它指向的组件就会马上激活
+* PendingIntent是一类消息的组合，不但包含目标的Intent对象，还包含请求代码、请求方式等信息
+* PendingIntent对象在创建之时便已知晓将要用于活动还是广播，例如调用getActivity方法得到的是活动跳转的延迟意图，调用getBroadcast方法得到的是广播发送的延迟意图
+
+
+
+需要实现3个编码步骤：定义定时器的广播接收器、开关定时器的广播接收器、设置定时器的播报规则
+
+
+
+
+
+#### 定义定时器的广播接收器
+
+闹钟广播的接收器采用动态注册方式，它的实现途径与标准广播类似，都要从BroadcastReceiver派生新的接收器，并重写onReceive方法
+
+
+
+```java
+package mao.android_alarmmanager;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Vibrator;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+    public class AlarmReceiver extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(500);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+#### 开关定时器的广播接收器
+
+定时接收器的开关流程参照标准广播，可以在活动页面的onStart方法中注册接收器，在活动页面的 onStop方法中注销接收器
+
+
+
+```java
+package mao.android_alarmmanager;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+
+    private final String ALARM_ACTION = "mao.android_alarmmanager.alarm";
+    private AlarmReceiver alarmReceiver;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+    public class AlarmReceiver extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            Log.d(TAG, "onReceive: ");
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(500);
+        }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        alarmReceiver = new AlarmReceiver();
+        IntentFilter intentFilter = new IntentFilter(ALARM_ACTION);
+        registerReceiver(alarmReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(alarmReceiver);
+    }
+}
+```
+
+
+
+
+
+
+
+#### 设置定时器的播报规则
+
+首先从系统服务中获取闹钟管理器，然后调用管理器的setxxx方法，把事先创建的延迟意图填到播报规 则当中
+
+
+
+```java
+package mao.android_alarmmanager;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+
+    private final String ALARM_ACTION = "mao.android_alarmmanager.alarm";
+    private AlarmReceiver alarmReceiver;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        findViewById(R.id.Button).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                sendAlarm();
+                toastShow("3秒后触发");
+            }
+        });
+    }
+
+    public class AlarmReceiver extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            Log.d(TAG, "onReceive: ");
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(500);
+        }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        alarmReceiver = new AlarmReceiver();
+        IntentFilter intentFilter = new IntentFilter(ALARM_ACTION);
+        registerReceiver(alarmReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(alarmReceiver);
+    }
+
+
+    private void sendAlarm()
+    {
+        Intent intent = new Intent(ALARM_ACTION); // 创建一个广播事件的意图
+        // 创建一个用于广播的延迟意图
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        // 从系统服务中获取闹钟管理器
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        long delayTime = System.currentTimeMillis() + 3 * 1000;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            // 允许在空闲时发送广播，Android6.0之后新增的方法
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, delayTime, pendingIntent);
+        }
+        else
+        {
+            // 设置一次性闹钟，延迟若干秒后，携带延迟意图发送闹钟广播
+            // （但Android6.0之后，set方法在暗屏时不保证发送广播，必须调用setAndAllowWhileIdle方法）
+            alarmManager.set(AlarmManager.RTC_WAKEUP, delayTime, pendingIntent);
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+### 电话管理器TelephonyManager
+
+
+
+​	
