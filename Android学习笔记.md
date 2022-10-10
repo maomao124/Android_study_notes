@@ -43346,3 +43346,288 @@ public class MainActivity extends AppCompatActivity
 
 ### 接收网络变更广播
 
+除了分钟广播，网络变更广播也很常见，因为手机可能使用WiFi上网，也可能使用数据连接上网，而后 者会产生流量费用，所以手机浏览器都提供了“智能无图”的功能，连上WiFi网络时才显示网页上的图 片，没连上WiFi就不显示图片。这类业务场景就要求侦听网络变更广播，对于当前网络变成WiFi连接、 变成数据连接的两种情况，需要分别判断并加以处理
+
+
+
+接收网络变更广播可分解为下面3个步骤：
+
+* 步骤一，定义一个网络广播的接收器，并重写接收器的onReceive方法，补充收到广播之后的处理逻辑
+* 步骤二，重写活动页面的onStart方法，添加广播接收器的注册代码，注意要让接收器过滤网络变更广播 android.net.conn.CONNECTIVITY_CHANGE
+* 步骤三，重写活动页面的onStop方法，添加广播接收器的注销代码
+
+
+
+
+
+上述3个步骤中，尤为注意第一步骤，因为onReceive方法只表示收到了网络广播，至于变成哪种网络， 还得把广播消息解包才知道是怎么回事。网络广播携带的包裹中有个名为networkInfo的对象，其数据 类型为NetworkInfo，于是调用NetworkInfo对象的相关方法，即可获取详细的网络信息
+
+
+
+![image-20221010110451132](img/Android学习笔记/image-20221010110451132.png)
+
+
+
+
+
+* getTypeName：获取网络类型的名称
+* getSubtype：获取网络子类型。当网络类型为数据连接时，子类型为2G/3G/4G的细分类型，如 CDMA、EVDO、HSDPA、LTE等
+
+
+
+![image-20221010110525956](img/Android学习笔记/image-20221010110525956.png)
+
+
+
+
+
+* getSubtypeName：获取网络子类型的名称
+* getState：获取网络状态
+
+
+
+![image-20221010110624953](img/Android学习笔记/image-20221010110624953.png)
+
+
+
+
+
+
+
+
+
+#### 定义网络广播的接收器
+
+```java
+package mao.android_network_change_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+    private TextView textView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+
+    private class NetworkReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            NetworkInfo networkInfo = intent.getParcelableExtra("networkInfo");
+            String s = "网络类型：" + networkInfo.getTypeName() + ",网络子类型：" + networkInfo.getSubtypeName()
+                    + ",网络状态：" + networkInfo.getState().toString();
+            textView.setText(textView.getText() +"\n\n"+ s);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+#### 添加广播接收器的注册代码
+
+```java
+package mao.android_network_change_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+    private TextView textView;
+    private NetworkReceiver networkReceiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+
+    private class NetworkReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            NetworkInfo networkInfo = intent.getParcelableExtra("networkInfo");
+            String s = "网络类型：" + networkInfo.getTypeName() + ",网络子类型：" + networkInfo.getSubtypeName()
+                    + ",网络状态：" + networkInfo.getState().toString();
+           textView.setText(textView.getText() +"\n\n"+ s);
+        }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        networkReceiver = new NetworkReceiver();
+        IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(networkReceiver, intentFilter);
+    }
+}
+```
+
+
+
+
+
+
+
+#### 添加广播接收器的注销代码
+
+```java
+package mao.android_network_change_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+    private TextView textView;
+    private NetworkReceiver networkReceiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+
+    }
+
+
+    private class NetworkReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            NetworkInfo networkInfo = intent.getParcelableExtra("networkInfo");
+            String s = "网络类型：" + networkInfo.getTypeName() + ",网络子类型：" + networkInfo.getSubtypeName()
+                    + ",网络状态：" + networkInfo.getState().toString();
+            textView.setText(textView.getText() +"\n\n"+ s);
+        }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        networkReceiver = new NetworkReceiver();
+        IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(networkReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(networkReceiver);
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221010112421654](img/Android学习笔记/image-20221010112421654.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 定时管理器AlarmManager
+
+
+
