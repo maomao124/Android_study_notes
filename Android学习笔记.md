@@ -45610,5 +45610,79 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+
+
 ### 电源服务PowerManager
+
+#### PowerManager是什么
+
+Android系统为我们提供的电源管理的一个API，其相关接口与设备电池的续航能力有很大的关联， 官方也说了，除非是迫不得已吧，不然的话，应该尽量避免使用这个类，并且使用完以后一定要及时释放
+
+所谓的电源管理包括:CPU运行，键盘或者屏幕亮起来!核心其实就是**wakelock锁**机制，只要我们拿着这个锁， 那么系统就无法进入休眠状态，可以给用户态程序或内核获取到！锁可以是:"**有超时的**"或者 "**没有超时**"，超时的锁到时间后会自动解锁，如果没有了锁或超时,内核会启动休眠机制来进入休眠
+
+
+
+
+
+#### wakelock锁
+
+**PowerManager.WakeLock**有**加锁**与**解锁**两种状态，而加锁的形式有两种:
+
+* **永久锁住**，这种锁除非显式的放开，否则是不会解锁的，所以用起来需要非常小心！
+
+* **超时锁**，到时间后就会解锁，而创建WakeLock后，有**两种加锁机制**: **①不计数锁机制**，**②计数锁机制(默认)** 可通过**setReferenceCounted**(boolean value)来指定,区别在于: 前者无论**acquire**( )多少次，一次**release**( )就可以解开锁。 而后者则需要**(--count == 0)**的时候，同样当**(count == 0)**才会去申请锁 所以，**WakeLock**的计数机制并不是正真意义上对每次请求进行申请/释放一个锁; 只是对同一把锁被**申请/释放**的次数来进行统计，然后再去操作
+
+
+
+
+
+
+
+#### PowerManagerd的使用
+
+```java
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyTag");
+        wakeLock.acquire();
+        //在这个过程,屏幕会保持光亮!
+        wakeLock.release();
+```
+
+
+
+
+
+上述**newWakeLock**( )的第一个**flag标记**，这些标记不同程度的影响系统电源.
+
+这些标记都是独占的，并且每次只能指定其中一个
+
+* **PARTIAL_WAKE_LOCK**:保持CPU 运转，屏幕和键盘灯有可能是关闭的。
+* **SCREEN_DIM_WAKE_LOCK**：保持CPU 运转，允许保持屏幕显示但有可能是灰的，允许关闭键盘灯
+* **SCREEN_BRIGHT_WAKE_LOCK**：保持CPU 运转，允许保持屏幕高亮显示，允许关闭键盘灯
+* **FULL_WAKE_LOCK**：保持CPU 运转，保持屏幕高亮显示，键盘灯也保持亮度
+
+
+
+
+
+#### 需要的权限
+
+```xml
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+<uses-permission android:name="android.permission.DEVICE_POWER"/>
+```
+
+
+
+
+
+
+
+
+
+
+
+### 壁纸管理器WallpaperManager
+
+
 
