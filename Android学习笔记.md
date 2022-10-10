@@ -42055,6 +42055,45 @@ Android的广播机制正是借鉴了WiFi的通信原理，不必搭建专门的
 
 
 
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="57dp"
+            app:layout_constraintHorizontal_bias="0.498" />
+
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/Button1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+
+
 ```java
 package mao.android_application_broadcast;
 
@@ -42286,4 +42325,852 @@ public class MainActivity extends AppCompatActivity
 
 
 ### 收发有序广播
+
+由于广播没指定唯一的接收者，因此可能存在多个接收器，每个接收器都拥有自己的处理逻辑。这种机 制固然灵活，却不够严谨，因为不同接收器之间也许有矛盾
+
+比如只要办了借书证，大家都能借阅图书馆的藏书，不过一本书被读者甲借出去之后，读者乙就不能再 借这本书了，必须等到读者甲归还了该书之后，读者乙方可继续借阅此书。这个借书场景体现了一种有 序性，即图书是轮流借阅着的，且同时刻仅能借给一位读者，只有前面的读者借完归还，才轮到后面的读者借阅。另外，读者甲一定会归还此书吗？可能读者甲对该书爱不释手，从图书馆高价买断了这本 书；也可能读者甲粗心大意，不小心弄丢了这本书。不管是哪种情况，读者甲都无法还书，导致正在排 队的读者乙无书可借。这种借不到书的场景体现了一种依赖关系，即使读者乙迫不及待地想借到书，也得看读者甲的心情，要是读者甲因为各种理由没能还书，那么读者乙就白白排队了。上述的借书业务对应到广播的接收功能
+
+
+
+一个广播存在多个接收器，这些接收器需要排队收听广播，这意味着该广播是条有序广播
+
+先收到广播的接收器A，既可以让其他接收器继续收听广播，也可以中断广播不让其他接收器收 听
+
+
+
+
+
+#### 发送广播时注明是有序广播
+
+之前发送标准广播用到了sendBroadcast方法，可是该方法发出来的广播是无序的。只有调用 sendOrderedBroadcast方法才能发送有序广播
+
+
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintTop_toBottomOf="@+id/Button2" />
+
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送有序广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/Button1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+关键代码
+
+```java
+findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+{
+    @Override
+    public void onClick(View v)
+    {
+        Intent intent = new Intent("mao.android_application_broadcast.b2");
+        sendOrderedBroadcast(intent, null);
+    }
+});
+```
+
+
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+    private MyReceiver receiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b2");
+                sendOrderedBroadcast(intent, null);
+            }
+        });
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":收到广播");
+        }
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter("mao.android_application_broadcast.b");
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+}
+```
+
+
+
+
+
+
+
+#### 定义有序广播的接收器
+
+接收器的定义代码基本不变，也要从BroadcastReceiver继承而来，唯一的区别是有序广播的接收器允 许中断广播。倘若在接收器的内部代码调用abortBroadcast方法，就会中断有序广播，使得后面的接收器不能再接收该广播
+
+
+
+```java
+private class OrderAReceiver extends BroadcastReceiver
+{
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        if (intent == null)
+        {
+            return;
+        }
+        if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+        {
+            return;
+        }
+        textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器A收到广播");
+        if (checkBox.isChecked())
+        {
+            abortBroadcast();
+        }
+    }
+}
+
+private class OrderBReceiver extends BroadcastReceiver
+{
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        if (intent == null)
+        {
+            return;
+        }
+        if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+        {
+            return;
+        }
+        textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器B收到广播");
+    }
+}
+```
+
+
+
+
+
+
+
+#### 注册有序广播的多个接收器
+
+接收器的注册操作同样调用registerReceiver方法，为了给接收器排队，还需调用意图过滤器的 setPriority方法设置优先级，优先级越大的接收器，越先收到有序广播。如果不设置优先级，或者两个 接收器的优先级相等，那么越早注册的接收器，会越先收到有序广播
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+    private MyReceiver receiver;
+    private CheckBox checkBox;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        checkBox = findViewById(R.id.CheckBox);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b2");
+                sendOrderedBroadcast(intent, null);
+            }
+        });
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":收到广播");
+        }
+    }
+
+
+    private class OrderAReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器A收到广播");
+            if (checkBox.isChecked())
+            {
+                abortBroadcast();
+            }
+        }
+    }
+
+    private class OrderBReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器B收到广播");
+        }
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter("mao.android_application_broadcast.b");
+        registerReceiver(receiver, filter);
+
+        OrderAReceiver orderAReceiver = new OrderAReceiver();
+        OrderBReceiver orderBReceiver = new OrderBReceiver();
+
+        IntentFilter intentFilterA = new IntentFilter("mao.android_application_broadcast.b2");
+        intentFilterA.setPriority(2);
+        IntentFilter intentFilterB = new IntentFilter("mao.android_application_broadcast.b2");
+        intentFilterB.setPriority(1);
+
+        registerReceiver(orderAReceiver, intentFilterA);
+        registerReceiver(orderBReceiver, intentFilterB);
+
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221009232554140](img/Android学习笔记/image-20221009232554140.png)
+
+
+
+![image-20221009232609915](img/Android学习笔记/image-20221009232609915.png)
+
+
+
+
+
+勾选单选框
+
+
+
+![image-20221009232634174](img/Android学习笔记/image-20221009232634174.png)
+
+
+
+![image-20221009232645066](img/Android学习笔记/image-20221009232645066.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 收发静态广播
+
+在AndroidManifest.xml中注册接收器，该方式被称作静态注册；而在代码中注册接收器，该方式被称 作动态注册。之所以罕见静态注册，是因为静态注册容易导致安全问题，故而Android 8.0之后废弃了大多数静态注册。话虽如此，Android倒也没有彻底禁止静态注册，只要满足特定的编码条件，那么依然 能够通过静态方式注册接收器
+
+
+
+首先右击当前模块的默认包，依次选择右键菜单的New→Package，创建名为receiver的新包，用于存放静态注册的接收器代码
+
+
+
+![image-20221010101208196](img/Android学习笔记/image-20221010101208196.png)
+
+
+
+
+
+其次右击刚创建的receiver包，依次选择右键菜单的New→Other→Broadcast Receiver
+
+
+
+![image-20221010101346776](img/Android学习笔记/image-20221010101346776.png)
+
+
+
+
+
+![image-20221010101419297](img/Android学习笔记/image-20221010101419297.png)
+
+
+
+
+
+在组件创建对话框的Class Name一栏填写接收器的类名
+
+
+
+默认代码：
+
+```java
+package mao.android_application_broadcast.receiver;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
+public class MyReceiver extends BroadcastReceiver
+{
+
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        // TODO: This method is called when the BroadcastReceiver is receiving
+        // an Intent broadcast.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+}
+```
+
+
+
+
+
+
+
+清单文件
+
+```xml
+<receiver
+        android:name=".receiver.MyReceiver"
+        android:enabled="true"
+        android:exported="true">
+
+</receiver>
+```
+
+
+
+
+
+
+
+填写代码
+
+```java
+package mao.android_application_broadcast.receiver;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Vibrator;
+import android.util.Log;
+
+public class MyReceiver extends BroadcastReceiver
+{
+
+    private static final String TAG = "MyReceiver";
+    
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        Log.d(TAG, "onReceive: ");
+        if (intent==null)
+        {
+            return;
+        }
+        if (!intent.getAction().equals("mao.android_application_broadcast.receiver.MyReceiver"))
+        {
+            return;
+        }
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(500);
+    }
+}
+```
+
+
+
+
+
+由于震动手机需要申请对应的权限，因此打开AndroidManifest.xml添加以下的权限申请配置：
+
+```xml
+<uses-permission android:name="android.permission.VIBRATE" />
+```
+
+
+
+
+
+修改 AndroidManifest.xml，在receiver节点内部增加intent-filter标签加以过滤
+
+```xml
+<receiver
+        android:name=".receiver.MyReceiver"
+        android:enabled="true"
+        android:exported="true">
+    <intent-filter>
+        <action android:name="mao.android_application_broadcast.receiver.MyReceiver" />
+    </intent-filter>
+</receiver>
+```
+
+
+
+
+
+由于Android 8.0之后删除了大部分静态注册，防止App退出后仍在收听广播， 因此为了让应用能够继续接收静态广播，需要给静态广播指定包名，也就是调用意图对象的 setComponent方法设置组件路径
+
+
+
+
+
+布局
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/Button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/Button2" />
+
+
+    <Button
+            android:id="@+id/Button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送有序广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintTop_toBottomOf="@+id/Button3" />
+
+    <Button
+            android:id="@+id/Button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送震动广播"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/Button1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+
+    <CheckBox
+            android:id="@+id/CheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
+
+
+关键代码：
+
+```java
+Intent intent = new Intent("mao.android_application_broadcast.receiver.MyReceiver");
+intent.setPackage("mao.android_application_broadcast");
+sendBroadcast(intent);
+```
+
+
+
+
+
+```java
+package mao.android_application_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private TextView textView;
+    private MyReceiver receiver;
+    private CheckBox checkBox;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textView = findViewById(R.id.TextView);
+
+        checkBox = findViewById(R.id.CheckBox);
+
+        findViewById(R.id.Button1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b");
+                sendBroadcast(intent);
+            }
+        });
+
+        findViewById(R.id.Button2).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.b2");
+                sendOrderedBroadcast(intent, null);
+            }
+        });
+
+        findViewById(R.id.Button3).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent("mao.android_application_broadcast.receiver.MyReceiver");
+                intent.setPackage("mao.android_application_broadcast");
+                sendBroadcast(intent);
+
+            }
+        });
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":收到广播");
+        }
+    }
+
+
+    private class OrderAReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器A收到广播");
+            if (checkBox.isChecked())
+            {
+                abortBroadcast();
+            }
+        }
+    }
+
+    private class OrderBReceiver extends BroadcastReceiver
+    {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null)
+            {
+                return;
+            }
+            if (!intent.getAction().equals("mao.android_application_broadcast.b2"))
+            {
+                return;
+            }
+            textView.setText(textView.getText() + "\n" + new Date().getTime() + ":接收器B收到广播");
+        }
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter("mao.android_application_broadcast.b");
+        registerReceiver(receiver, filter);
+
+        OrderAReceiver orderAReceiver = new OrderAReceiver();
+        OrderBReceiver orderBReceiver = new OrderBReceiver();
+
+        IntentFilter intentFilterA = new IntentFilter("mao.android_application_broadcast.b2");
+        intentFilterA.setPriority(2);
+        IntentFilter intentFilterB = new IntentFilter("mao.android_application_broadcast.b2");
+        intentFilterB.setPriority(1);
+
+        registerReceiver(orderAReceiver, intentFilterA);
+        registerReceiver(orderBReceiver, intentFilterB);
+
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+}
+```
+
+
+
+![image-20221010103030055](img/Android学习笔记/image-20221010103030055.png)
+
+
+
+![image-20221010103102892](img/Android学习笔记/image-20221010103102892.png)
+
+
+
+
+
+
+
+静态注册只适用于接收App自身的广播，不能接收系统广播，也不能接收其他应用的广播
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 监听系统广播
+
+
 
