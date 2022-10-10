@@ -43172,5 +43172,177 @@ public class MainActivity extends AppCompatActivity
 
 ## 监听系统广播
 
+### 接收分钟到达广播
 
+除了应用自身的广播，系统也会发出各式各样的广播，通过监听这些系统广播，App能够得知周围环境发生了什么变化，从而按照最新环境调整运行逻辑。分钟到达广播便是系统广播之一，每当时钟到达某分零秒，也就是跳到新的分钟时刻，系统就通过全局大喇叭播报分钟广播。App只要在运行时侦听分钟 广播Intent.ACTION_TIME_TICK，即可在分钟切换之际收到广播信息
+
+
+
+由于分钟广播属于系统广播，发送操作已经交给系统了，因此若要侦听分钟广播，App只需实现该广播 的接收操作。具体到编码上，接收分钟广播可分解为下面3个步骤：
+
+* 步骤一，定义一个分钟广播的接收器，并重写接收器的onReceive方法，补充收到广播之后的处理逻辑
+* 步骤二，重写活动页面的onStart方法，添加广播接收器的注册代码，注意要让接收器过滤分钟到达广播 Intent.ACTION_TIME_TICK
+* 步骤三，重写活动页面的onStop方法，添加广播接收器的注销代码
+
+
+
+
+
+#### 定义分钟广播的接收器
+
+
+
+```java
+package mao.android_minute_arrival_broadcast.receiver;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import java.util.Date;
+
+public class MyReceiver extends BroadcastReceiver
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MyReceiver";
+
+    @Override
+    public void onReceive(Context context, Intent intent)
+    {
+        if (intent == null)
+        {
+            return;
+        }
+        if (!intent.getAction().equals(Intent.ACTION_TIME_TICK))
+        {
+            return;
+        }
+        Log.i(TAG, "onReceive: 收到分钟到达广播：" + new Date());
+    }
+}
+```
+
+
+
+
+
+
+
+#### 添加广播接收器的注册代码
+
+```java
+package mao.android_minute_arrival_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+
+import mao.android_minute_arrival_broadcast.receiver.MyReceiver;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private MyReceiver receiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(receiver, intentFilter);
+    }
+}
+```
+
+
+
+
+
+#### 添加广播接收器的注销代码
+
+```java
+package mao.android_minute_arrival_broadcast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+
+import mao.android_minute_arrival_broadcast.receiver.MyReceiver;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private MyReceiver receiver;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(receiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221010105733855](img/Android学习笔记/image-20221010105733855.png)
+
+
+
+
+
+```sh
+2022-10-10 10:56:00.029 24398-24398 MyReceiver              mao...roid_minute_arrival_broadcast  I  onReceive: 收到分钟到达广播：Mon Oct 10 10:56:00 GMT+08:00 2022
+2022-10-10 10:57:00.003 24398-24398 MyReceiver              mao...roid_minute_arrival_broadcast  I  onReceive: 收到分钟到达广播：Mon Oct 10 10:57:00 GMT+08:00 2022
+2022-10-10 10:58:00.003 24398-24398 MyReceiver              mao...roid_minute_arrival_broadcast  I  onReceive: 收到分钟到达广播：Mon Oct 10 10:58:00 GMT+08:00 2022
+```
+
+
+
+
+
+
+
+
+
+
+
+### 接收网络变更广播
 
