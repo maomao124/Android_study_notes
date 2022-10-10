@@ -43627,6 +43627,8 @@ public class MainActivity extends AppCompatActivity
 
 
 
+## 管理器Manager
+
 ### 定时管理器AlarmManager
 
 尽管系统的分钟广播能够实现定时功能（每分钟一次），但是这种定时功能太低级了，既不能定制可长 可短的时间间隔，也不能限制定时广播的次数。为此Android提供了专门的定时管理器 AlarmManager，它利用系统闹钟定时发送广播，比分钟广播拥有更强大的功能。由于闹钟与震动器同 属系统服务，且闹钟的服务名称为ALARM_SERVICE，因此依然调用getSystemService方法获取闹钟管理器的实例
@@ -45684,5 +45686,143 @@ Android系统为我们提供的电源管理的一个API，其相关接口与设�
 
 ### 壁纸管理器WallpaperManager
 
+#### 相关方法
 
+设置壁纸的相关方法：
+
+- **setBitmap**(Bitmap bitmap)：将壁纸设置为bitmap所代表的位图
+- **setResource**(int resid)：将壁纸设置为resid资源所代表的图片
+- **setStream**(InputStream data)：将壁纸设置为data数据所代表的图片
+
+
+
+其他方法：
+
+- **clear**()：清除壁纸，设置回系统默认的壁纸
+- **getDesiredMinimumHeight**()：最小壁纸高度
+- **getDesiredMinimumWidth**()：最小壁纸宽度
+- **getDrawable**()：获得当前系统壁纸，如果没有设置壁纸，则返回系统默认壁纸
+- **getWallpaperInfo**()：加入当前壁纸是动态壁纸，返回动态壁纸信息
+- **peekDrawable**()：获得当前系统壁纸，如果没设置壁纸的话返回null
+
+
+
+
+
+#### WallpaperManager对象
+
+```java
+WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+```
+
+
+
+
+
+
+
+#### 需要的权限
+
+```xml
+<uses-permission android:name="android.permission.SET_WALLPAPER"/> 
+```
+
+
+
+
+
+
+
+#### 示例
+
+准备一张壁纸图片，放入res目录的drawable目录下
+
+
+
+然后在清单文件里加入权限
+
+
+
+
+
+```java
+package mao.android_wallpapermanager;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.WallpaperManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    @SuppressLint("ResourceType")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+
+        try
+        {
+            wallpaperManager.setResource(R.drawable.test);
+            toastShow("壁纸设置成功");
+
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            toastShow("壁纸设置失败，失败原因：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+![image-20221010211522829](img/Android学习笔记/image-20221010211522829.png)
+
+
+
+
+
+![image-20221010211634057](img/Android学习笔记/image-20221010211634057.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 对象序列化与反序列化
+
+## JSON
 
