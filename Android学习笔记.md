@@ -45822,7 +45822,474 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
+
+
+
 # 对象序列化与反序列化
 
 ## JSON
+
+我们和服务器交互一般用得较多的数据传递方式都是 Json 字符串的形式， 保存对象，我们也可以写成一个 Json 字符串然后存储，对于后端，可以直接使用spring MVC自带的jackson进行序列化与反序列化，也可以使用Gson，Fastjson等。
+
+安卓可以使用这些库，可以通过构建系统导入依赖，但是Android 有自带的 Json 解析器来解析 Json
+
+
+
+
+
+## Json解析类
+
+这些API都存在于org.json包下，而我们用到的类有下面这些：
+
+- **JSONObject**： Json对象，可以完成Json字符串与Java对象的相互转换
+- **JSONArray**： Json数组，可以完成Json字符串与Java集合或对象的相互转换
+- **JSONStringer**： Json文本构建类，这个类可以帮助快速和便捷的创建JSON text， 每个JSONStringer实体只能对应创建一个JSON text
+- **JSONTokener**：Json解析类
+- **JSONException**：Json异常
+
+
+
+
+
+
+
+## 基本使用
+
+
+
+实体类
+
+```java
+package mao.android_json.entity;
+
+/**
+ * Project name(项目名称)：android_Json
+ * Package(包名): mao.android_json.entity
+ * Class(类名): Student
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/10
+ * Time(创建时间)： 21:47
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Student
+{
+
+    /**
+     * id
+     */
+    private int id;
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * 性别
+     */
+    private String sex;
+    /**
+     * 年龄
+     */
+    private int age;
+
+    /**
+     * Instantiates a new Student.
+     */
+    public Student()
+    {
+    }
+
+    /**
+     * Instantiates a new Student.
+     *
+     * @param id   the id
+     * @param name the name
+     * @param sex  the sex
+     * @param age  the age
+     */
+    public Student(int id, String name, String sex, int age)
+    {
+        this.id = id;
+        this.name = name;
+        this.sex = sex;
+        this.age = age;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public int getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public Student setId(int id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public Student setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets sex.
+     *
+     * @return the sex
+     */
+    public String getSex()
+    {
+        return sex;
+    }
+
+    /**
+     * Sets sex.
+     *
+     * @param sex the sex
+     * @return the sex
+     */
+    public Student setSex(String sex)
+    {
+        this.sex = sex;
+        return this;
+    }
+
+    /**
+     * Gets age.
+     *
+     * @return the age
+     */
+    public int getAge()
+    {
+        return age;
+    }
+
+    /**
+     * Sets age.
+     *
+     * @param age the age
+     * @return the age
+     */
+    public Student setAge(int age)
+    {
+        this.age = age;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Student student = (Student) o;
+
+        if (getId() != student.getId()) return false;
+        if (getAge() != student.getAge()) return false;
+        if (getName() != null ? !getName().equals(student.getName()) : student.getName() != null)
+        {
+            return false;
+        }
+        return getSex() != null ? getSex().equals(student.getSex()) : student.getSex() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getSex() != null ? getSex().hashCode() : 0);
+        result = 31 * result + getAge();
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id(学号)：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("sex：").append(sex).append('\n');
+        stringbuilder.append("age：").append(age).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+基本使用
+
+```java
+Student student = new Student()
+        .setId(10001)
+        .setName("张三")
+        .setSex("男")
+        .setAge(18);
+
+try
+{
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("abc", student);
+    String json = jsonObject.toString(4);
+    Log.i(TAG, "onCreate: " + json);
+}
+catch (JSONException e)
+{
+    e.printStackTrace();
+}
+```
+
+
+
+
+
+这API真难用，写了很久的后端了，也使用了几个json序列化的工具了，这个安卓自带的json序列化工具是最难用的，有时候只是想把一个对象直接转换成一个json字符串，这个需求量很大的，也最常使用，我找了很久也没找到API，使用put方法也能实现类似的，但是会多带一个key。然后我发现一个很恶心的问题，put后然后转换的json字符串内部的对象直接调用的是对象的toString方法。。。。
+
+
+
+![image-20221010221827397](img/Android学习笔记/image-20221010221827397.png)
+
+
+
+这一转换，到其它地方使用可能会出问题，还是使用第三方的库吧
+
+
+
+
+
+
+
+
+
+## fastjson
+
+
+
+在模块级的build文件里加入依赖
+
+```
+implementation 'com.alibaba:fastjson:2.0.15.graal'
+```
+
+
+
+然后点击同步
+
+
+
+![image-20221010222506463](img/Android学习笔记/image-20221010222506463.png)
+
+
+
+
+
+
+
+### 序列化
+
+```java
+package mao.android_json;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.JsonWriter;
+import android.util.Log;
+
+import com.alibaba.fastjson2.JSON;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
+import org.json.JSONTokener;
+
+import mao.android_json.entity.Student;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Student student = new Student()
+                .setId(10001)
+                .setName("张三")
+                .setSex("男")
+                .setAge(18);
+
+
+        Object json = JSON.toJSON(student);
+        Log.d(TAG, "onCreate: " + json);
+    }
+}
+```
+
+
+
+
+
+![image-20221010223539926](img/Android学习笔记/image-20221010223539926.png)
+
+
+
+序列化没问题
+
+
+
+
+
+### 反序列化
+
+```java
+package mao.android_json;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.JsonWriter;
+import android.util.Log;
+
+import com.alibaba.fastjson.JSON;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
+import org.json.JSONTokener;
+
+import mao.android_json.entity.Student;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    private static final String TAG = "MainActivity";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+//        Student student = new Student()
+//                .setId(10001)
+//                .setName("张三")
+//                .setSex("男")
+//                .setAge(18);
+//
+//
+//        Object json = JSON.toJSON(student);
+//        Log.d(TAG, "onCreate: " + json);
+
+
+        String json = "{\"age\":18,\"id\":10001,\"name\":\"张三\",\"sex\":\"男\"}";
+
+        Student student = JSON.parseObject(json, Student.class);
+        Log.d(TAG, "onCreate: \n" + student);
+
+    }
+}
+```
+
+
+
+
+
+![image-20221010223627431](img/Android学习笔记/image-20221010223627431.png)
+
+
+
+
+
+反序列化也能使用
+
+
+
+API还有很多，不一一列举，其它的序列化工具的使用也不想再通过安卓再写一遍，构建工具不一样，以前使用的都是maven，现在使用Grande，还要从网上在找依赖
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# HTTP网络通信
+
+## HttpURLConnection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
