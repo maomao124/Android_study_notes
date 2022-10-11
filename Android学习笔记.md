@@ -46531,7 +46531,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-### 封装
+### 封装HttpURLConnection
 
 #### 依赖
 
@@ -47755,4 +47755,782 @@ public class SimpleHTTPImpl implements HTTP
 
 
 ##### SimpleRestfulHTTPImpl
+
+```java
+package mao;
+
+import com.alibaba.fastjson.JSON;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+/**
+ * Project name(项目名称)：封装HttpURLConnection
+ * Package(包名): mao
+ * Class(类名): SimpleRestfulHTTPImpl
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 14:07
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+//public interface RestfulHTTPHandlerListener<T>
+//{
+//    /**
+//     * 正常处理
+//     *
+//     * @param responseData 响应数据
+//     * @param responseCode 响应代码
+//     */
+//    void OKHandler(T responseData, int responseCode);
+//
+//    /**
+//     * 异常处理
+//     *
+//     * @param e            IOException
+//     * @param responseCode 响应代码
+//     */
+//    void ExceptionHandler(IOException e, int responseCode);
+//}
+
+
+public class SimpleRestfulHTTPImpl extends SimpleHTTPImpl implements RestfulHTTP
+{
+
+    /**
+     * 转换成json
+     *
+     * @param object 对象
+     * @return {@link String}
+     */
+    protected String toJson(Object object)
+    {
+        return JSON.toJSONString(object);
+    }
+
+    /**
+     * 解析Json
+     *
+     * @param json  json
+     * @param clazz clazz
+     * @return {@link T}
+     */
+    protected <T> T parse(String json, Class<T> clazz)
+    {
+        return JSON.parseObject(json, clazz);
+    }
+
+
+    @Override
+    public <T> T request(Class<T> responseClazz, String urlString, String method, Map<String, String> requestHeader, Object requestBody)
+    {
+        if (requestBody == null)
+        {
+            String json = this.request(urlString, method, requestHeader, null);
+            return this.parse(json, responseClazz);
+        }
+        else
+        {
+            if (requestHeader == null)
+            {
+                Map<String, String> map = new HashMap<>();
+                map.put("Content-Type", "application/json;charsetset=UTF-8");
+                map.put("Accept", "application/json");
+                String json = this.request(urlString, method, map, toJson(requestBody));
+                return this.parse(json, responseClazz);
+            }
+            else
+            {
+                requestHeader.put("Content-Type", "application/json;charsetset=UTF-8");
+                requestHeader.put("Accept", "application/json");
+                String json = this.request(urlString, method, requestHeader, toJson(requestBody));
+                return this.parse(json, responseClazz);
+            }
+        }
+    }
+
+    /**
+     * GET请求
+     *
+     * @param responseClazz 响应体的类型字节码
+     * @param urlString     url字符串
+     * @param requestHeader 请求头
+     * @param requestBody   请求体
+     * @return {@link T}
+     */
+    @Override
+    public <T> T GET(Class<T> responseClazz, String urlString, Map<String, String> requestHeader, Object requestBody)
+    {
+        return request(responseClazz, urlString, "GET", requestHeader, requestBody);
+    }
+
+    /**
+     * 异步请求
+     *
+     * @param responseClazz 响应clazz
+     * @param urlString     url字符串
+     * @param method        方法
+     * @param requestHeader 请求头
+     * @param requestBody   请求体
+     * @param listener      侦听器
+     */
+    @Override
+    public <T> void asyncRequest(Class<T> responseClazz, String urlString, String method,
+                                 Map<String, String> requestHeader, Object requestBody, RestfulHTTPHandlerListener<T> listener)
+    {
+        if (requestBody!=null)
+        {
+            if (requestHeader == null)
+            {
+                requestHeader = new HashMap<>();
+                requestHeader.put("Content-Type", "application/json;charsetset=UTF-8");
+                requestHeader.put("Accept", "application/json");
+            }
+            else
+            {
+                requestHeader.put("Content-Type", "application/json;charsetset=UTF-8");
+                requestHeader.put("Accept", "application/json");
+            }
+        }
+        this.asyncRequest(urlString, method, requestHeader, requestBody == null ? null : toJson(requestBody), new HTTPHandlerListener()
+        {
+            @Override
+            public void OKHandler(String responseString, int responseCode)
+            {
+                T t = parse(responseString, responseClazz);
+                listener.OKHandler(t, responseCode);
+            }
+
+            @Override
+            public void ExceptionHandler(IOException e, int responseCode)
+            {
+                listener.ExceptionHandler(e, responseCode);
+            }
+        });
+    }
+
+    /**
+     * 异步GET请求
+     *
+     * @param responseClazz 响应clazz
+     * @param urlString     url字符串
+     * @param requestHeader 请求头
+     * @param requestBody   请求体
+     * @param listener      侦听器
+     */
+    @Override
+    public <T> void asyncGETRequest(Class<T> responseClazz, String urlString,
+                                    Map<String, String> requestHeader, Object requestBody, RestfulHTTPHandlerListener<T> listener)
+    {
+        this.asyncRequest(responseClazz, urlString, "GET", requestHeader, requestBody, listener);
+    }
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+业务代码已完成，接下来的是测试代码
+
+#### 实体类
+
+##### Student
+
+```java
+package mao.entity;
+
+/**
+ * Project name(项目名称)：封装HttpURLConnection
+ * Package(包名): mao.entity
+ * Class(类名): Student
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 14:45
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Student
+{
+    /**
+     * id
+     */
+    private long id;
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 别
+     */
+    private String sex;
+
+    /**
+     * 年龄
+     */
+    private int age;
+
+    /**
+     * Instantiates a new Student.
+     */
+    public Student()
+    {
+    }
+
+    /**
+     * Instantiates a new Student.
+     *
+     * @param id   the id
+     * @param name the name
+     * @param sex  the sex
+     * @param age  the age
+     */
+    public Student(long id, String name, String sex, int age)
+    {
+        this.id = id;
+        this.name = name;
+        this.sex = sex;
+        this.age = age;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public Student setId(long id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public Student setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets sex.
+     *
+     * @return the sex
+     */
+    public String getSex()
+    {
+        return sex;
+    }
+
+    /**
+     * Sets sex.
+     *
+     * @param sex the sex
+     * @return the sex
+     */
+    public Student setSex(String sex)
+    {
+        this.sex = sex;
+        return this;
+    }
+
+    /**
+     * Gets age.
+     *
+     * @return the age
+     */
+    public int getAge()
+    {
+        return age;
+    }
+
+    /**
+     * Sets age.
+     *
+     * @param age the age
+     * @return the age
+     */
+    public Student setAge(int age)
+    {
+        this.age = age;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("sex：").append(sex).append('\n');
+        stringbuilder.append("age：").append(age).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+#### 后端程序
+
+创建一个spring boot程序，拷贝实体类到此项目中
+
+
+
+
+
+##### TestController
+
+创建TestController
+
+```java
+package mao.testdemo.controller;
+
+import mao.testdemo.entity.Student;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+/**
+ * Project name(项目名称)：封装HttpURLConnection
+ * Package(包名): mao.testdemo.controller
+ * Class(类名): TestController
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 14:47
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+@RestController
+public class TestController
+{
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
+
+    @GetMapping("/test")
+    public Student get(@RequestHeader(required = false) Map<String, String> header, @RequestBody(required = false) Student student)
+    {
+        log.info("收到了get请求");
+        log.info("请求头：" + header);
+        log.info("请求体：" + student);
+        Student student1 = new Student()
+                .setId(100001L)
+                .setName("张三")
+                .setSex("男")
+                .setAge(18);
+
+        log.info("响应数据：" + student1);
+        return student1;
+    }
+
+    @PostMapping("/test")
+    public Student post(@RequestHeader(required = false) Map<String, String> header,@RequestBody(required = false) Student student)
+    {
+        log.info("收到了post请求");
+        log.info("请求头：" + header);
+        log.info("请求体：" + student);
+        Student student1 = new Student()
+                .setId(100002L)
+                .setName("李四")
+                .setSex("女")
+                .setAge(19);
+
+        log.info("响应数据：" + student1);
+        return student1;
+    }
+}
+```
+
+
+
+
+
+![image-20221011185831448](img/Android学习笔记/image-20221011185831448.png)
+
+
+
+
+
+
+
+
+
+#### 单元测试类
+
+##### SimpleHTTPImplTest
+
+```java
+package mao;
+
+import org.junit.jupiter.api.*;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Project name(项目名称)：封装HttpURLConnection
+ * Package(包名): mao
+ * Class(测试类名): SimpleHTTPImplTest
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 13:08
+ * Version(版本): 1.0
+ * Description(描述)： 测试类
+ */
+
+class SimpleHTTPImplTest
+{
+    private static HTTP http;
+
+    @BeforeAll
+    static void beforeAll()
+    {
+        http = new SimpleHTTPImpl();
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put("a1", "b1");
+        http.setDefaultRequestHeader(map);
+    }
+
+    @AfterAll
+    static void afterAll()
+    {
+
+    }
+
+    @Test
+    void request()
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "value");
+        map.put("a", "b");
+        String s = http.request("https://www.bilibili.com/", "GET", map, null);
+        System.out.println(s);
+    }
+
+    @Test
+    void GET()
+    {
+        String s = http.GET("https://www.bilibili.com/");
+        System.out.println(s);
+    }
+
+    @Test
+    void asyncRequest()
+    {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        http.setThreadPool(executorService);
+
+        http.asyncRequest("https://www.bilibili.com/", "GET", new HTTPHandlerListener()
+        {
+            @Override
+            public void OKHandler(String responseString, int responseCode)
+            {
+                System.out.println(responseCode);
+                System.out.println(responseString);
+            }
+
+            @Override
+            public void ExceptionHandler(IOException e, int responseCode)
+            {
+                e.printStackTrace();
+            }
+        });
+
+        try
+        {
+            Thread.sleep(3000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+
+
+
+![image-20221011190009866](img/Android学习笔记/image-20221011190009866.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### SimpleRestfulHTTPImplTest
+
+```java
+package mao;
+
+import mao.entity.Student;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Project name(项目名称)：封装HttpURLConnection
+ * Package(包名): mao
+ * Class(测试类名): SimpleRestfulHTTPImplTest
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 15:01
+ * Version(版本): 1.0
+ * Description(描述)： 测试类
+ */
+
+class SimpleRestfulHTTPImplTest
+{
+    private static RestfulHTTP http;
+
+    @BeforeAll
+    static void beforeAll()
+    {
+        http = new SimpleRestfulHTTPImpl();
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put("a1", "b1");
+//        map.put("Content-Type", "application/json;charsetset=UTF-8");
+//        map.put("Accept", "application/json");
+        http.setDefaultRequestHeader(map);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        http.setThreadPool(executorService);
+    }
+
+
+    @Test
+    void request()
+    {
+        Student student = http.request(Student.class, "http://localhost:8080/test", "GET", null, null);
+        System.out.println(student);
+    }
+
+    @Test
+    void request2()
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value2");
+        map.put("b", "c");
+        Student student = http.request(Student.class, "http://localhost:8080/test", "GET", map, null);
+        System.out.println(student);
+    }
+
+    @Test
+    void request3()
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value2");
+        map.put("b", "c");
+        Student student = http.request(Student.class, "http://localhost:8080/test",
+                "POST", map, new Student().setAge(17).setId(100023L));
+        System.out.println(student);
+    }
+
+    @Test
+    void request4()
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value2");
+        map.put("b", "c");
+        Student student = http.request(Student.class, "http://localhost:8080/test",
+                "POST", map, new Student().setAge(17).setId(100023L).setName("王五").setSex("男"));
+        System.out.println(student);
+    }
+
+    @Test
+    void GET()
+    {
+        Student student = http.GET(Student.class, "http://localhost:8080/test", null, null);
+        System.out.println(student);
+    }
+
+    @Test
+    void asyncRequest()
+    {
+        http.asyncRequest(Student.class, "http://localhost:8080/test", "POST",
+                null, new Student().setId(20589L), new RestfulHTTPHandlerListener<Student>()
+                {
+                    @Override
+                    public void OKHandler(Student responseData, int responseCode)
+                    {
+                        System.out.println(responseCode);
+                        System.out.println(responseData);
+                    }
+
+                    @Override
+                    public void ExceptionHandler(IOException e, int responseCode)
+                    {
+                        e.printStackTrace();
+                    }
+                });
+
+
+        try
+        {
+            Thread.sleep(3000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void asyncGETRequest()
+    {
+        http.asyncGETRequest(Student.class, "http://localhost:8080/test", null, null, new RestfulHTTPHandlerListener<Student>()
+        {
+            @Override
+            public void OKHandler(Student responseData, int responseCode)
+            {
+                System.out.println(responseCode);
+                System.out.println(responseData);
+            }
+
+            @Override
+            public void ExceptionHandler(IOException e, int responseCode)
+            {
+                e.printStackTrace();
+            }
+        });
+
+        try
+        {
+            Thread.sleep(3000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+}
+```
+
+
+
+
+
+
+
+启动后端程序
+
+
+
+![image-20221011190129437](img/Android学习笔记/image-20221011190129437.png)
+
+
+
+
+
+
+
+![image-20221011190247319](img/Android学习笔记/image-20221011190247319.png)
+
+
+
+
+
+
+
+后端日志
+
+![image-20221011190349391](img/Android学习笔记/image-20221011190349391.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+用起来挺方便的，封装度高
+
+
+
+
 
