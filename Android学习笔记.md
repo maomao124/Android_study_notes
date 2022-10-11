@@ -46279,6 +46279,251 @@ API还有很多，不一一列举，其它的序列化工具的使用也不想�
 
 ## HttpURLConnection
 
+HttpURLConnection是java.net包下的类，javaSE的时候就应该学了，不想再多说，不推荐使用UI线程去发送HTTP请求，防止应用的ANR（Aplication Not Response）异常
+
+
+
+
+
+### 示例
+
+
+
+布局文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:orientation="vertical">
+
+
+    <Button
+            android:id="@+id/Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发起请求" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+    </ScrollView>
+
+</LinearLayout>
+```
+
+
+
+
+
+MainActivity
+
+```java
+package mao.android_httpurlconnection;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+
+public class MainActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainActivity";
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        TextView textView = findViewById(R.id.TextView);
+
+        findViewById(R.id.Button).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                try
+                {
+                    getHTML("https://www.bilibili.com/", new HTTPHandlerListener()
+                    {
+                        @Override
+                        public void OKHandler(String responseString)
+                        {
+                            //注意，此回调不在ui线程中
+                            runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    textView.setText(responseString);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void ExceptionHandler(IOException e)
+                        {
+                            Log.e(TAG, "ExceptionHandler: ", e);
+                        }
+                    });
+                }
+                catch (IOException e)
+                {
+                    toastShow("异常：" + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+    public interface HTTPHandlerListener
+    {
+        void OKHandler(String responseString);
+
+        void ExceptionHandler(IOException e);
+
+    }
+
+
+    private void getHTML(String urlString, HTTPHandlerListener listener) throws IOException
+    {
+        //使用使用线程池
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                BufferedReader bufferedReader = null;
+                InputStreamReader inputStreamReader = null;
+                InputStream inputStream = null;
+                HttpURLConnection httpURLConnection = null;
+                try
+                {
+                    URL url = new URL(urlString);
+                    httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestMethod("GET");
+                    httpURLConnection.setConnectTimeout(5000);
+                    httpURLConnection.setReadTimeout(5000);
+                    //请求头
+                    httpURLConnection.addRequestProperty("key", "value");
+                    inputStream = httpURLConnection.getInputStream();
+                    inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    bufferedReader = new BufferedReader(inputStreamReader);
+                    String str;
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while ((str = bufferedReader.readLine()) != null)
+                    {
+                        stringBuilder.append(str).append("\n");
+                    }
+                    bufferedReader.close();
+                    inputStreamReader.close();
+                    inputStream.close();
+                    httpURLConnection.disconnect();
+                    listener.OKHandler(stringBuilder.toString());
+                }
+                catch (IOException e)
+                {
+                    listener.ExceptionHandler(e);
+                }
+                finally
+                {
+                    try
+                    {
+                        if (bufferedReader != null)
+                        {
+                            bufferedReader.close();
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    try
+                    {
+                        if (inputStreamReader != null)
+                        {
+                            inputStreamReader.close();
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    try
+                    {
+                        if (inputStream != null)
+                        {
+                            inputStream.close();
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    if (httpURLConnection != null)
+                    {
+                        httpURLConnection.disconnect();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+
+
+![image-20221011123653631](img/Android学习笔记/image-20221011123653631.png)
+
+
+
+
+
+![image-20221011123705923](img/Android学习笔记/image-20221011123705923.png)
 
 
 
@@ -46290,6 +46535,5 @@ API还有很多，不一一列举，其它的序列化工具的使用也不想�
 
 
 
-
-
+### 封装
 
