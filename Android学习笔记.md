@@ -52032,9 +52032,1224 @@ public class ImageLoadResult
 
 #### service
 
+##### CartoonService
+
+```java
+package mao.cartoonapp.service;
 
 
 
+import java.util.List;
+
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.CartoonItem;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.service
+ * Interface(接口名): CartoonService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 19:41
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CartoonService
+{
+    List<Cartoon> getCartoonList(String urlString, int type);
+
+    List<CartoonItem> getCartoonItem(int id);
+
+    /**
+     * 搜索
+     *
+     * @param keyword 关键字
+     * @return {@link List}<{@link Cartoon}>
+     */
+    List<Cartoon> search(String keyword);
+}
+```
+
+
+
+
+
+##### CartoonServiceImpl
+
+```java
+package mao.cartoonapp.service;
+
+import com.alibaba.fastjson.JSON;
+import mao.cartoonapp.constant.URLConstant;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.CartoonItem;
+import mao.cartoonapp.entity.CartoonItemRequestBody;
+import mao.cartoonapp.net.HTTP;
+import mao.cartoonapp.net.RestfulHTTP;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.service
+ * Class(类名): CartoonServiceImpl
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 19:41
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonServiceImpl implements CartoonService
+{
+
+    private final RestfulHTTP http;
+
+    public CartoonServiceImpl(RestfulHTTP http)
+    {
+        this.http = http;
+    }
+
+
+    /**
+     * 得到漫画列表json
+     *
+     * @param urlString url字符串
+     * @return {@link List}<{@link Cartoon}>
+     */
+    public List<Cartoon> getCartoonListByJson(String urlString, Map<String, String> requestHeader)
+    {
+        String json = http.GET(urlString, requestHeader);
+        //System.out.println(json);
+        List<Cartoon> cartoonList = JSON.parseArray(json, Cartoon.class);
+        return cartoonList;
+    }
+
+    public List<Cartoon> getCartoonListByJson(Map<String, String> requestHeader, int pageNumber, int type)
+    {
+        return this.getCartoonListByJson("http://m.qiman57.com/ajaxf/?page_num=" + pageNumber + "&type=" + type,
+                requestHeader);
+    }
+
+    @Override
+    public List<Cartoon> getCartoonList(String urlString, int type)
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37");
+        map.put("Referer", urlString);
+        map.put("Host", URLConstant.host);
+        List<Cartoon> list = new ArrayList<>(100);
+        for (int i = 0; i < 6; i++)
+        {
+            List<Cartoon> cartoonList = getCartoonListByJson(map, i, type);
+            list.addAll(cartoonList);
+        }
+        return list;
+    }
+
+    @Override
+    public List<CartoonItem> getCartoonItem(int id)
+    {
+        List<CartoonItem> cartoonItemByHtml = getCartoonItemByHtml(id);
+        List<CartoonItem> cartoonItemByJson = getCartoonItemByJson(id);
+        cartoonItemByHtml.addAll(cartoonItemByJson);
+        return cartoonItemByHtml;
+    }
+
+    public List<CartoonItem> getCartoonItemByHtml(int id)
+    {
+        List<CartoonItem> list = new ArrayList<>(20);
+        Map<String, String> map = new HashMap<>();
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37");
+        map.put("Referer", URLConstant.bookChapterUrl);
+        map.put("Host", URLConstant.host);
+        String html = http.GET(URLConstant.baseUrl + id + "/", map);
+        //System.out.println(html);
+
+        Document document = Jsoup.parse(html);
+        //System.out.println(document);
+        Element element = document.getElementsByClass("catalog-list").first();
+        //System.out.println(element);
+        if (element == null)
+        {
+            return list;
+        }
+        Elements li = element.getElementsByTag("li");
+        //System.out.println(li);
+        if (li.size() == 0)
+        {
+            return list;
+        }
+        for (Element liItem : li)
+        {
+            //System.out.println(liItem + "\n");
+            String itemId = liItem.attr("data-id");
+            //System.out.println(itemId);
+            Element a = liItem.getElementsByTag("a").first();
+            String name;
+            if (a == null)
+            {
+                name = "";
+            }
+            else
+            {
+                try
+                {
+                    name = a.html();
+                }
+                catch (Exception e)
+                {
+                    name = "";
+                }
+            }
+            //System.out.println(name);
+
+            CartoonItem cartoonItem = new CartoonItem(itemId, name);
+            list.add(cartoonItem);
+        }
+        return list;
+    }
+
+    public List<CartoonItem> getCartoonItemByJson(int id)
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37");
+        map.put("Referer", URLConstant.bookChapterUrl);
+        map.put("Host", URLConstant.host);
+        String body = "id=" + id + "&id2=1";
+        String s = http.request(URLConstant.bookChapterUrl, "POST", map, body);
+        return JSON.parseArray(s, CartoonItem.class);
+    }
+
+
+    /**
+     * 搜索
+     *
+     * @param keyword 关键字
+     * @return {@link List}<{@link Cartoon}>
+     */
+    @Override
+    public List<Cartoon> search(String keyword)
+    {
+        List<Cartoon> list = new ArrayList<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37");
+        map.put("Host", URLConstant.host);
+        String url = URLConstant.searchUrl + keyword;
+        String html = http.GET(url, map);
+        if (html == null)
+        {
+            return list;
+        }
+        Document document = Jsoup.parse(html);
+        //System.out.println(document);
+        Element element = document.getElementsByClass("search-result").first();
+        //System.out.println(element);
+        if (element == null)
+        {
+            return list;
+        }
+        Elements elements = element.getElementsByClass("comic-list-item clearfix");
+        //System.out.println(elements.size() + "\n\n");
+        //System.out.println(elements);
+        for (Element element1 : elements)
+        {
+            String id = element1.attr("data-cid");
+            //System.out.println(id);
+            Element img = element1.getElementsByTag("img").first();
+            //System.out.println(img);
+            String imgUrl;
+            imgUrl = img != null ? img.attr("src") : null;
+            String name = Objects.requireNonNull(Objects.requireNonNull(element1.getElementsByClass("comic-name").
+                    first()).getElementsByTag("a").first()).html();
+            String author = Objects.requireNonNull(element1.getElementsByClass("comic-author").first()).html();
+            String remarks = Objects.requireNonNull(element1.getElementsByClass("comic-update-at").first()).html();
+            //System.out.println(imgUrl);
+            //System.out.println(name);
+            //System.out.println(author);
+            //System.out.println(remarks);
+            Cartoon cartoon = new Cartoon()
+                    .setId(id)
+                    .setName(name)
+                    .setAuthor(author)
+                    .setRemarks(remarks)
+                    .setImgUrl(imgUrl);
+            list.add(cartoon);
+        }
+        return list;
+    }
+}
+```
+
+
+
+
+
+
+
+#### activity
+
+##### CartoonHistoryActivity
+
+```java
+package mao.cartoonapp;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import mao.cartoonapp.adapter.CartoonListViewAdapter;
+import mao.cartoonapp.application.MainApplication;
+import mao.cartoonapp.constant.URLConstant;
+import mao.cartoonapp.dao.CartoonHistoryDao;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.CartoonHistory;
+
+public class CartoonHistoryActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "CartoonHistoryActivity";
+    private ListView listView;
+    private TextView textView;
+    private List<CartoonHistory> cartoonHistoryList;
+    private List<Cartoon> cartoonList;
+    private CartoonListViewAdapter cartoonListViewAdapter;
+    private volatile boolean isEmpty = true;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_cartoon_history);
+
+
+        listView = findViewById(R.id.ListView);
+        textView = findViewById(R.id.TextView);
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    CartoonHistoryDao cartoonHistoryDao = CartoonHistoryDao.getInstance(CartoonHistoryActivity.this);
+                    cartoonHistoryList = cartoonHistoryDao.queryAllByLastTimeDesc();
+                    Log.d(TAG, "run: 历史记录：" + cartoonHistoryList);
+                    if (cartoonHistoryList.size() == 0)
+                    {
+                        return;
+                    }
+                    isEmpty = false;
+                    cartoonList = new ArrayList<>(cartoonHistoryList.size());
+                    for (CartoonHistory cartoonHistory : cartoonHistoryList)
+                    {
+                        Date date = new Date();
+                        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat =
+                                new SimpleDateFormat("yyyy/MM/dd  HH:mm:ss");
+                        date.setTime(cartoonHistory.getLastTime());
+
+                        Cartoon cartoon = new Cartoon()
+                                .setId(cartoonHistory.getId1())
+                                .setName(cartoonHistory.getName())
+                                .setAuthor(cartoonHistory.getAuthor())
+                                .setRemarks(simpleDateFormat.format(date))
+                                .setImgUrl(cartoonHistory.getImgUrl());
+                        Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+                        cartoon.setBitmap(bitmap);
+                        cartoonList.add(cartoon);
+                    }
+                    cartoonListViewAdapter = new CartoonListViewAdapter(CartoonHistoryActivity.this, cartoonList);
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            textView.setVisibility(View.GONE);
+                            listView.setVisibility(View.VISIBLE);
+                            listView.setAdapter(cartoonListViewAdapter);
+                        }
+                    });
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                    {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                        {
+                            CartoonHistory cartoonHistory = cartoonHistoryList.get(position);
+                            String id1 = cartoonHistory.getId1();
+                            String id2 = cartoonHistory.getId2();
+                            String html = URLConstant.baseUrl + id1 + "/" + id2 + ".html";
+                            Intent intent2 = new Intent(CartoonHistoryActivity.this, ContentActivity.class);
+                            intent2.putExtra("html", html);
+                            intent2.putExtra("name", cartoonHistory.getName());
+                            intent2.putExtra("author", cartoonHistory.getAuthor());
+                            intent2.putExtra("imgUrl", cartoonHistory.getImgUrl());
+                            Log.d(TAG, "onItemClick: html:" + html);
+                            startActivity(intent2);
+                        }
+                    });
+
+                    listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+                    {
+                        @Override
+                        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+                        {
+                            Cartoon cartoon = cartoonList.get(position);
+                            String id1 = cartoon.getId();
+                            String name = cartoon.getName();
+                            String author = cartoon.getAuthor();
+                            String imgUrl = cartoon.getImgUrl();
+                            Intent intent = new Intent(CartoonHistoryActivity.this, CartoonItemActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("id", id1);
+                            bundle.putString("name", name);
+                            bundle.putString("author", author);
+                            bundle.putString("imgUrl", imgUrl);
+                            intent.putExtras(bundle);
+                            startActivity(intent);
+                            return true;
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            new AlertDialog.Builder(CartoonHistoryActivity.this)
+                                    .setTitle("错误")
+                                    .setMessage("异常内容：\n" + e)
+                                    .setPositiveButton("我知道了", null)
+                                    .create()
+                                    .show();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, 1, 1, "清空历史记录");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        if (id == 1)
+        {
+            if (isEmpty)
+            {
+                toastShow("已经为空了哦o(*≧д≦)o!!");
+                return super.onOptionsItemSelected(item);
+            }
+            new AlertDialog.Builder(CartoonHistoryActivity.this)
+                    .setTitle("提示")
+                    .setMessage("是否清空历史记录？")
+                    .setPositiveButton("确定清除", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    try
+                                    {
+                                        CartoonHistoryDao cartoonHistoryDao =
+                                                CartoonHistoryDao.getInstance(CartoonHistoryActivity.this);
+                                        boolean b = cartoonHistoryDao.deleteAll();
+                                        runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                if (b)
+                                                {
+                                                    toastShow("清空成功");
+                                                    cartoonList.clear();
+                                                    cartoonHistoryList.clear();
+                                                    cartoonListViewAdapter.notifyDataSetChanged();
+                                                    textView.setVisibility(View.VISIBLE);
+                                                    listView.setVisibility(View.GONE);
+                                                    isEmpty = true;
+                                                }
+                                                else
+                                                {
+                                                    toastShow("清空失败");
+                                                }
+                                            }
+                                        });
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log.e(TAG, "run: ", e);
+                                    }
+                                }
+                            });
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .create()
+                    .show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+##### CartoonItemActivity
+
+```java
+package mao.cartoonapp;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import mao.cartoonapp.adapter.CartoonItemListViewAdapter;
+import mao.cartoonapp.application.MainApplication;
+import mao.cartoonapp.constant.URLConstant;
+import mao.cartoonapp.dao.CartoonFavoritesDao;
+import mao.cartoonapp.dao.CartoonHistoryDao;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.CartoonHistory;
+import mao.cartoonapp.entity.CartoonItem;
+import mao.cartoonapp.service.CartoonService;
+
+public class CartoonItemActivity extends AppCompatActivity
+{
+
+    private static final String TAG = "CartoonItemActivity";
+
+    private ListView listView;
+    private CartoonItemListViewAdapter cartoonItemListViewAdapter;
+    private List<CartoonItem> cartoonItemList;
+    private String id;
+    private String name;
+    private String author;
+    private String imgUrl;
+    private Button button_add_favorites;
+    private Button button_start;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_cartoon_item);
+
+        listView = findViewById(R.id.ListView);
+        button_add_favorites = findViewById(R.id.Button_add_favorites);
+        button_start = findViewById(R.id.Button_start);
+
+        Intent intent = getIntent();
+        if (intent == null)
+        {
+            toastShow("无法获取数据");
+            return;
+        }
+        Bundle bundle = intent.getExtras();
+        id = bundle.getString("id");
+        name = bundle.getString("name");
+        author = bundle.getString("author");
+        imgUrl = bundle.getString("imgUrl");
+        if (id == null)
+        {
+            toastShow("无法获取数据");
+            return;
+        }
+        //toastShow(name);
+        TextView textView_name = findViewById(R.id.name);
+        TextView textView_author = findViewById(R.id.author);
+        ImageView imageView = findViewById(R.id.ImageView);
+        textView_name.setText(name);
+        textView_author.setText(author);
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Bitmap bitmap = openImageByHTTP(imgUrl);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        imageView.setImageBitmap(bitmap);
+                    }
+                });
+            }
+        });
+
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Log.d(TAG, "run: 发起请求");
+                CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+                cartoonItemList = cartoonService.getCartoonItem(Integer.parseInt(id));
+                int size = cartoonItemList.size();
+                Log.d(TAG, "run: 大小：" + size);
+                Log.d(TAG, "run: 数据：\n" + cartoonItemList);
+                try
+                {
+                    for (int i = 0; i < size; i++)
+                    {
+                        int textViewId = size - i;
+                        cartoonItemList.get(i).setTextViewId(String.valueOf(textViewId));
+                        //Log.d(TAG, "run: " + textViewId);
+                    }
+                    cartoonItemListViewAdapter = new CartoonItemListViewAdapter(CartoonItemActivity.this, cartoonItemList);
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            cartoonItemListViewAdapter.notifyDataSetChanged();
+                            listView.setAdapter(cartoonItemListViewAdapter);
+                        }
+                    });
+
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "run: ", e);
+                }
+            }
+        });
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                CartoonItem cartoonItem = cartoonItemList.get(position);
+                String id2 = cartoonItem.getId();
+                String html = URLConstant.baseUrl + CartoonItemActivity.this.id + "/" + id2 + ".html";
+                Intent intent2 = new Intent(CartoonItemActivity.this, ContentActivity.class);
+                intent2.putExtra("html", html);
+                intent2.putExtra("name", name);
+                intent2.putExtra("author", author);
+                intent2.putExtra("imgUrl", imgUrl);
+                Log.d(TAG, "onItemClick: html:" + html);
+                startActivity(intent2);
+            }
+        });
+
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                CartoonFavoritesDao cartoonFavoritesDao = CartoonFavoritesDao.getInstance(CartoonItemActivity.this);
+                Cartoon cartoon = cartoonFavoritesDao.queryById(id);
+                CartoonHistoryDao cartoonHistoryDao = CartoonHistoryDao.getInstance(CartoonItemActivity.this);
+                CartoonHistory cartoonHistory = cartoonHistoryDao.queryById(id);
+                Log.d(TAG, "run: cartoon:" + cartoon);
+                Log.d(TAG, "run: cartoonHistory" + cartoonHistory);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        handlerAddFavoritesButton(cartoon, button_add_favorites, name, author, imgUrl, cartoonFavoritesDao);
+
+                        handlerStartButton(cartoonHistory, button_start, name, author, imgUrl);
+                    }
+                });
+            }
+        });
+
+    }
+
+    /**
+     * 处理程序添加收藏夹按钮
+     *
+     * @param cartoon              卡通
+     * @param button_add_favorites 按钮添加收藏夹
+     * @param name                 名字
+     * @param author               作者
+     * @param imgUrl               img url
+     * @param cartoonFavoritesDao  CartoonFavoritesDao
+     */
+    private void handlerAddFavoritesButton(Cartoon cartoon, Button button_add_favorites, String name, String author, String imgUrl, CartoonFavoritesDao cartoonFavoritesDao)
+    {
+        if (cartoon == null)
+        {
+            //收藏为空
+            button_add_favorites.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Cartoon cartoon1 = new Cartoon()
+                            .setId(id)
+                            .setName(name)
+                            .setAuthor(author)
+                            .setImgUrl(imgUrl)
+                            .setRemarks("");
+                    boolean b = cartoonFavoritesDao.insert(cartoon1);
+                    if (b)
+                    {
+                        toastShow("添加收藏成功");
+                        button_add_favorites.setText("已添加到收藏");
+                        button_add_favorites.setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+                                toastShow("已经添加到收藏了哦(*^▽^*)\n" +
+                                        "如果需要取消收藏，请到收藏页面长按取消");
+                            }
+                        });
+                    }
+                    else
+                    {
+                        toastShow("添加收藏失败(；´д｀)ゞ");
+                    }
+                }
+            });
+        }
+        else
+        {
+            //收藏不为空
+            button_add_favorites.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    toastShow("已经添加到收藏了哦(*^▽^*)\n" +
+                            "如果需要取消收藏，请到收藏页面长按取消");
+                }
+            });
+            button_add_favorites.setText("已添加到收藏");
+        }
+    }
+
+    /**
+     * 处理程序开始按钮
+     *
+     * @param cartoonHistory 卡通历史
+     * @param button_start   按钮开始
+     * @param name           名字
+     * @param author         作者
+     * @param imgUrl         img url
+     */
+    private void handlerStartButton(CartoonHistory cartoonHistory, Button button_start, String name, String author, String imgUrl)
+    {
+        if (cartoonHistory == null)
+        {
+            //没有历史记录，从第一章开始阅读
+//            if (cartoonItemList.size() == 0)
+//            {
+//                toastShow("当前漫画没有章节");
+//            }
+//            else
+            {
+                button_start.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        CartoonItem cartoonItem;
+                        try
+                        {
+                            cartoonItem = cartoonItemList.get(cartoonItemList.size() - 1);
+                        }
+                        catch (NullPointerException e)
+                        {
+                            toastShow("当前漫画没有章节");
+                            return;
+                        }
+                        String id2 = cartoonItem.getId();
+                        String html = URLConstant.baseUrl + CartoonItemActivity.this.id + "/" + id2 + ".html";
+                        Intent intent2 = new Intent(CartoonItemActivity.this, ContentActivity.class);
+                        intent2.putExtra("html", html);
+                        intent2.putExtra("name", name);
+                        intent2.putExtra("author", author);
+                        intent2.putExtra("imgUrl", imgUrl);
+                        Log.d(TAG, "onItemClick: html:" + html);
+                        startActivity(intent2);
+                    }
+                });
+            }
+        }
+        else
+        {
+            //有历史记录
+            button_start.setText("继续阅读");
+            button_start.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    String id2 = cartoonHistory.getId2();
+                    String html = URLConstant.baseUrl + CartoonItemActivity.this.id + "/" + id2 + ".html";
+                    Intent intent2 = new Intent(CartoonItemActivity.this, ContentActivity.class);
+                    intent2.putExtra("html", html);
+                    intent2.putExtra("name", name);
+                    intent2.putExtra("author", author);
+                    intent2.putExtra("imgUrl", imgUrl);
+                    Log.d(TAG, "onItemClick: html:" + html);
+                    startActivity(intent2);
+                }
+            });
+        }
+    }
+
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                CartoonHistoryDao cartoonHistoryDao = CartoonHistoryDao.getInstance(CartoonItemActivity.this);
+                CartoonHistory cartoonHistory = cartoonHistoryDao.queryById(id);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        handlerStartButton(cartoonHistory, button_start, name, author, imgUrl);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, 1, 1, "反转目录");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        if (id == 1)
+        {
+            //反转
+            Collections.reverse(cartoonItemList);
+            cartoonItemListViewAdapter.notifyDataSetChanged();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+
+    /**
+     * 从网络上加载图片
+     *
+     * @param imgUrl img url
+     * @return {@link Bitmap}
+     */
+    public Bitmap openImageByHTTP(String imgUrl)
+    {
+        Bitmap bitmap;
+        InputStream inputStream = null;
+        HttpURLConnection httpURLConnection = null;
+        try
+        {
+            URL url = new URL(imgUrl);
+            httpURLConnection = (HttpURLConnection) url.openConnection();
+            inputStream = httpURLConnection.getInputStream();
+            bitmap = BitmapFactory.decodeStream(inputStream);
+            return bitmap;
+        }
+        catch (Exception e)
+        {
+            //加载失败，直接加载默认的图片
+            Log.e(TAG, "openImageByHTTP: ", e);
+            bitmap = BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_launcher_round);
+            return bitmap;
+        }
+        finally
+        {
+            try
+            {
+                if (inputStream != null)
+                {
+                    inputStream.close();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            if (httpURLConnection != null)
+            {
+                httpURLConnection.disconnect();
+            }
+        }
+    }
+}
+```
+
+
+
+
+
+##### ContentActivity
+
+```java
+package mao.cartoonapp;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import mao.cartoonapp.application.MainApplication;
+import mao.cartoonapp.constant.URLConstant;
+import mao.cartoonapp.dao.CartoonHistoryDao;
+import mao.cartoonapp.entity.CartoonHistory;
+
+public class ContentActivity extends AppCompatActivity
+{
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "ContentActivity";
+    private WebView webView;
+
+
+    /**
+     * js代码，目的是屏蔽一些广告和一些额外的元素
+     */
+    private final String js = "function getClass(parent,sClass)\n" +
+            "{\n" +
+            "\tvar aEle=parent.getElementsByTagName('div');\n" +
+            "\tvar aResult=[];\n" +
+            "\tvar i=0;\n" +
+            "\tfor(i<0;i<aEle.length;i++)\n" +
+            "\t{\n" +
+            "\t\tif(aEle[i].className==sClass)\n" +
+            "\t\t{\n" +
+            "\t\t\taResult.push(aEle[i]);\n" +
+            "\t\t}\n" +
+            "\t};\n" +
+            "\treturn aResult;\n" +
+            "}\n" +
+            "\n" +
+            "function hideOther() \n" +
+            "{\n" +
+            "\tgetClass(document,'guide-download')[0].style.display='none';\n" +
+            "\tgetClass(document,'xxtop')[0].style.display='none';\n" +
+            "\tgetClass(document,'list3_1 similar clearfix mt10')[0].style.display='none';\n" +
+            "\tgetClass(document,'read-end')[0].style.display='none';\n" +
+            "\tgetClass(document,'comment-box hide')[0].style.display='none';\n" +
+            "\tgetClass(document,'comment-input-box')[0].style.display='none';\n" +
+            "\tdocument.getElementById('adhtml').style.display='none';\n" +
+            "}";
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_content);
+
+        Intent intent = getIntent();
+        if (intent == null)
+        {
+            toastShow("获取不到数据");
+            return;
+        }
+        Bundle bundle = intent.getExtras();
+        String html = bundle.getString("html");
+        String name = bundle.getString("name");
+        String author = bundle.getString("author");
+        String imgUrl = bundle.getString("imgUrl");
+        if (html == null)
+        {
+            toastShow("获取不到数据");
+            return;
+        }
+        Log.d(TAG, "onCreate: name:" + name);
+        Log.d(TAG, "onCreate: author:" + author);
+
+        webView = findViewById(R.id.WebView);
+
+        webView.setWebViewClient(new WebViewClient()
+        {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url)
+            {
+                //Log.d(TAG, "shouldOverrideUrlLoading: 网页url：" + url);
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public void onLoadResource(WebView view, String url)
+            {
+                //http://m.qiman57.com/21429/1413472.html
+                //Log.d(TAG, "onLoadResource: 网页url：" + url);
+                Pattern pattern = Pattern.compile(URLConstant.baseUrl + "\\d+/\\d+.html");
+                Matcher matcher = pattern.matcher(url);
+                boolean result = matcher.matches();
+                if (result)
+                {
+                    Log.d(TAG, "onLoadResource: 网页url：" + url);
+                    String substring = url.substring(URLConstant.baseUrl.length(), url.length() - 5);
+                    //System.out.println(substring);
+                    String[] split = substring.split("/");
+                    if (split.length == 2)
+                    {
+                        CartoonHistoryDao cartoonHistoryDao = CartoonHistoryDao.getInstance(ContentActivity.this);
+                        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    String id1 = split[0];
+                                    String id2 = split[1];
+                                    Log.d(TAG, "onLoadResource: " + id1 + "," + id2);
+                                    CartoonHistory cartoonHistory = new CartoonHistory()
+                                            .setId1(id1)
+                                            .setId2(id2)
+                                            .setName(name)
+                                            .setAuthor(author)
+                                            .setLastTime(new Date().getTime())
+                                            .setImgUrl(imgUrl);
+                                    boolean b = cartoonHistoryDao.insertOrUpdate(cartoonHistory);
+                                    Log.d(TAG, "run: 历史记录：" + cartoonHistory);
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            if (!b)
+                                            {
+                                                toastShow("历史记录更新失败");
+                                            }
+                                            else
+                                            {
+                                                Log.d(TAG, "run: 历史记录更新成功");
+                                                //toastShow("更新历史记录");
+                                            }
+                                        }
+                                    });
+                                }
+                                catch (Exception e)
+                                {
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            toastShow("历史记录更新失败");
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+                super.onLoadResource(view, url);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url)
+            {
+                //guide-download
+                //xxtop
+                //list3_1 similar clearfix mt10
+                //read-end
+                //comment-box hide
+                //comment-input-box
+
+                Log.d(TAG, "onPageFinished: " + url);
+                Pattern pattern = Pattern.compile(URLConstant.baseUrl + "\\d+/\\d+.html");
+                Matcher matcher = pattern.matcher(url);
+                boolean result = matcher.matches();
+                if (result)
+                {
+                    view.loadUrl("javascript:" + js);
+                    view.loadUrl("javascript:hideOther();");
+                }
+            }
+        });
+
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);//支持缩放
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setAllowContentAccess(true);
+        webView.getSettings().setAppCacheEnabled(true);//是否使用缓存
+
+        webView.loadUrl(html);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(1, 1, 1, "刷新");
+        menu.add(1, 2, 2, "页面返回");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        if (id == 1)
+        {
+            webView.reload();
+        }
+        else if (id == 2)
+        {
+            if (webView.canGoBack())
+            {
+                webView.goBack();
+            }
+            else
+            {
+                toastShow("页面不能再回退了");
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
+```
+
+
+
+
+
+##### FavoritesActivity
 
 
 
