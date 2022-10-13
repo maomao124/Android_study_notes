@@ -48578,6 +48578,34 @@ class SimpleRestfulHTTPImplTest
 
 
 
+
+
+### 依赖
+
+#### Grande
+
+```
+dependencies {
+
+    implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'com.alibaba:fastjson:2.0.15.graal'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+```
+
+
+
+
+
+
+
+
+
 ### 代码
 
 #### net包
@@ -54231,3 +54259,572 @@ class CartoonServiceImplTest
 ### 项目地址
 
 [maomao124/CartoonApp: 漫画App (github.com)](https://github.com/maomao124/CartoonApp)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 小说App
+
+不想再写下去了，其实原理和上面那个一样的，这里我就直接粘贴我以前写的爬取小说数据的代码吧，你们可以通过这些代码开发app。请求需要封装
+
+
+
+
+
+### maven依赖
+
+```xml
+<dependencies>
+
+    <!--Jsoup解析html-->
+    <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>1.15.3</version>
+    </dependency>
+
+    <!--阿里巴巴的FastJson json解析-->
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>1.2.79</version>
+    </dependency>
+
+</dependencies>
+```
+
+
+
+
+
+
+
+### 代码
+
+#### 实体类
+
+##### Book
+
+```java
+package mao.entity;
+
+import java.util.List;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.entity
+ * Class(类名): Book
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:32
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Book
+{
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * 列表
+     */
+    private List<Catalogue> list;
+
+    /**
+     * Instantiates a new Book.
+     */
+    public Book()
+    {
+    }
+
+    /**
+     * Instantiates a new Book.
+     *
+     * @param name the name
+     * @param list the list
+     */
+    public Book(String name, List<Catalogue> list)
+    {
+        this.name = name;
+        this.list = list;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets list.
+     *
+     * @return the list
+     */
+    public List<Catalogue> getList()
+    {
+        return list;
+    }
+
+    /**
+     * Sets list.
+     *
+     * @param list the list
+     */
+    public void setList(List<Catalogue> list)
+    {
+        this.list = list;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("list：").append(list).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+
+
+##### Catalogue
+
+```java
+package mao.entity;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.entity
+ * Class(类名): Catalogue
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:14
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Catalogue
+{
+    /**
+     * 名字
+     */
+    private String name;
+    /**
+     * href
+     */
+    private String href;
+
+    /**
+     * Instantiates a new Catalogue.
+     */
+    public Catalogue()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Catalogue.
+     *
+     * @param name the name
+     * @param href the href
+     */
+    public Catalogue(String name, String href)
+    {
+        this.name = name;
+        this.href = href;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets href.
+     *
+     * @return the href
+     */
+    public String getHref()
+    {
+        return href;
+    }
+
+    /**
+     * Sets href.
+     *
+     * @param href the href
+     */
+    public void setHref(String href)
+    {
+        this.href = href;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("href：").append(href).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+##### Content
+
+```java
+package mao.entity;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.entity
+ * Class(类名): Content
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:09
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Content
+{
+    /**
+     * 标题
+     */
+    private String title;
+    /**
+     * 内容
+     */
+    private String content;
+
+    /**
+     * Instantiates a new Content.
+     */
+    public Content()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Content.
+     *
+     * @param title   the title
+     * @param content the content
+     */
+    public Content(String title, String content)
+    {
+        this.title = title;
+        this.content = content;
+    }
+
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
+    public void setContent(String content)
+    {
+        this.content = content;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("title：").append(title).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+##### SpeedProp
+
+```java
+package mao.entity;
+
+import java.io.InputStream;
+import java.util.Properties;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.entity
+ * Class(类名): SpeedProp
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 21:54
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class SpeedProp
+{
+    /**
+     * 最小睡眠时间
+     */
+    private static int minSleepTime = 200;
+
+    /**
+     * 最大值睡眠时间
+     */
+    private static int maxSleepTime = 1000;
+
+    static
+    {
+        InputStream inputStream = SpeedProp.class.getClassLoader().getResourceAsStream("speed.properties");
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(inputStream);
+            String minSleepTime1 = properties.getProperty("minSleepTime");
+            String maxSleepTime1 = properties.getProperty("maxSleepTime");
+            int min = Integer.parseInt(minSleepTime1);
+            int max = Integer.parseInt(maxSleepTime1);
+            if (max < min)
+            {
+                throw new Exception();
+            }
+            if (max < 0 || min < 0)
+            {
+                throw new Exception();
+            }
+            maxSleepTime = max;
+            minSleepTime = min;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+        System.out.println("minSleepTime："+minSleepTime);
+        System.out.println("maxSleepTime："+maxSleepTime);
+    }
+
+    /**
+     * 得到最小睡眠时间
+     *
+     * @return int
+     */
+    public static int getMinSleepTime()
+    {
+        return minSleepTime;
+    }
+
+    /**
+     * 得到最大值睡眠时间
+     *
+     * @return int
+     */
+    public static int getMaxSleepTime()
+    {
+        return maxSleepTime;
+    }
+}
+
+```
+
+
+
+
+
+
+
+#### service
+
+##### CatalogueService
+
+```java
+package mao.service;
+
+import mao.entity.Book;
+import mao.entity.Catalogue;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.service
+ * Class(类名): CatalogueService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:06
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CatalogueService
+{
+    /**
+     * 获取目录
+     *
+     * @param urlString url字符串
+     * @return {@link Book}
+     * @throws IOException IOException
+     */
+    public static Book getCatalogue(String urlString) throws IOException
+    {
+        String html = Request.get(urlString);
+        Document document = Jsoup.parse(html);
+        List<Catalogue> list = new ArrayList<>(64);
+        //System.out.println(document);
+        Element element = document.getElementById("list");
+        //System.out.println(element);
+        assert element != null;
+        Elements a = element.getElementsByTag("a");
+        //System.out.println(a);
+        for (int i = 0; i < a.size(); i++)
+        {
+            if (i < 9)
+            {
+                continue;
+            }
+            Element element1 = a.get(i);
+            //System.out.println(element1);
+            String href = element1.attr("href");
+            String name = element1.html();
+            //System.out.println(href);
+            //System.out.println(s);
+            Catalogue catalogue = new Catalogue();
+            catalogue.setHref(href);
+            catalogue.setName(name);
+            list.add(catalogue);
+        }
+
+        //获取书名
+        Elements h1 = document.getElementsByTag("h1");
+        //System.out.println(h1);
+        String name = h1.html();
+        Book book = new Book();
+        book.setName(name);
+        book.setList(list);
+        return book;
+    }
+
+
+    public static void main(String[] args) throws IOException
+    {
+        Book book = getCatalogue("http://www.biqu5200.net/52_52542/");
+        System.out.println(book);
+    }
+}
+
+```
+
+
+
+
+
+##### ContentService
