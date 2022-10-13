@@ -48534,3 +48534,604 @@ class SimpleRestfulHTTPImplTest
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 项目
+
+## 漫画App
+
+### 介绍
+
+一个看漫画的app，使用的是别人的后端，使用了jsoup去解析html页面，使用了fastjson去解析json串。涉及到爬虫的一些内容，懂的人很懂，不懂的人注释再多也看不懂，需要一定的web前端的功底，并且要对前后端数据交互要有一定的理解。这里我不多解释，直接上代码。
+
+
+
+本项目不参考任何的文献资料，所有代码全为本人一行一行的敲出来的。代码一共7000多行
+
+
+
+
+
+### 代码
+
+#### net包
+
+将之前封装好的发http请求的代码粘贴到项目中
+
+
+
+![image-20221013200305234](img/Android学习笔记/image-20221013200305234.png)
+
+
+
+
+
+
+
+
+
+#### 清单文件
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+            android:name=".application.MainApplication"
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@drawable/run"
+            android:label="@string/app_name"
+            android:roundIcon="@drawable/run"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.CartoonApp"
+            android:usesCleartextTraffic="true"
+            tools:targetApi="31">
+        <activity
+                android:name=".CartoonHistoryActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+        <activity
+                android:name=".searchActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+        <activity
+                android:name=".FavoritesActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+        <activity
+                android:name=".CartoonItemActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+        <activity
+                android:name=".ContentActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+        <activity
+                android:name=".MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.app.lib_name"
+                    android:value="" />
+        </activity>
+    </application>
+
+</manifest>
+```
+
+
+
+
+
+#### values
+
+##### dimens.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="main_item_list_height">120dp</dimen>
+    <dimen name="item_cartoonitem_height">50dp</dimen>
+    <dimen name="search_height">60dp</dimen>
+</resources>
+```
+
+
+
+##### strings.xml
+
+```xml
+<resources>
+    <string name="app_name">漫画App</string>
+</resources>
+```
+
+
+
+
+
+
+
+#### 布局文件
+
+##### activity_cartoon_history
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".FavoritesActivity"
+        android:orientation="vertical">
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="历史记录"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textColor="#ffaacc" />
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:text="暂无历史记录，快去看漫画吧ヾ(✿ﾟ▽ﾟ)ノ"
+            android:textSize="18sp"
+            android:textColor="#00ccff"
+            android:gravity="center" />
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### activity_cartoon_item
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".CartoonItemActivity"
+        android:orientation="vertical">
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:orientation="horizontal">
+
+
+        <ImageView
+                android:id="@+id/ImageView"
+                android:layout_width="150dp"
+                android:layout_height="180dp" />
+
+        <RelativeLayout
+                android:layout_marginStart="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:gravity="center_horizontal" />
+
+            <TextView
+                    android:id="@+id/author"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="17sp"
+                    android:gravity="center_horizontal" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal">
+
+        <TextView
+                android:gravity="center_vertical|center_horizontal"
+                android:layout_width="70dp"
+                android:layout_height="@dimen/item_cartoonitem_height"
+                android:text="章节序号"
+                android:textSize="14sp" />
+
+        <TextView
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:text="章节名称"
+                android:layout_height="@dimen/item_cartoonitem_height" />
+
+
+    </LinearLayout>
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <Button
+                android:id="@+id/Button_add_favorites"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                android:text="加入到收藏" />
+
+        <Button
+                android:id="@+id/Button_start"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:text="开始阅读" />
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+##### activity_content
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/WebView"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ContentActivity">
+
+</WebView>
+```
+
+
+
+
+
+
+
+##### activity_favorites
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".FavoritesActivity"
+        android:orientation="vertical">
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="漫画收藏夹"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textColor="#ffaacc" />
+
+    <TextView
+            android:id="@+id/TextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:text="收藏夹空空如也，快去收藏漫画吧(〃'▽'〃)"
+            android:textSize="18sp"
+            android:textColor="#00ccff"
+            android:gravity="center" />
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### activity_main
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.viewpager.widget.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ViewPager"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <androidx.viewpager.widget.PagerTabStrip
+            android:id="@+id/PagerTabStrip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+</androidx.viewpager.widget.ViewPager>
+```
+
+
+
+
+
+##### activity_search
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".searchActivity"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/search_height"
+            android:orientation="horizontal"
+            android:layout_marginBottom="5dp">
+
+
+        <EditText
+                android:id="@+id/EditText_search"
+                android:layout_width="0dp"
+                android:hint="从这里输入搜索关键字"
+                android:layout_height="@dimen/search_height"
+                android:layout_weight="1" />
+
+        <Button
+                android:id="@+id/Button_search"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/search_height"
+
+                android:text="搜索" />
+
+    </LinearLayout>
+
+
+    <ListView
+            android:id="@+id/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_cartoonitem
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_cartoonitem_height"
+        android:orientation="horizontal"
+        android:layout_margin="10dp">
+
+
+    <TextView
+            android:id="@+id/id"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_width="70dp"
+            android:layout_height="@dimen/item_cartoonitem_height"
+            android:textSize="16sp" />
+
+    <TextView
+            android:id="@+id/name"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_cartoonitem_height" />
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_listview_cartoon
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/main_item_list_height">
+
+
+    <ImageView
+            android:id="@+id/image"
+            android:layout_width="@dimen/main_item_list_height"
+            android:layout_height="@dimen/main_item_list_height" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/main_item_list_height"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:textSize="20sp" />
+
+        <TextView
+                android:id="@+id/author"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2" />
+
+        <TextView
+                android:id="@+id/remarks"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+
+
+
+
+##### item_pageview
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+</ListView>
+```
+
+
+
+
+
+
+
+#### application
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 项目结构
+
+![image-20221013200611603](img/Android学习笔记/image-20221013200611603.png)
+
+
+
+![image-20221013200621362](img/Android学习笔记/image-20221013200621362.png)
+
+
+
+
+
+
+
+### 项目地址
+
+[maomao124/CartoonApp: 漫画App (github.com)](https://github.com/maomao124/CartoonApp)
