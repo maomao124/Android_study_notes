@@ -49092,6 +49092,281 @@ class SimpleRestfulHTTPImplTest
 
 #### application
 
+##### MainApplication
+
+```java
+package mao.cartoonapp.application;
+
+import android.app.Application;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import mao.cartoonapp.R;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.ImageLoadResult;
+import mao.cartoonapp.net.RestfulHTTP;
+import mao.cartoonapp.net.SimpleRestfulHTTPImpl;
+import mao.cartoonapp.service.CartoonService;
+import mao.cartoonapp.service.CartoonServiceImpl;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.application
+ * Class(类名): MainApplication
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 13:42
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class MainApplication extends Application
+{
+    /**
+     * 标签
+     */
+    private static final String TAG = "MainApplication";
+
+    /**
+     * 实例，单例模式
+     */
+    private static volatile MainApplication mainApplication;
+
+    public Map<String, Object> data = new HashMap<>();
+
+    /**
+     * 线程池
+     */
+    private ExecutorService threadPool;
+
+    /**
+     * http
+     */
+    private RestfulHTTP http;
+
+
+    private CartoonService cartoonService;
+
+
+    public ExecutorService getThreadPool()
+    {
+        return threadPool;
+    }
+
+    public RestfulHTTP getHttp()
+    {
+        return http;
+    }
+
+    public CartoonService getCartoonService()
+    {
+        return cartoonService;
+    }
+
+    public static MainApplication getInstance()
+    {
+        return mainApplication;
+    }
+
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        Log.d(TAG, "onCreate: ");
+        mainApplication = this;
+        threadPool = Executors.newFixedThreadPool(6);
+        http = new SimpleRestfulHTTPImpl();
+        http.setConnectTimeout(16000);
+        http.setReadTimeout(10000);
+        http.setThreadPool(threadPool);
+
+        cartoonService = new CartoonServiceImpl(http);
+    }
+
+    /**
+     * This method is for use in emulated process environments.  It will
+     * never be called on a production Android device, where processes are
+     * removed by simply killing them; no user code (including this callback)
+     * is executed when doing so.
+     */
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+
+
+    /**
+     * 加载图片
+     *
+     * @param cartoon 卡通
+     * @return {@link Bitmap}
+     */
+    public Bitmap loadImage(Cartoon cartoon)
+    {
+        String imgPath = getExternalCacheDir().toString() + "/" + cartoon.getId() + ".jpg";
+        Log.d(TAG, "loadImage: imgPath" + imgPath);
+        //从本地加载
+        Bitmap bitmap = openImage(imgPath);
+        if (bitmap != null)
+        {
+            //本地存在，直接返回
+            Log.d(TAG, "loadImage: 本地存在图片：" + cartoon.getId());
+            return bitmap;
+        }
+        //本地不存在,从网络上加载
+        ImageLoadResult imageLoadResult = openImageByHTTP(cartoon.getImgUrl());
+        if (imageLoadResult.isStatus())
+        {
+            Log.d(TAG, "loadImage: 从网络上加载图片成功：" + cartoon.getId());
+            //从网络上成功加载，保存到本地
+            saveImage(imgPath, imageLoadResult.getBitmap());
+            return imageLoadResult.getBitmap();
+        }
+        //从网络上加载失败，是默认的图片
+        return imageLoadResult.getBitmap();
+    }
+
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param path 路径
+     * @return {@link Bitmap}
+     */
+    public Bitmap openImage(String path)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(path))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            //e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+
+    public ImageLoadResult openImageByHTTP(String imgUrl)
+    {
+        Bitmap bitmap;
+        InputStream inputStream = null;
+        HttpURLConnection httpURLConnection = null;
+        try
+        {
+            URL url = new URL(imgUrl);
+            httpURLConnection = (HttpURLConnection) url.openConnection();
+            inputStream = httpURLConnection.getInputStream();
+            bitmap = BitmapFactory.decodeStream(inputStream);
+            return new ImageLoadResult(true, bitmap);
+        }
+        catch (Exception e)
+        {
+            //加载失败，直接加载默认的图片
+            Log.e(TAG, "openImageByHTTP: ", e);
+            bitmap = BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_launcher_round);
+            return new ImageLoadResult(false, bitmap);
+        }
+        finally
+        {
+            try
+            {
+                if (inputStream != null)
+                {
+                    inputStream.close();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            if (httpURLConnection != null)
+            {
+                httpURLConnection.disconnect();
+            }
+        }
+    }
+
+
+    /**
+     * 从指定路径的图片文件中读取位图数据
+     *
+     * @param file File对象
+     * @return {@link Bitmap}
+     */
+    public Bitmap openImage(File file)
+    {
+        // 声明一个位图对象
+        Bitmap bitmap = null;
+        // 根据指定的文件路径构建文件输入流对象
+        try (FileInputStream fileInputStream = new FileInputStream(file))
+        {
+            // 从文件输入流中解码位图数据
+            bitmap = BitmapFactory.decodeStream(fileInputStream);
+        }
+        catch (Exception e)
+        {
+            //e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 把位图数据保存到指定路径的图片文件
+     *
+     * @param path   路径
+     * @param bitmap Bitmap对象
+     */
+    public boolean saveImage(String path, Bitmap bitmap)
+    {
+        // 根据指定的文件路径构建文件输出流对象
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path))
+        {
+            // 把位图数据压缩到文件输出流中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+```
 
 
 
@@ -49099,8 +49374,1094 @@ class SimpleRestfulHTTPImplTest
 
 
 
+#### 常量
+
+##### URLConstant
+
+```java
+package mao.cartoonapp.constant;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.constant
+ * Class(类名): URLConstant
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 21:08
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class URLConstant
+{
+    public static final String baseUrl = "http://m.qiman57.com/";
+    public static final String host = "m.qiman57.com";
+    public static final String bookChapterUrl = "http://m.qiman57.com/bookchapter/";
+
+    public static final String searchUrl = "http://m.qiman57.com/spotlight/?keyword=";
+
+    public static final String rank1Name = "日热门榜";
+    public static final String rankUrl1 = "http://m.qiman57.com/rank/1-1.html";
+    public static final int rankUrl1Type = 1;
+
+    public static final String rank2Name = "周热门榜";
+    public static final String rankUrl2 = "http://m.qiman57.com/rank/2-1.html";
+    public static final int rankUrl2Type = 2;
+
+    public static final String rank3Name = "月热门榜";
+    public static final String rankUrl3 = "http://m.qiman57.com/rank/3-1.html";
+    public static final int rankUrl3Type = 3;
+
+    public static final String rank4Name = "总热门榜";
+    public static final String rankUrl4 = "http://m.qiman57.com/rank/4-1.html";
+    public static final int rankUrl4Type = 4;
+
+    public static final String rank5Name = "最近更新";
+    public static final String rankUrl5 = "http://m.qiman57.com/rank/5-1.html";
+    public static final int rankUrl5Type = 5;
+
+    public static final String rank6Name = "新漫入库";
+    public static final String rankUrl6 = "http://m.qiman57.com/rank/6-1.html";
+    public static final int rankUrl6Type = 6;
+}
+```
 
 
+
+
+
+
+
+#### 适配器类
+
+##### CartoonItemListViewAdapter
+
+```java
+package mao.cartoonapp.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.cartoonapp.R;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.entity.CartoonItem;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.adapter
+ * Class(类名): CartoonItemListViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 15:55
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonItemListViewAdapter extends BaseAdapter
+{
+
+    private final Context context;
+
+    private final List<CartoonItem> cartoonItemList;
+
+    public CartoonItemListViewAdapter(Context context, List<CartoonItem> cartoonItemList)
+    {
+        this.context = context;
+        this.cartoonItemList = cartoonItemList;
+    }
+
+    @Override
+    public int getCount()
+    {
+        return cartoonItemList.size();
+    }
+
+    @Override
+    public Object getItem(int position)
+    {
+        return cartoonItemList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        CartoonItemListViewHolder cartoonItemListViewHolder;
+        if (convertView == null)
+        {
+            cartoonItemListViewHolder = new CartoonItemListViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_cartoonitem, null);
+            cartoonItemListViewHolder.textViewId = convertView.findViewById(R.id.id);
+            cartoonItemListViewHolder.name = convertView.findViewById(R.id.name);
+            convertView.setTag(cartoonItemListViewHolder);
+        }
+        else
+        {
+            cartoonItemListViewHolder = (CartoonItemListViewHolder) convertView.getTag();
+        }
+        CartoonItem cartoonItem = cartoonItemList.get(position);
+        String textViewId = cartoonItem.getTextViewId();
+        cartoonItemListViewHolder.textViewId.setText(textViewId);
+        cartoonItemListViewHolder.name.setText(cartoonItem.getName());
+        return convertView;
+    }
+
+    private static class CartoonItemListViewHolder
+    {
+        /**
+         * 文本视图id
+         */
+        public TextView textViewId;
+
+        /**
+         * 名字
+         */
+        public TextView name;
+    }
+}
+```
+
+
+
+
+
+##### CartoonListViewAdapter
+
+```java
+package mao.cartoonapp.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+
+import mao.cartoonapp.R;
+import mao.cartoonapp.entity.Cartoon;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.adapter
+ * Class(类名): CartoonListViewAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 13:48
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonListViewAdapter extends BaseAdapter
+{
+
+    /**
+     * 上下文
+     */
+    private final Context context;
+
+    /**
+     * 漫画列表
+     */
+    private final List<Cartoon> cartoonList;
+
+    public CartoonListViewAdapter(Context context, List<Cartoon> cartoonList)
+    {
+        this.context = context;
+        this.cartoonList = cartoonList;
+    }
+
+    @Override
+    public int getCount()
+    {
+        return cartoonList.size();
+    }
+
+    @Override
+    public Object getItem(int position)
+    {
+        return cartoonList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        CartoonListViewHolder cartoonListViewHolder;
+        if (convertView == null)
+        {
+            cartoonListViewHolder = new CartoonListViewHolder();
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_listview_cartoon, null);
+            cartoonListViewHolder.image = convertView.findViewById(R.id.image);
+            cartoonListViewHolder.name = convertView.findViewById(R.id.name);
+            cartoonListViewHolder.author = convertView.findViewById(R.id.author);
+            cartoonListViewHolder.remarks = convertView.findViewById(R.id.remarks);
+            convertView.setTag(cartoonListViewHolder);
+        }
+        else
+        {
+            cartoonListViewHolder = (CartoonListViewHolder) convertView.getTag();
+        }
+        Cartoon cartoon = cartoonList.get(position);
+        cartoonListViewHolder.image.setImageBitmap(cartoon.getBitmap());
+        cartoonListViewHolder.name.setText(cartoon.getName());
+        cartoonListViewHolder.author.setText(cartoon.getAuthor());
+        cartoonListViewHolder.remarks.setText(cartoon.getRemarks());
+        return convertView;
+    }
+
+
+    private static class CartoonListViewHolder
+    {
+        /**
+         * 图像
+         */
+        public ImageView image;
+        /**
+         * 名字
+         */
+        public TextView name;
+        /**
+         * 作者
+         */
+        public TextView author;
+
+        /**
+         * 最后一章节
+         */
+        public TextView remarks;
+    }
+
+}
+```
+
+
+
+
+
+##### CartoonViewPagerAdapter
+
+```java
+package mao.cartoonapp.adapter;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.PagerAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.cartoonapp.CartoonItemActivity;
+import mao.cartoonapp.MainActivity;
+import mao.cartoonapp.R;
+import mao.cartoonapp.application.MainApplication;
+import mao.cartoonapp.constant.URLConstant;
+import mao.cartoonapp.dao.CartoonFavoritesDao;
+import mao.cartoonapp.entity.Cartoon;
+import mao.cartoonapp.service.CartoonService;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.adapter
+ * Class(类名): CartoonViewPagerAdapter
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 19:20
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonViewPagerAdapter extends PagerAdapter
+{
+
+    private Activity activity;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "CartoonViewPagerAdapter";
+
+    private List<Cartoon> cartoonList1;
+    private List<Cartoon> cartoonList2;
+    private List<Cartoon> cartoonList3;
+    private List<Cartoon> cartoonList4;
+    private List<Cartoon> cartoonList5;
+    private List<Cartoon> cartoonList6;
+
+    private final ListView[] listViewList;
+
+    private final CartoonListViewAdapter[] cartoonListViewAdapterList;
+
+    private final String[] titleList =
+            {
+                    URLConstant.rank1Name,
+                    URLConstant.rank2Name,
+                    URLConstant.rank3Name,
+                    URLConstant.rank4Name,
+                    URLConstant.rank5Name,
+                    URLConstant.rank6Name,
+            };
+
+
+    public CartoonViewPagerAdapter(Activity activity)
+    {
+        this.activity = activity;
+
+
+        listViewList = new ListView[6];
+        cartoonListViewAdapterList = new CartoonListViewAdapter[6];
+
+
+        //初始化listViewList
+        for (int i = 0; i < listViewList.length; i++)
+        {
+            listViewList[i] = (ListView) LayoutInflater.from(activity).inflate(R.layout.item_pageview, null);
+        }
+
+        MainApplication.getInstance().getThreadPool().submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    //先初始化第2组
+                    load2(activity);
+                    //加载其它页，并发加载
+                    MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                load1(activity);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.e(TAG, "run: ", e);
+                            }
+                        }
+                    });
+                    MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                load3(activity);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.e(TAG, "run: ", e);
+                            }
+                        }
+                    });
+                    MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                load4(activity);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.e(TAG, "run: ", e);
+                            }
+                        }
+                    });
+                    MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                load5(activity);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.e(TAG, "run: ", e);
+                            }
+                        }
+                    });
+                    MainApplication.getInstance().getThreadPool().submit(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                load6(activity);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.e(TAG, "run: ", e);
+                            }
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "run: ", e);
+                    //只提示用户第二组报错，其它组的异常不提示
+                    activity.runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            new AlertDialog.Builder(activity)
+                                    .setTitle("错误")
+                                    .setMessage("异常内容：\n" + e)
+                                    .setPositiveButton("我知道了", null)
+                                    .create()
+                                    .show();
+                        }
+                    });
+                }
+            }
+        });
+
+        listViewList[0].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList1.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+        listViewList[1].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList2.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+        listViewList[2].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList3.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+        listViewList[3].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList4.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+        listViewList[4].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList5.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+        listViewList[5].setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList6.get(position);
+                String id1 = cartoon.getId();
+                String name = cartoon.getName();
+                String author = cartoon.getAuthor();
+                String imgUrl = cartoon.getImgUrl();
+                Intent intent = new Intent(activity, CartoonItemActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id1);
+                bundle.putString("name", name);
+                bundle.putString("author", author);
+                bundle.putString("imgUrl", imgUrl);
+                intent.putExtras(bundle);
+                activity.startActivity(intent);
+            }
+        });
+
+
+        listViewList[0].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList1.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        listViewList[1].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList2.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        listViewList[2].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList3.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        listViewList[3].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList4.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        listViewList[4].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList5.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+        listViewList[5].setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Cartoon cartoon = cartoonList6.get(position);
+                new AlertDialog.Builder(activity)
+                        .setTitle("提示")
+                        .setMessage("是否将漫画”" + cartoon.getName() + "“加入到收藏夹？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                boolean insert = CartoonFavoritesDao.getInstance(activity).insert(cartoon);
+                                if (insert)
+                                {
+                                    toastShow("加入成功");
+                                }
+                                else
+                                {
+                                    toastShow("加入失败");
+                                }
+                            }
+                        })
+                        .setNeutralButton("否", null)
+                        .create()
+                        .show();
+                return true;
+            }
+        });
+
+    }
+
+    private void load1(Activity activity)
+    {
+        int pageNumber = 0;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList1 = cartoonService.getCartoonList(URLConstant.rankUrl1, URLConstant.rankUrl1Type);
+        Log.d(TAG, "run: 大小：" + cartoonList1.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList1);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList1);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList1)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第1页加载完成");
+    }
+
+
+    private void load2(Activity activity)
+    {
+        int pageNumber = 1;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList2 = cartoonService.getCartoonList(URLConstant.rankUrl2, URLConstant.rankUrl2Type);
+        Log.d(TAG, "run: 大小：" + cartoonList2.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList2);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList2);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList2)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第2页加载完成");
+    }
+
+    private void load3(Activity activity)
+    {
+        int pageNumber = 2;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList3 = cartoonService.getCartoonList(URLConstant.rankUrl3, URLConstant.rankUrl3Type);
+        Log.d(TAG, "run: 大小：" + cartoonList3.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList3);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList3);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList3)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第3页加载完成");
+    }
+
+
+    private void load4(Activity activity)
+    {
+        int pageNumber = 3;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList4 = cartoonService.getCartoonList(URLConstant.rankUrl4, URLConstant.rankUrl4Type);
+        Log.d(TAG, "run: 大小：" + cartoonList4.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList4);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList4);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList4)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第4页加载完成");
+    }
+
+
+    private void load5(Activity activity)
+    {
+        int pageNumber = 4;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList5 = cartoonService.getCartoonList(URLConstant.rankUrl5, URLConstant.rankUrl5Type);
+        Log.d(TAG, "run: 大小：" + cartoonList5.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList5);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList5);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList5)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第5页加载完成");
+    }
+
+
+    private void load6(Activity activity)
+    {
+        int pageNumber = 5;
+        CartoonService cartoonService = MainApplication.getInstance().getCartoonService();
+        cartoonList6 = cartoonService.getCartoonList(URLConstant.rankUrl6, URLConstant.rankUrl6Type);
+        Log.d(TAG, "run: 大小：" + cartoonList6.size());
+        Log.d(TAG, "run: 请求完成：\n" + cartoonList6);
+        cartoonListViewAdapterList[pageNumber] = new CartoonListViewAdapter(activity, cartoonList6);
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        for (Cartoon cartoon : cartoonList6)
+        {
+            Log.d(TAG, "run: " + cartoon.getImgUrl());
+            Bitmap bitmap = MainApplication.getInstance().loadImage(cartoon);
+            cartoon.setBitmap(bitmap);
+        }
+
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cartoonListViewAdapterList[pageNumber].notifyDataSetChanged();
+                listViewList[pageNumber].setAdapter(cartoonListViewAdapterList[pageNumber]);
+            }
+        });
+        Log.d(TAG, "run: 第6页加载完成");
+    }
+
+
+    @Override
+    public int getCount()
+    {
+        return 6;
+    }
+
+    @Override
+    public boolean isViewFromObject(@NonNull View view, @NonNull Object object)
+    {
+        return view == object;
+    }
+
+    @NonNull
+    @Override
+    public Object instantiateItem(@NonNull ViewGroup container, int position)
+    {
+        Log.d(TAG, "instantiateItem: 页面初始化：" + position);
+        container.addView(listViewList[position]);
+        return listViewList[position];
+    }
+
+    @Override
+    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
+    {
+        Log.d(TAG, "instantiateItem: 页面销毁：" + position);
+        container.removeView(listViewList[position]);
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position)
+    {
+        return titleList[position];
+    }
+
+    /**
+     * 显示消息
+     *
+     * @param message 消息
+     */
+    private void toastShow(String message)
+    {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+    }
+
+}
+```
+
+
+
+
+
+
+
+#### 数据持久化类
 
 
 
