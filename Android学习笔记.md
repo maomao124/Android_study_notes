@@ -50463,6 +50463,1577 @@ public class CartoonViewPagerAdapter extends PagerAdapter
 
 #### 数据持久化类
 
+##### CartoonFavoritesDao
+
+```java
+package mao.cartoonapp.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.cartoonapp.entity.Cartoon;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.dao
+ * Class(类名): CartoonFavoritesDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 21:13
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonFavoritesDao extends SQLiteOpenHelper
+{
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "cartoonFavorites.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "cartoon_favorites";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile CartoonFavoritesDao cartoonFavoritesDao = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "CartoonFavoritesDao";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public CartoonFavoritesDao(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link CartoonFavoritesDao}
+     */
+    public static CartoonFavoritesDao getInstance(Context context)
+    {
+        if (cartoonFavoritesDao == null)
+        {
+            synchronized (CartoonFavoritesDao.class)
+            {
+                if (cartoonFavoritesDao == null)
+                {
+                    cartoonFavoritesDao = new CartoonFavoritesDao(context);
+                }
+            }
+        }
+        return cartoonFavoritesDao;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = cartoonFavoritesDao.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = cartoonFavoritesDao.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                "id VARCHAR PRIMARY KEY NOT NULL," +
+                "name VARCHAR NOT NULL," +
+                "author VARCHAR NOT NULL," +
+                "remarks VARCHAR NOT NULL," +
+                "imgUrl VARCHAR NOT NULL)";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Cartoon}>
+     */
+    public List<Cartoon> queryAll()
+    {
+        List<Cartoon> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            Cartoon cartoon = new Cartoon();
+            setCartoon(cursor, cartoon);
+            list.add(cartoon);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+
+    /**
+     * 通过id(主键)查询
+     *
+     * @param id id(主键)
+     * @return {@link Cartoon}
+     */
+    public Cartoon queryById(Serializable id)
+    {
+        Cartoon cartoon = null;
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor.moveToNext())
+        {
+            cartoon = new Cartoon();
+            setCartoon(cursor, cartoon);
+        }
+        cursor.close();
+        return cartoon;
+    }
+
+
+    /**
+     * 插入一条数据
+     *
+     * @param cartoon Cartoon对象
+     * @return boolean
+     */
+    public boolean insert(Cartoon cartoon)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartoon, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<Cartoon> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (Cartoon cartoon : list)
+            {
+                boolean insert = this.insert(cartoon);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param cartoon Cartoon对象
+     * @return boolean
+     */
+    public boolean update(Cartoon cartoon)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartoon, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id=?", new String[]{cartoon.getId().toString()});
+        return update > 0;
+    }
+
+    /**
+     * 插入或更新，先尝试插入，如果插入失败，更新
+     *
+     * @param cartoon Cartoon对象
+     * @return boolean
+     */
+    public boolean insertOrUpdate(Cartoon cartoon)
+    {
+        boolean insert = insert(cartoon);
+        if (insert)
+        {
+            return true;
+        }
+        return update(cartoon);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id id
+     * @return boolean
+     */
+    public boolean delete(Serializable id)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id=?", new String[]{String.valueOf(id)});
+        return delete > 0;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param cartoon       Cartoon
+     * @param contentValues ContentValues
+     */
+    private void setContentValues(Cartoon cartoon, ContentValues contentValues)
+    {
+        contentValues.put("id", cartoon.getId());
+        contentValues.put("name", cartoon.getName());
+        contentValues.put("author", cartoon.getAuthor());
+        contentValues.put("remarks", cartoon.getRemarks());
+        contentValues.put("imgUrl", cartoon.getImgUrl());
+    }
+
+    /**
+     * 填充Cartoon
+     *
+     * @param cursor  游标
+     * @param cartoon Cartoon对象
+     */
+    private Cartoon setCartoon(Cursor cursor, Cartoon cartoon)
+    {
+        cartoon.setId(cursor.getString(0));
+        cartoon.setName(cursor.getString(1));
+        cartoon.setAuthor(cursor.getString(2));
+        cartoon.setRemarks(cursor.getString(3));
+        cartoon.setImgUrl(cursor.getString(4));
+        return cartoon;
+    }
+
+
+}
+```
+
+
+
+
+
+##### CartoonHistoryDao
+
+```java
+package mao.cartoonapp.dao;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import mao.cartoonapp.entity.CartoonHistory;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.dao
+ * Class(类名): CartoonHistoryDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/13
+ * Time(创建时间)： 13:58
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class CartoonHistoryDao extends SQLiteOpenHelper
+{
+    /**
+     * 数据库名字
+     */
+    private static final String DB_NAME = "CartoonHistory.db";
+
+    /**
+     * 表名
+     */
+    private static final String TABLE_NAME = "CartoonHistory";
+
+    /**
+     * 数据库版本
+     */
+    private static final int DB_VERSION = 1;
+
+    /**
+     * 实例，单例模式，懒汉式，双重检查锁方式
+     */
+    private static volatile CartoonHistoryDao cartoonHistoryDao = null;
+
+    /**
+     * 读数据库
+     */
+    private SQLiteDatabase readDatabase;
+    /**
+     * 写数据库
+     */
+    private SQLiteDatabase writeDatabase;
+
+    /**
+     * 标签
+     */
+    private static final String TAG = "CartoonHistoryDao";
+
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文
+     */
+    public CartoonHistoryDao(@Nullable Context context)
+    {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    /**
+     * 获得实例
+     *
+     * @param context 上下文
+     * @return {@link CartoonHistoryDao}
+     */
+    public static CartoonHistoryDao getInstance(Context context)
+    {
+        if (cartoonHistoryDao == null)
+        {
+            synchronized (CartoonHistoryDao.class)
+            {
+                if (cartoonHistoryDao == null)
+                {
+                    cartoonHistoryDao = new CartoonHistoryDao(context);
+                }
+            }
+        }
+        return cartoonHistoryDao;
+    }
+
+    /**
+     * 打开读连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openReadConnection()
+    {
+        if (readDatabase == null || !readDatabase.isOpen())
+        {
+            readDatabase = cartoonHistoryDao.getReadableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 打开写连接
+     *
+     * @return {@link SQLiteDatabase}
+     */
+    public SQLiteDatabase openWriteConnection()
+    {
+        if (writeDatabase == null || !writeDatabase.isOpen())
+        {
+            writeDatabase = cartoonHistoryDao.getWritableDatabase();
+        }
+        return readDatabase;
+    }
+
+    /**
+     * 关闭数据库读连接和写连接
+     */
+    public void closeConnection()
+    {
+        if (readDatabase != null && readDatabase.isOpen())
+        {
+            readDatabase.close();
+            readDatabase = null;
+        }
+
+        if (writeDatabase != null && writeDatabase.isOpen())
+        {
+            writeDatabase.close();
+            writeDatabase = null;
+        }
+    }
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db)
+    {
+
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                "id1 VARCHAR PRIMARY KEY NOT NULL," +
+                "id2 VARCHAR NOT NULL," +
+                "name VARCHAR NOT NULL," +
+                "author VARCHAR NOT NULL," +
+                "lastTime INTEGER NOT NULL," +
+                "imgUrl VARCHAR NOT NULL)";
+        db.execSQL(sql);
+    }
+
+    /**
+     * 数据库版本更新时触发回调
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion 旧版本
+     * @param newVersion 新版本
+     */
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link CartoonHistory}>
+     */
+    public List<CartoonHistory> queryAll()
+    {
+        List<CartoonHistory> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, null);
+
+        while (cursor.moveToNext())
+        {
+            CartoonHistory cartoonHistory = new CartoonHistory();
+            setCartoonHistory(cursor, cartoonHistory);
+            list.add(cartoonHistory);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+    /**
+     * 查询所有,并按更新时间的降序排序
+     *
+     * @return {@link List}<{@link CartoonHistory}>
+     */
+    public List<CartoonHistory> queryAllByLastTimeDesc()
+    {
+        List<CartoonHistory> list = new ArrayList<>();
+
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "1=1", new String[]{}, null, null, "lastTime desc");
+
+        while (cursor.moveToNext())
+        {
+            CartoonHistory cartoonHistory = new CartoonHistory();
+            setCartoonHistory(cursor, cartoonHistory);
+            list.add(cartoonHistory);
+        }
+
+        cursor.close();
+        return list;
+    }
+
+
+    /**
+     * 通过id1(主键)查询
+     *
+     * @param id1 id1(主键)
+     * @return {@link CartoonHistory}
+     */
+    public CartoonHistory queryById(Serializable id1)
+    {
+        CartoonHistory cartoonHistory = null;
+        Cursor cursor = readDatabase.query(TABLE_NAME, null, "id1=?", new String[]{String.valueOf(id1)}, null, null, null);
+        if (cursor.moveToNext())
+        {
+            cartoonHistory = new CartoonHistory();
+            setCartoonHistory(cursor, cartoonHistory);
+        }
+        cursor.close();
+        return cartoonHistory;
+    }
+
+
+    /**
+     * 插入一条数据
+     *
+     * @param cartoonHistory CartoonHistory对象
+     * @return boolean
+     */
+    public boolean insert(CartoonHistory cartoonHistory)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartoonHistory, contentValues);
+        long insert = writeDatabase.insert(TABLE_NAME, null, contentValues);
+        return insert > 0;
+    }
+
+    /**
+     * 插入多条数据
+     *
+     * @param list 列表
+     * @return boolean
+     */
+    public boolean insert(List<CartoonHistory> list)
+    {
+        try
+        {
+            writeDatabase.beginTransaction();
+            for (CartoonHistory cartoonHistory : list)
+            {
+                boolean insert = this.insert(cartoonHistory);
+                if (!insert)
+                {
+                    throw new Exception();
+                }
+            }
+            writeDatabase.setTransactionSuccessful();
+            return true;
+        }
+        catch (Exception e)
+        {
+            writeDatabase.endTransaction();
+            Log.e(TAG, "insert: ", e);
+            return false;
+        }
+    }
+
+    /**
+     * 更新
+     *
+     * @param cartoonHistory CartoonHistory对象
+     * @return boolean
+     */
+    public boolean update(CartoonHistory cartoonHistory)
+    {
+        ContentValues contentValues = new ContentValues();
+        setContentValues(cartoonHistory, contentValues);
+        int update = writeDatabase.update(TABLE_NAME, contentValues, "id1=?", new String[]{cartoonHistory.getId1().toString()});
+        return update > 0;
+    }
+
+    /**
+     * 插入或更新，先尝试插入，如果插入失败，更新
+     *
+     * @param cartoonHistory CartoonHistory对象
+     * @return boolean
+     */
+    public boolean insertOrUpdate(CartoonHistory cartoonHistory)
+    {
+        boolean insert = insert(cartoonHistory);
+        if (insert)
+        {
+            return true;
+        }
+        return update(cartoonHistory);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id1 id1
+     * @return boolean
+     */
+    public boolean delete(Serializable id1)
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "id1=?", new String[]{String.valueOf(id1)});
+        return delete > 0;
+    }
+
+    /**
+     * 删除所有
+     *
+     * @return boolean
+     */
+    public boolean deleteAll()
+    {
+        int delete = writeDatabase.delete(TABLE_NAME, "1=1", new String[]{});
+        return delete > 0;
+    }
+
+
+    /**
+     * 填充ContentValues
+     *
+     * @param cartoonHistory CartoonHistory
+     * @param contentValues  ContentValues
+     */
+    private void setContentValues(CartoonHistory cartoonHistory, ContentValues contentValues)
+    {
+        contentValues.put("id1", cartoonHistory.getId1());
+        contentValues.put("id2", cartoonHistory.getId2());
+        contentValues.put("name", cartoonHistory.getName());
+        contentValues.put("author", cartoonHistory.getAuthor());
+        contentValues.put("lastTime", cartoonHistory.getLastTime());
+        contentValues.put("imgUrl", cartoonHistory.getImgUrl());
+    }
+
+    /**
+     * 填充CartoonHistory
+     *
+     * @param cursor         游标
+     * @param cartoonHistory CartoonHistory对象
+     */
+    private CartoonHistory setCartoonHistory(Cursor cursor, CartoonHistory cartoonHistory)
+    {
+        cartoonHistory.setId1(cursor.getString(0));
+        cartoonHistory.setId2(cursor.getString(1));
+        cartoonHistory.setName(cursor.getString(2));
+        cartoonHistory.setAuthor(cursor.getString(3));
+        cartoonHistory.setLastTime(cursor.getLong(4));
+        cartoonHistory.setImgUrl(cursor.getString(5));
+        return cartoonHistory;
+    }
+
+
+}
+```
+
+
+
+
+
+
+
+#### 实体类
+
+##### Cartoon
+
+```java
+package mao.cartoonapp.entity;
+
+import android.graphics.Bitmap;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.entity
+ * Class(类名): Cartoon
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 19:42
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class Cartoon
+{
+    /**
+     * id
+     */
+    private String id;
+
+    /**
+     * 名字
+     */
+    private String name;
+
+    /**
+     * 作者
+     */
+    private String author;
+
+    /**
+     * 最后一章节
+     */
+    private String remarks;
+
+    /**
+     * img url
+     */
+    private String imgUrl;
+
+
+    /**
+     * 位图
+     */
+    private Bitmap bitmap;
+
+    /**
+     * Instantiates a new Cartoon.
+     */
+    public Cartoon()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Cartoon.
+     *
+     * @param id      the id
+     * @param name    the name
+     * @param author  the author
+     * @param remarks the remarks
+     * @param imgUrl  the img url
+     */
+    public Cartoon(String id, String name, String author, String remarks, String imgUrl)
+    {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+        this.remarks = remarks;
+        this.imgUrl = imgUrl;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public Cartoon setId(String id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public Cartoon setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets author.
+     *
+     * @return the author
+     */
+    public String getAuthor()
+    {
+        return author;
+    }
+
+    /**
+     * Sets author.
+     *
+     * @param author the author
+     * @return the author
+     */
+    public Cartoon setAuthor(String author)
+    {
+        this.author = author;
+        return this;
+    }
+
+    /**
+     * Gets remarks.
+     *
+     * @return the remarks
+     */
+    public String getRemarks()
+    {
+        return remarks;
+    }
+
+    /**
+     * Sets remarks.
+     *
+     * @param remarks the remarks
+     * @return the remarks
+     */
+    public Cartoon setRemarks(String remarks)
+    {
+        this.remarks = remarks;
+        return this;
+    }
+
+    /**
+     * Gets img url.
+     *
+     * @return the img url
+     */
+    public String getImgUrl()
+    {
+        return imgUrl;
+    }
+
+    /**
+     * Sets img url.
+     *
+     * @param imgUrl the img url
+     * @return the img url
+     */
+    public Cartoon setImgUrl(String imgUrl)
+    {
+        this.imgUrl = imgUrl;
+        return this;
+    }
+
+    public Bitmap getBitmap()
+    {
+        return bitmap;
+    }
+
+    public Cartoon setBitmap(Bitmap bitmap)
+    {
+        this.bitmap = bitmap;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Cartoon cartoon = (Cartoon) o;
+
+        if (getId() != null ? !getId().equals(cartoon.getId()) : cartoon.getId() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(cartoon.getName()) : cartoon.getName() != null)
+        {
+            return false;
+        }
+        if (getAuthor() != null ? !getAuthor().equals(cartoon.getAuthor()) : cartoon.getAuthor() != null)
+        {
+            return false;
+        }
+        if (getRemarks() != null ? !getRemarks().equals(cartoon.getRemarks()) : cartoon.getRemarks() != null)
+        {
+            return false;
+        }
+        return getImgUrl() != null ? getImgUrl().equals(cartoon.getImgUrl()) : cartoon.getImgUrl() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAuthor() != null ? getAuthor().hashCode() : 0);
+        result = 31 * result + (getRemarks() != null ? getRemarks().hashCode() : 0);
+        result = 31 * result + (getImgUrl() != null ? getImgUrl().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("author：").append(author).append('\n');
+        stringbuilder.append("remarks：").append(remarks).append('\n');
+        stringbuilder.append("imgUrl：").append(imgUrl).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+##### CartoonHistory
+
+```java
+package mao.cartoonapp.entity;
+
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.entity
+ * Class(类名): CartoonHistory
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/13
+ * Time(创建时间)： 13:55
+ * Version(版本): 1.0
+ * Description(描述)： 历史记录，取不到章节名称
+ */
+
+
+public class CartoonHistory
+{
+    /**
+     * 漫画的id
+     */
+    private String id1;
+    /**
+     * 章节的id
+     */
+    private String id2;
+    /**
+     * 漫画名字
+     */
+    private String name;
+    /**
+     * 漫画作者
+     */
+    private String author;
+
+    /**
+     * 最后一次更新时间
+     */
+    private Long lastTime;
+
+    /**
+     * img url
+     */
+    private String imgUrl;
+
+    /**
+     * Instantiates a new Cartoon history.
+     */
+    public CartoonHistory()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Cartoon history.
+     *
+     * @param id1      the id 1
+     * @param id2      the id 2
+     * @param name     the name
+     * @param author   the author
+     * @param lastTime the last time
+     * @param imgUrl   the img url
+     */
+    public CartoonHistory(String id1, String id2, String name, String author, Long lastTime, String imgUrl)
+    {
+        this.id1 = id1;
+        this.id2 = id2;
+        this.name = name;
+        this.author = author;
+        this.lastTime = lastTime;
+        this.imgUrl = imgUrl;
+    }
+
+    /**
+     * Gets id 1.
+     *
+     * @return the id 1
+     */
+    public String getId1()
+    {
+        return id1;
+    }
+
+    /**
+     * Sets id 1.
+     *
+     * @param id1 the id 1
+     * @return the id 1
+     */
+    public CartoonHistory setId1(String id1)
+    {
+        this.id1 = id1;
+        return this;
+    }
+
+    /**
+     * Gets id 2.
+     *
+     * @return the id 2
+     */
+    public String getId2()
+    {
+        return id2;
+    }
+
+    /**
+     * Sets id 2.
+     *
+     * @param id2 the id 2
+     * @return the id 2
+     */
+    public CartoonHistory setId2(String id2)
+    {
+        this.id2 = id2;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public CartoonHistory setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets author.
+     *
+     * @return the author
+     */
+    public String getAuthor()
+    {
+        return author;
+    }
+
+    /**
+     * Sets author.
+     *
+     * @param author the author
+     * @return the author
+     */
+    public CartoonHistory setAuthor(String author)
+    {
+        this.author = author;
+        return this;
+    }
+
+    /**
+     * Gets last time.
+     *
+     * @return the last time
+     */
+    public Long getLastTime()
+    {
+        return lastTime;
+    }
+
+    /**
+     * Sets last time.
+     *
+     * @param lastTime the last time
+     * @return the last time
+     */
+    public CartoonHistory setLastTime(Long lastTime)
+    {
+        this.lastTime = lastTime;
+        return this;
+    }
+
+    /**
+     * Gets img url.
+     *
+     * @return the img url
+     */
+    public String getImgUrl()
+    {
+        return imgUrl;
+    }
+
+    /**
+     * Sets img url.
+     *
+     * @param imgUrl the img url
+     * @return the img url
+     */
+    public CartoonHistory setImgUrl(String imgUrl)
+    {
+        this.imgUrl = imgUrl;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        CartoonHistory that = (CartoonHistory) o;
+
+        if (getId1() != null ? !getId1().equals(that.getId1()) : that.getId1() != null)
+        {
+            return false;
+        }
+        if (getId2() != null ? !getId2().equals(that.getId2()) : that.getId2() != null)
+        {
+            return false;
+        }
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
+        {
+            return false;
+        }
+        if (getAuthor() != null ? !getAuthor().equals(that.getAuthor()) : that.getAuthor() != null)
+        {
+            return false;
+        }
+        if (getLastTime() != null ? !getLastTime().equals(that.getLastTime()) : that.getLastTime() != null)
+        {
+            return false;
+        }
+        return getImgUrl() != null ? getImgUrl().equals(that.getImgUrl()) : that.getImgUrl() == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getId1() != null ? getId1().hashCode() : 0;
+        result = 31 * result + (getId2() != null ? getId2().hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAuthor() != null ? getAuthor().hashCode() : 0);
+        result = 31 * result + (getLastTime() != null ? getLastTime().hashCode() : 0);
+        result = 31 * result + (getImgUrl() != null ? getImgUrl().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id1：").append(id1).append('\n');
+        stringbuilder.append("id2：").append(id2).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("author：").append(author).append('\n');
+        stringbuilder.append("lastTime：").append(lastTime).append('\n');
+        stringbuilder.append("imgUrl：").append(imgUrl).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+##### CartoonItem
+
+```java
+package mao.cartoonapp.entity;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.entity
+ * Class(类名): CartoonItem
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 20:36
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class CartoonItem
+{
+    /**
+     * id
+     */
+    private String id;
+
+    /**
+     * 文本视图id
+     */
+    private String TextViewId;
+
+    /**
+     * 章节名字
+     */
+    private String name;
+
+    /**
+     * Instantiates a new Cartoon item.
+     */
+    public CartoonItem()
+    {
+    }
+
+    /**
+     * Instantiates a new Cartoon item.
+     *
+     * @param id   the id
+     * @param name the name
+     */
+    public CartoonItem(String id, String name)
+    {
+        this.id = id;
+        this.name = name;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public CartoonItem setId(String id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     * @return the name
+     */
+    public CartoonItem setName(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    public String getTextViewId()
+    {
+        return TextViewId;
+    }
+
+    public CartoonItem setTextViewId(String textViewId)
+    {
+        TextViewId = textViewId;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("TextViewId：").append(TextViewId).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+##### CartoonItemRequestBody
+
+```java
+package mao.cartoonapp.entity;
+
+/**
+ * Project name(项目名称)：解析漫画网站
+ * Package(包名): mao.entity
+ * Class(类名): CartoonItemRequestBody
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/11
+ * Time(创建时间)： 20:40
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+public class CartoonItemRequestBody
+{
+    /**
+     * 请求的漫画的id
+     */
+    private int id;
+
+    /**
+     * 第二个id，一般为1
+     */
+    private int id2;
+
+    /**
+     * Instantiates a new Cartoon item request body.
+     *
+     * @param id  the id
+     * @param id2 the id 2
+     */
+    public CartoonItemRequestBody(int id, int id2)
+    {
+        this.id = id;
+        this.id2 = id2;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public int getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
+    public CartoonItemRequestBody setId(int id)
+    {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Gets id 2.
+     *
+     * @return the id 2
+     */
+    public int getId2()
+    {
+        return id2;
+    }
+
+    /**
+     * Sets id 2.
+     *
+     * @param id2 the id 2
+     * @return the id 2
+     */
+    public CartoonItemRequestBody setId2(int id2)
+    {
+        this.id2 = id2;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("id2：").append(id2).append('\n');
+        return stringbuilder.toString();
+    }
+}
+```
+
+
+
+
+
+
+
+##### ImageLoadResult
+
+```java
+package mao.cartoonapp.entity;
+
+import android.graphics.Bitmap;
+
+/**
+ * Project name(项目名称)：CartoonApp
+ * Package(包名): mao.cartoonapp.entity
+ * Class(类名): ImageLoadResult
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/10/12
+ * Time(创建时间)： 18:51
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ImageLoadResult
+{
+    /**
+     * 状态
+     */
+    private boolean status;
+    /**
+     * 位图
+     */
+    private Bitmap bitmap;
+
+    public ImageLoadResult(boolean status, Bitmap bitmap)
+    {
+        this.status = status;
+        this.bitmap = bitmap;
+    }
+
+    public boolean isStatus()
+    {
+        return status;
+    }
+
+    public ImageLoadResult setStatus(boolean status)
+    {
+        this.status = status;
+        return this;
+    }
+
+    public Bitmap getBitmap()
+    {
+        return bitmap;
+    }
+
+    public ImageLoadResult setBitmap(Bitmap bitmap)
+    {
+        this.bitmap = bitmap;
+        return this;
+    }
+}
+```
+
+
+
+
+
+
+
+#### service
+
+
+
 
 
 
