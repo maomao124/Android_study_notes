@@ -54828,3 +54828,535 @@ public class CatalogueService
 
 
 ##### ContentService
+
+
+
+```java
+package mao.service;
+
+import mao.entity.Book;
+import mao.entity.Content;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.service
+ * Class(类名): ContentService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:39
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class ContentService
+{
+    /**
+     * 获取内容
+     *
+     * @param urlString url字符串
+     * @return {@link Content}
+     * @throws IOException ioexception
+     */
+    public static Content getContent(String urlString) throws IOException
+    {
+        String html = Request.get(urlString);
+        Document document = Jsoup.parse(html);
+        //获取标题
+        Element h1 = document.getElementsByTag("h1").first();
+        assert h1 != null;
+        String title = h1.html();
+        //获取内容
+        Element content = document.getElementById("content");
+        //System.out.println(content);
+        assert content != null;
+        Elements p = content.getElementsByTag("p");
+        StringBuilder stringBuilder = new StringBuilder(512);
+        for (Element element : p)
+        {
+            String s = element.html().strip();
+            //System.out.println(s);
+            stringBuilder.append(s).append("\n");
+        }
+        //System.out.println(stringBuilder);
+        //System.out.println(stringBuilder.length());
+        Content content1 = new Content();
+        content1.setTitle(title);
+        content1.setContent(stringBuilder.toString());
+        return content1;
+    }
+
+
+    public static void main(String[] args) throws IOException
+    {
+        Content content = getContent("http://www.biqu5200.net/52_52542/20380548.html");
+        System.out.println(content);
+    }
+}
+
+```
+
+
+
+##### Request
+
+```java
+package mao.service;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.service
+ * Class(类名): Request
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 19:54
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class Request
+{
+    /**
+     * get请求
+     *
+     * @param urlString url字符串
+     * @return {@link String}
+     * @throws IOException IOException
+     */
+    public static String get(String urlString) throws IOException
+    {
+        return get(urlString, "gbk");
+    }
+
+    /**
+     * get请求
+     *
+     * @param urlString   url字符串
+     * @param charsetName 字符集名称
+     * @return {@link String}
+     * @throws IOException IOException
+     */
+    public static String get(String urlString, String charsetName) throws IOException
+    {
+        URL url = new URL(urlString);
+        URLConnection urlConnection = url.openConnection();
+        urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.70");
+        InputStream inputStream = urlConnection.getInputStream();
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, charsetName);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        String s;
+        StringBuilder stringBuilder = new StringBuilder(10240);
+        while ((s = bufferedReader.readLine()) != null)
+        {
+            stringBuilder.append(s);
+        }
+        return stringBuilder.toString();
+    }
+
+    public static void main(String[] args) throws IOException
+    {
+        System.out.println(Request.get("http://www.biqu5200.net/52_52542/"));
+    }
+}
+
+```
+
+
+
+
+
+##### Download
+
+```java
+package mao.service;
+
+import com.alibaba.fastjson.JSON;
+import mao.entity.Book;
+import mao.entity.Catalogue;
+import mao.entity.Content;
+import mao.entity.SpeedProp;
+
+import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * Project name(项目名称)：java_Jsoup实现小说爬取
+ * Package(包名): mao.service
+ * Class(类名): Download
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/9/3
+ * Time(创建时间)： 20:51
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class Download
+{
+    /**
+     * 得到int随机数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int
+     */
+    private static int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    private static void sleep() throws InterruptedException
+    {
+        Thread.sleep(getIntRandom(SpeedProp.getMinSleepTime(), SpeedProp.getMaxSleepTime()));
+    }
+
+
+    /**
+     * 缓存到文件
+     *
+     * @param urlString url字符串
+     * @throws IOException          IOException
+     * @throws InterruptedException 中断异常
+     */
+    public static void toFile(String urlString) throws IOException, InterruptedException
+    {
+        //文字数量
+        long size = 0;
+        //获取目录和书名
+        Book book = CatalogueService.getCatalogue(urlString);
+        System.out.println("书名：" + book.getName());
+        List<Catalogue> list = book.getList();
+        System.out.println("一共" + list.size() + "章");
+        System.out.println("开始获取正文");
+        File file = new File(book.getName() + ".txt");
+        FileWriter fileWriter = new FileWriter(file);
+        for (Catalogue catalogue : list)
+        {
+            System.out.println("已缓存" + size + "字   " + "开始缓存：" + catalogue.getName());
+            Content content = ContentService.getContent(catalogue.getHref());
+            String s = content.getContent();
+            size = size + s.length();
+            fileWriter.write(content.getTitle() + "\n\n");
+            fileWriter.write(s);
+            fileWriter.write("\n\n\n\n");
+            fileWriter.flush();
+            //随机休眠
+            sleep();
+        }
+        fileWriter.close();
+        System.out.println("缓存完成，本书一共" + size + "字");
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    /**
+     * 缓存到文件，从startChapter章节开始缓存
+     *
+     * @param urlString    url字符串
+     * @param startChapter 开始章章节
+     * @throws IOException          ioexception
+     * @throws InterruptedException 中断异常
+     */
+    public static void toFile(String urlString, int startChapter) throws IOException, InterruptedException
+    {
+        //文字数量
+        long size = 0;
+        //获取目录和书名
+        Book book = CatalogueService.getCatalogue(urlString);
+        System.out.println("书名：" + book.getName());
+        List<Catalogue> list = book.getList();
+        System.out.println("一共" + list.size() + "章");
+        System.out.println("开始获取正文");
+        File file = new File(book.getName() + ".txt");
+        FileWriter fileWriter = new FileWriter(file);
+        for (int i = 0; i < list.size(); i++)
+        {
+            if (i < startChapter - 1)
+            {
+                continue;
+            }
+            Catalogue catalogue = list.get(i);
+            System.out.println("已缓存" + size + "字   " + "开始缓存：" + catalogue.getName());
+            Content content = ContentService.getContent(catalogue.getHref());
+            String s = content.getContent();
+            size = size + s.length();
+            fileWriter.write(content.getTitle() + "\n\n");
+            fileWriter.write(s);
+            fileWriter.write("\n\n\n\n");
+            fileWriter.flush();
+            //随机休眠
+            sleep();
+        }
+        fileWriter.close();
+        System.out.println("缓存完成，本书一共" + size + "字");
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    /**
+     * 缓存到文件，分散模式，一章一个文件
+     *
+     * @param urlString url字符串
+     * @throws IOException          IOException
+     * @throws InterruptedException 中断异常
+     */
+    public static void toFileDispersion(String urlString) throws IOException, InterruptedException
+    {
+        //文字数量
+        long size = 0;
+        //获取目录和书名
+        Book book = CatalogueService.getCatalogue(urlString);
+        System.out.println("书名：" + book.getName());
+        List<Catalogue> list = book.getList();
+        System.out.println("一共" + list.size() + "章");
+        System.out.println("开始获取正文");
+        File file1 = new File("./" + book.getName() + "/");
+        if (!file1.exists())
+        {
+            boolean b = file1.mkdirs();
+            if (!b)
+            {
+                System.out.println("目录创建失败！");
+                return;
+            }
+        }
+        for (Catalogue catalogue : list)
+        {
+            try
+            {
+                System.out.println("已缓存" + size + "字   " + "开始缓存：" + catalogue.getName());
+                Content content = ContentService.getContent(catalogue.getHref());
+                File file = new File("./" + book.getName() + "/" + content.getTitle() + ".txt");
+                FileWriter fileWriter = new FileWriter(file);
+                String s = content.getContent();
+                size = size + s.length();
+                fileWriter.write(s);
+                fileWriter.flush();
+                fileWriter.close();
+                //随机休眠
+                sleep();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("缓存完成，本书一共" + size + "字");
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    /**
+     * 缓存到文件，分散模式，一章一个文件，从startChapter章节开始
+     *
+     * @param urlString    url字符串
+     * @param startChapter 开始章节
+     * @throws IOException          IOException
+     * @throws InterruptedException 中断异常
+     */
+    public static void toFileDispersion(String urlString, int startChapter) throws IOException, InterruptedException
+    {
+        //文字数量
+        long size = 0;
+        //获取目录和书名
+        Book book = CatalogueService.getCatalogue(urlString);
+        System.out.println("书名：" + book.getName());
+        List<Catalogue> list = book.getList();
+        System.out.println("一共" + list.size() + "章");
+        System.out.println("开始获取正文");
+        File file1 = new File("./" + book.getName() + "/");
+        if (!file1.exists())
+        {
+            boolean b = file1.mkdirs();
+            if (!b)
+            {
+                System.out.println("目录创建失败！");
+                return;
+            }
+        }
+        for (int i = 0; i < list.size(); i++)
+        {
+            if (i < startChapter - 1)
+            {
+                continue;
+            }
+            try
+            {
+                Catalogue catalogue = list.get(i);
+                System.out.println("已缓存" + size + "字   " + "开始缓存：" + catalogue.getName());
+                Content content = ContentService.getContent(catalogue.getHref());
+                File file = new File("./" + book.getName() + "/" + content.getTitle() + ".txt");
+                FileWriter fileWriter = new FileWriter(file);
+                String s = content.getContent();
+                size = size + s.length();
+                fileWriter.write(s);
+                fileWriter.flush();
+                fileWriter.close();
+                //随机休眠
+                sleep();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("缓存完成，本书一共" + size + "字");
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    /**
+     * 缓存到文件，分散模式，一章一个文件，从startChapter章节开始，json格式
+     *
+     * @param urlString    url字符串
+     * @param startChapter 开始章节
+     * @throws IOException          IOException
+     * @throws InterruptedException 中断异常
+     */
+    public static void toJsonFileDispersion(String urlString, int startChapter) throws IOException, InterruptedException
+    {
+        //文字数量
+        long size = 0;
+        //获取目录和书名
+        Book book = CatalogueService.getCatalogue(urlString);
+        System.out.println("书名：" + book.getName());
+        List<Catalogue> list = book.getList();
+        System.out.println("一共" + list.size() + "章");
+        System.out.println("开始获取正文");
+        File file1 = new File("./" + book.getName() + "/json/");
+        if (!file1.exists())
+        {
+            boolean b = file1.mkdirs();
+            if (!b)
+            {
+                System.out.println("目录创建失败！");
+                return;
+            }
+        }
+        for (int i = 0; i < list.size(); i++)
+        {
+            if (i < startChapter - 1)
+            {
+                continue;
+            }
+            try
+            {
+                Catalogue catalogue = list.get(i);
+                System.out.println("已缓存" + size + "字   " + "开始缓存：" + catalogue.getName());
+                Content content = ContentService.getContent(catalogue.getHref());
+                File file = new File("./" + book.getName() + "/json/" + content.getTitle() + ".json");
+                FileWriter fileWriter = new FileWriter(file);
+                String s = content.getContent();
+                size = size + s.length();
+                String jsonString = JSON.toJSONString(content);
+                fileWriter.write(jsonString);
+                fileWriter.flush();
+                fileWriter.close();
+                //随机休眠
+                sleep();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("缓存完成，本书一共" + size + "字");
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+
+    /**
+     * 缓存到文件，分散模式，一章一个文件，json格式
+     *
+     * @param urlString url字符串
+     * @throws IOException          IOException
+     * @throws InterruptedException 中断异常
+     */
+    public static void toJsonFileDispersion(String urlString) throws IOException, InterruptedException
+    {
+        toJsonFileDispersion(urlString, 1);
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException
+    {
+        //toFile("http://www.biqu5200.net/52_52542/", 494);
+        //toFileDispersion("http://www.biqu5200.net/52_52542/", 211);
+        //toJsonFileDispersion("http://www.biqu5200.net/52_52542/",128);
+        //toJsonFileDispersion("http://www.biqu5200.net/2_2157/", 257);
+        toFileDispersion("http://www.biqu5200.net/8_8187/");
+        //toFileDispersion("http://www.biqu5200.net/0_111/");
+
+//        for (int i = 0; i < 10; i++)
+//        {
+//            System.out.println(getIntRandom(SpeedProp.getMinSleepTime(), SpeedProp.getMaxSleepTime()));
+//        }
+    }
+}
+
+```
+
+
+
+
+
+#### speed.properties
+
+```properties
+# 下载完一章后需要随机休眠，防止被发现报503
+#最小休眠时间，单位为毫秒
+minSleepTime=200
+#最大休眠时间
+maxSleepTime=1000
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+
+
