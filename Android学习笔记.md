@@ -54270,6 +54270,34 @@ class CartoonServiceImplTest
 
 
 
+深色模式
+
+![image-20221013220121953](img/Android学习笔记/image-20221013220121953.png)
+
+
+
+
+
+![image-20221013220203111](img/Android学习笔记/image-20221013220203111.png)
+
+
+
+![image-20221013220239325](img/Android学习笔记/image-20221013220239325.png)
+
+
+
+![image-20221013220349720](img/Android学习笔记/image-20221013220349720.png)
+
+
+
+
+
+![image-20221013220526247](img/Android学习笔记/image-20221013220526247.png)
+
+
+
+
+
 
 
 
